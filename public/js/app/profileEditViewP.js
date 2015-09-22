@@ -1,13 +1,13 @@
 define([
 	'bodyColumn',
 	'confettiBackground',
+	'defaultFormFor',
 	'fonts',
-	'formFor',
 	'holibirthdayRow',
 	'meP',
 	'prettyForms',
 	'profilesP',
-], function (bodyColumn, confettiBackground, fonts, formFor, holibirthdayRow, meP, prettyForms, profilesP) {
+], function (bodyColumn, confettiBackground, defaultFormFor, fonts, holibirthdayRow, meP, prettyForms, profilesP) {
 	return function (user) {
 		return meP.then(function (me) {
 			return profilesP.then(function (profiles) {
@@ -26,7 +26,7 @@ define([
 					knowAHolibirthdayer: Stream.once(profile.knowAHolibirthdayer),
 				};
 
-				var editForm = formFor.profile(profile, function (fields) {
+				var editForm = defaultFormFor.profile(profile, function (fields) {
 					return bodyColumn(stack({}, [
 						text('hello there'),
 					]));
@@ -36,7 +36,7 @@ define([
 					confettiBackground(bodyColumn(holibirthdayRow(text('Edit Profile').all([
 						fonts.h1,
 					])))),
-					editForm,
+					// editForm,
 				]);
 			});
 		});

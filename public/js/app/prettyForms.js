@@ -56,6 +56,9 @@ define([
 				]),
 			]);
 		},
+		imageUpload: function (config) {
+			
+		},
 		checkbox: function (config) {
 			var currentValue = false;
 			config.stream.onValue(function (value) {
