@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Holibirthday</title>
+		<meta name="description" content="Dedicated to celebrating birthdays upstaged by Holidays, Bad Days like tax day, 9-11 and Birthdays Forgotten!">
+		<link rel="icon" type="image/png" href="/content/man2.png">
+		
+		<!-- set scale for mobile devices -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<!-- required for search crawlers -->
+		<!-- see https://developers.google.com/webmasters/ajax-crawling/docs/getting-started -->
+		<meta name="fragment" content="!">
+
+		<!-- a small amount of CSS -->
+		<link href="css/reset.css" rel="stylesheet" type="text/css" />
+		<link href="css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+		<link href="hcj/hcj.css" rel="stylesheet" type="text/css" />
+		<style>
+		 @font-face {
+			 font-family: "Raleway Thin";
+			 src: url('/fonts/Raleway Thin.otf');
+		 }
+		 @font-face {
+			 font-family: "BebasNeue";
+			 src: url('/fonts/BebasNeue.otf');
+		 }
+		 @font-face {
+			 font-family: "CelebrationTime";
+			 src: url('/fonts/CelebrationTime.ttf');
+		 }
+		 @font-face {
+			 font-family: 'Open Sans';
+			 src: url('/fonts/OpenSans-Regular.ttf');
+		 }
+		</style>
+
+		<!-- external libraries -->
+		<script src='https://www.google.com/recaptcha/api.js?onload=render=explicit'></script>
+		<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+
+		<!-- local libraries written by others -->
+		<script src="js/lib/ckeditor/ckeditor.js"></script>
+		<script src="js/lib/jquery.min.js"></script>
+		<script src="js/lib/jquery.slotmachine.min.js"></script>
+		<script src="js/lib/localStorageShim.js"></script>
+		<script src="js/lib/ObjectID.js"></script>
+		<script src="js/lib/q.js"></script>
+		<script src="js/lib/require.min.js"></script>
+		<script src="js/lib/waitForWebfonts.js"></script>
+
+		<!-- local libraries written by me -->
+		<script src="hcj/type/is.js"></script>
+		<script src="hcj/type/type.js"></script>
+		<script src="hcj/hcj.js"></script>
+		<script src="hcj/libs.js"></script>
+
+		<!-- declaration files shared with backend -->
+		<script src="Err.js"></script>
+		<script src="editorType.js"></script>
+		<script src="type.js"></script>
+		<script src="schema.js"></script>
+
+		<!-- the application -->
+		<script src="js/storeItems.js"></script>
+        <script src="js/app/main.js"></script>
+	</head>
+	<body>
+		<div style="visibility: hidden">
+			Dedicated to celebrating birthdays upstaged by Holidays, Bad Days like tax day, 9-11 and Birthdays Forgotten!
+			<a href="news.html">News</a>
+		</div>
+		<div class="sandbox" style="z-index: -1; width: 100%; overflow: hidden;"></div>
+		<div id="fb-root"></div>
+        <script src="//connect.facebook.net/en_US/all.js"></script>
+        <script>
+		 FB.init({
+			 appId  : (-1 === location.host.indexOf('www.holibirthday.com')) ?
+							 '343310219088626' : // staging
+							 '888285114590433', // production
+			 xfbml  : true  // parse XFBML
+		 });
+        </script>
+	</body>
+</html>

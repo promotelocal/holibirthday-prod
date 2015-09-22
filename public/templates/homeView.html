@@ -1,0 +1,108 @@
+<div class="home">
+	<div sidebar class="sidebar">
+		<div class="sidebar-handle">
+			<img src="./content/man2.png" />
+		</div>
+		<div ng-show="todayBirthdays.length > 0 && todayProfiles[todayBirthdays[currentIndex].user]">
+			<div class="widget">
+				<div class="todays-holibirthdays">
+					<div class="date">
+						Today's Birthdays
+					</div>
+					<div class="feed-underline"></div>
+					<div class="slideshow">
+						<div class="slideshow-item current">
+							<div class="little-bold feed-text">
+								{{todayProfiles[todayBirthdays[currentIndex].user].firstName}} {{todayProfiles[todayBirthdays[currentIndex].user].lastName}}
+							</div>
+							<img ng-show="todayProfiles[todayBirthdays[currentIndex].user].profileImageURL" ng-src="{{todayProfiles[todayBirthdays[currentIndex].user].profileImageURL}}" />
+							<img ng-hide="todayProfiles[todayBirthdays[currentIndex].user].profileImageURL" src="content/noProfileImage.png" />
+						</div>
+						<div class="slideshow-item next" ng-show="todayBirthdays[nextIndex]">
+							<div class="little-bold feed-text">
+								{{todayProfiles[todayBirthdays[nextIndex].user].firstName}} {{todayProfiles[todayBirthdays[nextIndex].user].lastName}}
+							</div>
+							<img ng-show="todayProfiles[todayBirthdays[nextIndex].user].profileImageURL" ng-src="{{todayProfiles[todayBirthdays[nextIndex].user].profileImageURL}}" />
+							<img ng-hide="todayProfiles[todayBirthdays[nextIndex].user].profileImageURL" src="content/noProfileImage.png" />
+						</div>
+						<div class="arrow left">
+							<a href="javascript:void(0)" ng-click="prevBirthday()">
+								<div class="arrow-img">
+									<
+								</div>
+							</a>
+							<div class="arrow-backdrop">
+							</div>
+						</div>
+						<div class="arrow right">
+							<a href="javascript:void(0)" ng-click="nextBirthday()">
+								<div class="arrow-img">
+									>
+								</div>
+							</a>
+							<div class="arrow-backdrop">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="widget-separator"><div></div></div>
+		</div>
+		<div your-holibirthday></div>
+		<div class="widget">
+			<div class="date">
+				Read Stories
+			</div>
+			<div class="feed-underline"></div>
+			<a href="#/stories?storyType=best">
+				<div class="feed-button row">
+					Good Holibirthday
+				</div>
+			</a>
+			<a href="#/stories?storyType=worst">
+				<div class="feed-button row">
+					Bad Holibirthday
+				</div>
+			</a>
+			<a href="#/stories?storyType=forgotmenot">
+				<div class="feed-button row">
+					Friend's Holibirthday
+				</div>
+			</a>
+		</div>
+	</div>
+	<div class="stories">
+		<div about-holibirthday></div>
+		<div ng-repeat="fp in featuredPosts track by $index">
+			<div class="widget-separator"><div></div></div>
+			<a href="#/story?_id={{fp.story}}">
+				<div class="widget">
+					<div class="title">
+						Holiday Birthday Stories
+					</div>
+					<div class="feed-underline"></div>
+					<div ng-repeat="story in storiesById[fp.story]">
+						<div story-small story="story" similar-stories="true"></div>
+					</div>
+				</div>
+			</a>
+		</div>
+		<div class="widget-separator"></div>
+		<div class="widget-halves">
+			<a href="#/blog"><div class="widget">
+				<div class="title">
+					From our Blog
+				</div>
+				<div class="feed-underline"></div>
+				<div ng-repeat="blogPost in blogPosts" story-small story="blogPost"></div>
+			</div></a><a href="/#stories"><div class="widget">
+				<div class="title">
+					Latest Story
+				</div>
+				<div class="feed-underline"></div>
+				<div ng-repeat="story in stories" story-small story="story"></div>
+			</div></a>
+		</div>
+	</div>
+	<div class="clear"></div>
+</div>

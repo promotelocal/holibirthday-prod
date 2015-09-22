@@ -1,0 +1,14 @@
+<div>
+	<div class="title">
+		{{ story.name }}
+	</div>
+	<div class="author">
+		By {{ profile.firstName }} {{ profile.lastName }}
+	</div>
+	<div class="feed-underline"></div>
+	<div class="story-image" >
+		<img ng-src="{{story.imageUrl}}" />
+	</div>
+	<div class="story-text" ng-bind-html="story.textSafe"></div>
+	<div class="clear"></div>
+</div>

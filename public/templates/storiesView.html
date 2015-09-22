@@ -1,0 +1,28 @@
+<div class="home">
+	<div sidebar class="sidebar">
+		<div class="sidebar-handle">
+			<img src="./content/man2.png" />
+		</div>
+		<div class="widget">
+			<div class="date">
+				{{storyTypeTitle[storyType]}}
+			</div>
+			<div class="feed-underline"></div>
+			<div class="feed-button row" ng-show="storyType !== 'best'" ng-click="storyType = 'best'">See {{storyTypeTitle['best']}}</div>
+			<div class="feed-button row" ng-show="storyType !== 'worst'" ng-click="storyType = 'worst'">See {{storyTypeTitle['worst']}}</div>
+			<div class="feed-button row" ng-show="storyType !== 'forgotmenot'" ng-click="storyType = 'forgotmenot'">See {{storyTypeTitle['forgotmenot']}}</div>
+		</div>
+	</div>
+	<div class="stories">
+		<div class="widget">
+			<div class="title">
+				{{storyTypeTitle[storyType]}}
+			</div>
+			<div ng-repeat="story in stories[storyType]">
+				<div class="feed-separator"><div></div></div>
+				<div story-small story="story"></div>
+			</div>
+		</div>
+	</div>
+	<div class="clear"></div>
+</div>

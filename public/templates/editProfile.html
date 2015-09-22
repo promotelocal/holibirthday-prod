@@ -1,0 +1,40 @@
+<div class="register" ng-show="profile">
+	<div class="widget">
+		<div class="title">
+			{{ profile.firstName }} {{ profile.lastName }}
+		</div>
+		<div class="feed-underline"></div>
+		<div class="feed-text birth-date">
+			<div class="field-name">Birth Date</div>
+			<div class="field-input">
+				<select ng-model="profile.birthMonth" ng-options="month as monthNames[month] for month in months"></select>
+				<select ng-model="profile.birthDate" ng-options="day for day in daysByMonth[profile.birthMonth]"></select>
+			</div>
+		</div>
+		<div class="feed-text">
+			<div class="field-name">
+				<input type="checkbox" ng-model="profile.holibirthdayer" />
+				I am a Holibirther
+			</div>
+			<div class="field-name">
+				<input type="checkbox" ng-model="profile.knowAHolibirthdayer" />
+				I know a Holibirther
+			</div>
+		</div>
+		<form id="uploadForm" action="/uploadFile" method="post">
+			<div class="field-name">Upload Profile Image</div>
+			<div class="field-input">
+				<input type="file" accept="image/*" fileread="imageData" onchange="angular.element(this).scope().changeImage()" />
+			</div>
+			<div class="profile-pic">
+				<img style="width:100%" ng-src="{{profile.profileImageURL}}" ng-show="profile.profileImageURL" />
+				<img style="width:100%" src="/content/noProfileImage.png" ng-show="!profile.profileImageURL" />
+			</div>
+		</form>
+		<div class="feed-text"></div>
+		<div class="feed-button right" ng-click="saveProfile()">
+			Save Profile
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Holibirthday</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Dedicated to celebrating birthdays upstaged by Holidays, Bad Days like tax day, 9-11 and Birthdays Forgotten!">
+		<link rel="icon" type="image/png" href="/content/man2.png">
+		<link href="reset.css" rel="stylesheet" type="text/css" />
+		<link href="hcj/hcj.css" rel="stylesheet" type="text/css" />
+
+		<style>
+		 @font-face {
+			 font-family: "Raleway Thin";
+			 src: url('/fonts/Raleway Thin.otf');
+		 }
+		 @font-face {
+			 font-family: "BebasNeue";
+			 src: url('/fonts/BebasNeue.otf');
+		 }
+		 @font-face {
+			 font-family: "CelebrationTime";
+			 src: url('/fonts/CelebrationTime.ttf');
+		 }
+		</style>
+		<script src='https://www.google.com/recaptcha/api.js?onload=render=explicit'></script>
+		<script src="wysihtml/advanced.js"></script>
+		<script src="wysihtml/wysihtml5-0.3.0.min.js"></script>
+		<script src="ckeditor/ckeditor.js"></script>
+		<link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css" />
+		<link href="font-awesome.min.css" rel="stylesheet" type="text/css" />
+		<script src="jquery.min.js"></script>
+		<script src="js/jquery.slotmachine.min.js"></script>
+		<script src="waitForWebfonts.js"></script>
+		<script src="q.js"></script>
+		<script src="hcj/type/is.js"></script>
+		<script src="hcj/type/type.js"></script>
+		<script src="hcj/hcj.js"></script>
+		<script src="hcj/libs.js"></script>
+
+		<script src="js/ObjectID.js"></script>
+		<script src="Err.js"></script>
+		<script src="type.js"></script>
+		<script src="schema.js"></script>
+	</head>
+	<body>
+		<div style="visibility: hidden">
+			Dedicated to celebrating birthdays upstaged by Holidays, Bad Days like tax day, 9-11 and Birthdays Forgotten!
+			<a href="news.html">News</a>
+		</div>
+		<div class="sandbox" style="z-index: -1; width: 100%; overflow: hidden;"></div>
+		<div id="fb-root"></div>
+        <script src="//connect.facebook.net/en_US/all.js"></script>
+        <script>
+		 FB.init({
+			 //appId  : '888285114590433',
+			 appId  : '343310219088626',
+			 xfbml  : true  // parse XFBML
+		 });
+        </script>
+		<div id="wysihtml5-toolbar" style="display: none;">
+			<a data-wysihtml5-command="bold">bold</a>
+			<a data-wysihtml5-command="italic">italic</a>
+
+			<!-- Some wysihtml5 commands require extra parameters -->
+			<a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="red">red</a>
+			<a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="green">green</a>
+			<a data-wysihtml5-command="foreColor" data-wysihtml5-command-value="blue">blue</a>
+
+			<!-- Some wysihtml5 commands like 'createLink' require extra paramaters specified by the user (eg. href) -->
+			<a data-wysihtml5-command="createLink">insert link</a>
+			<div data-wysihtml5-dialog="createLink" style="display: none;">
+				<label>
+					Link:
+					<input data-wysihtml5-dialog-field="href" value="http://" class="text">
+				</label>
+				<a data-wysihtml5-dialog-action="save">OK</a> <a data-wysihtml5-dialog-action="cancel">Cancel</a>
+			</div>
+		</div>
+	</body>
+</html>

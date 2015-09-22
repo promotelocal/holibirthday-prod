@@ -1,0 +1,50 @@
+<div class="register">
+	<div class="widget">
+		<div class="title">Sign Up</div>
+		<div class="feed-underline"></div>
+		<form class="form">
+			<div>First Name</div>
+			<div class="feed-text">
+				<input ng-model="newUser.firstName" />
+			</div>
+			<div>Last Name</div>
+			<div class="feed-text">
+				<input ng-model="newUser.lastName" />
+			</div>
+			<div>Email</div>
+			<div class="feed-text">
+				<input ng-model="newUser.email" />
+			</div>
+			<div class="feed-text">
+				<input type="checkbox" ng-model="newUser.am" />
+				I am a Holibirther
+			</div>
+			<div class="feed-text">
+				<input type="checkbox" ng-model="newUser.know" />
+				I know a Holibirther
+			</div>
+			<div>Password</div>
+			<div class="feed-text">
+				<input type="password" ng-model="newUser.password" />
+			</div>
+			<div>Confirm Password</div>
+			<div class="feed-text">
+				<input type="password" ng-model="newUser.confirmPassword"/>
+			</div>
+			<div class="feed-text">
+				<input type="checkbox" ng-model="newUser.privacyPolicy" />
+				I agree with the <a href="#/privacyPolicy">Privacy Policy</a>
+			</div>
+			<div class="feed-text" id="grecaptcha-div"></div>
+			<div class="feed-text" ng-show="newUser.password !== newUser.confirmPassword">
+				Passwords do not match
+			</div>
+			<div class="feed-text" ng-show="!newUser.firstName || !newUser.lastName || !newUser.email || !newUser.password || !newUser.privacyPolicy">
+				Please complete all fields
+			</div>
+			<div class="feed-button row" ng-click="register()">
+				Register
+			</div>
+		</form>
+	</div>
+</div>

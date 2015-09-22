@@ -1,0 +1,32 @@
+<div class="feed-item">
+	<div class="title">
+		{{countdown.title}}
+	</div>
+	<div class="feed-underline"></div>
+	<div class="daily-ten-scoreboard">
+		<div ng-repeat="storyId in countdown.stories track by $index">
+			<div ng-repeat="story in storiesById[storyId] track by $index">
+				<div class="daily-ten-entry" ng-show="$parent.$index < 3">
+					<div class="score">
+						{{countdown.stories.length - $parent.$index}})
+					</div>
+					<div class="dash">
+						-
+					</div>
+					<a href="#/story?_id={{item._id}}">
+						<div class="name">
+							{{story.name}}
+						</div>
+					</a>
+					<div class="clear"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<a href="#/topTen">
+		<div class="feed-button right">
+			See All
+		</div>
+	</a>
+	<div class="clear"></div>
+</div>

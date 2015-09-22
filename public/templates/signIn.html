@@ -1,0 +1,39 @@
+<div class="register">
+	<div class="widget">
+		<div class="title">Sign In</div>
+		<div class="feed-underline"></div>
+		<form class="form" ng-submit="signIn()">
+			<div>Email</div>
+			<div class="feed-text">
+				<input name="email" ng-model="creds.username" />
+			</div>
+			<div>Password</div>
+			<div class="feed-text">
+				<input name="password" type="password" ng-model="creds.password" />
+			</div>
+			<div class="feed-text" ng-show="mustRegister">
+				Login failed.
+			</div>
+			<div ng-click="signIn()" class="feed-button row">
+				Sign In
+			</div>
+			<div class="feed-text">
+				Don't have an account?
+			</div>
+			<a class="link" ng-href="#/register?holibirthdate={{holibirthdate ? holibirthdate : ''}}&know={{know}}&am={{am}}">
+				<div class="feed-button row">
+					Sign up
+				</div>
+			</a>
+			<div class="feed-text center">
+				or
+			</div>
+			<div class="feed-button row login-with-facebook" ng-click="loginWithFacebook()">
+				Login With Facebook
+			</div>
+			<div class="feed-text">
+				By logging in with Facebook, you agree to our <a href="#/privacyPolicy">Privacy Policy</a>
+			</div>
+		</form>
+	</div>
+</div>

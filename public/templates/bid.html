@@ -1,0 +1,174 @@
+<div class="bid">
+	<div class="ask-price-bid-price">
+		<div>Current bid price: ${{ bid.bidPrice }} {{offers[0].oneTimeRecurring === 'oneTime' ? 'Fee' : ' / mo'}}</div>
+	</div>
+	<div ng-show="buyer">
+		<div class="bidder small-margin-bottom">
+			{{ providerProfile.firstName }} {{ providerProfile.lastName }},&nbsp;
+		</div>
+		<div class="bidding-on small-margin-bottom">
+			selling
+		</div>
+	</div>
+	<div ng-hide="buyer">
+		<div class="bidder small-margin-bottom">
+			{{ bidderProfile.firstName }} {{ bidderProfile.lastName }},&nbsp;
+		</div>
+		<div class="bidding-on small-margin-bottom">
+			bidding on
+		</div>
+	</div>
+	<div class="clear"></div>
+	<div ng-repeat="offer in offers">
+		<div offer="offer" preview="true"></div>
+	</div>
+	<div class="bid-forms">
+		<div ng-show="!buyer && !teamAcceptsBid">
+			<div class="form">
+				<div class="field-name">
+					You can accept this bid at any time.
+				</div>
+				<div class="bottom-right-button-margin">&nbsp;</div>
+				<div class="bid-forms-button" ng-show="!acceptingBid">
+					<div ng-click="acceptingBid = true" class="button-one-color">Accept agreement for ${{ bid.bidPrice }}&nbsp;{{offers[0].oneTimeRecurring === 'oneTime' ? 'Fee' : '&nbsp;/&nbsp;mo'}}</div>
+				</div>
+				
+				<div class="bid-forms-button" ng-show="acceptingBid">
+					<div ng-click="teamAcceptBid()" class="button-one-color">Really accept agreement for ${{ bid.bidPrice }}&nbsp;{{offers[0].oneTimeRecurring === 'oneTime' ? 'Fee' : '&nbsp;/&nbsp;mo'}}</div>
+				</div>
+			</div>
+		</div>
+		<div ng-show="!buyer && teamAcceptsBid" class="form">
+			<div class="field-name">
+				Agreement will be formed as soon as bidder enters payment information.
+			</div>
+			<div class="bottom-right-button-margin">&nbsp;</div>
+			<div class="bid-forms-button" ng-show="!unacceptingBid">
+				<div ng-click="unacceptingBid = true" class="button-one-color">
+					Un-accept agreement
+				</div>
+			</div>
+			<div class="bid-forms-button" ng-show="unacceptingBid">
+				<div ng-click="teamUnacceptBid()" class="button-one-color">
+					Really un-accept agreement
+				</div>
+			</div>
+		</div>
+		<div ng-show="buyer && !bidderAcceptsBid">
+			<div ng-show="cards.length === 0" class="form">
+				<form>
+					<div class="field-name">You must enter payment information before you can accept the bid.</div>
+				</form>
+				<div class="bottom-right-button-margin">&nbsp;</div>
+				<a href="#/settings">
+					<div class="bid-forms-button">
+						<div ng-click="updateBid()" ng-show="buyer" class="button-one-color">Enter Payment Info</div>
+					</div>
+				</a>
+			</div>
+			<div ng-show="cards.length > 0" class="form">
+				<div ng-show="offers[0].oneTimeRecurring !== 'oneTime'">
+					<form>
+						<div class="field-name">Credit Card</div>
+						<select ng-model="paymentInfo.card" ng-options="card as card.last4 for card in cards"></select>
+					</form>
+				</div>
+				<div class="bottom-right-button-margin">&nbsp;</div>
+				<div class="bid-forms-button" ng-show="!acceptingBid">
+					<div ng-click="acceptingBid = true" ng-show="buyer" class="button-one-color">Accept agreement for ${{ bid.bidPrice }}&nbsp;{{offers[0].oneTimeRecurring === 'oneTime' ? 'Fee' : '&nbsp;/&nbsp;mo'}}</div>
+				</div>
+				<div class="bid-forms-button" ng-show="acceptingBid">
+					<div ng-click="bidderAcceptBid()" ng-show="buyer" class="button-one-color">Really accept agreement for ${{ bid.bidPrice }}&nbsp;{{offers[0].oneTimeRecurring === 'oneTime' ? 'Fee' : '&nbsp;/&nbsp;mo'}}</div>
+				</div>
+			</div>
+		</div>
+		<div ng-show="buyer && bidderAcceptsBid" class="form">
+			<div class="field-name">
+				Agreement will be formed as soon as provider accepts this bid.
+			</div>
+			<div class="bottom-right-button-margin">&nbsp;</div>
+			<div class="bid-forms-button" ng-show="!unacceptingBid">
+				<div ng-click="unacceptingBid = true" class="button-one-color">
+					Un-accept agreement
+				</div>
+			</div>
+			<div class="bid-forms-button" ng-show="unacceptingBid">
+				<div ng-click="bidderUnacceptBid()" class="button-one-color">
+					Really un-accept agreement
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="bid-forms">
+		<div class="form">
+			<form>
+				<div class="field-name">Comment</div>
+				<div class="field-input">
+					<textarea rows="8" ng-model="newBidMessage.text"></textarea>
+				</div>
+			</form>
+			<div class="bottom-right-button-margin">&nbsp;</div>
+			<div class="bid-forms-button">
+				<div class="button-one-color" ng-click="leaveMessage()">Leave Comment</div>
+			</div>
+		</div>
+		<div ng-show="buyer" class="form">
+			<form>
+				<div class="field-name">Bid Price $</div>
+				<div class="field-input">
+					<input ng-model="newBid.bidPrice" />
+				</div>
+			</form>
+			<div class="bottom-right-button-margin">&nbsp;</div>
+			<div class="bid-forms-button">
+				<div ng-click="updateBid()" ng-show="buyer" class="button-one-color">Change Bid Price</div>
+			</div>
+		</div>
+	</div>
+	<div id="{{message._id}}" class="message" ng-repeat="message in bidMessages track by $index">
+		<div class="message-separator"></div>
+		<div class="big-quote">
+			<i class="fa fa-quote-left"></i>
+		</div>
+		<div class="message-body">
+			<div ng-show="message.poster === $parent.$parent.me._id" class="message-buttons">
+				<i ng-click="editMessage(message)" class="fa fa-edit"></i>
+				<i ng-click="removeMessage(message)" class="fa fa-close"></i>
+			</div>
+			<div class="message-from" ng-show="message.poster === bid.bidderUser">
+				{{ bidderProfile.firstName }} {{ bidderProfile.lastName }} said
+			</div>
+			<div class="message-from" ng-show="message.poster === bid.providerUser">
+				{{ providerProfile.firstName }} {{ providerProfile.lastName }} said
+			</div>
+			<div class="message-text" ng-hide="editingMessage[message._id]" ng-bind="message.text"></div>
+			<textarea class="message-date" ng-show="editingMessage[message._id]" ng-model="editingMessage[message._id].text"></textarea>
+			<div class="message-date button-one-color" ng-show="editingMessage[message._id]" ng-click="updateMessage(message)">
+				Save Edits
+			</div>
+			<div class="message-date button-one-color" ng-show="removingMessage[message._id]" ng-click="reallyRemoveMessage(message)">
+				Really Delete Message
+			</div>
+			<div class="message-date">
+				on {{message.createDate.getDay()}} / {{message.createDate.getMonth()}} / {{message.createDate.getFullYear().toString().substring(2)}}
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="bottom-right-button-margin">&nbsp;</div>
+	<div class="bottom-right-button-margin">&nbsp;</div>
+	<div class="bottom-right-button">
+		<div ng-show="buyer">
+			<div class="float" ng-show="!removingBid" ng-click="removingBid=true">
+				<div class="button-one-color">
+					Remove Bid
+				</div>
+			</div>
+			<div class="float" ng-show="removingBid" ng-click="removeBid()">
+				<div class="button-one-color">
+					Really Remove Bid?
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

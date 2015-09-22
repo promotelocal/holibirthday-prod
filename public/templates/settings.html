@@ -1,0 +1,36 @@
+<div>
+	<div class="form">
+		<div class="field-name">
+			Credit Cards
+		</div>
+		<div class="field-name" ng-repeat="card in cards">
+			{{card.last4}} <a ng-click="removeCard(card)" href="javascript:void(0)">(remove)</a>
+		</div>
+	</div>
+	<div class="form">
+		<form>
+			<div class="field-name">Credit Card Number</div>
+			<div class="field-input">
+				<input ng-model="card.cardNumber" />
+			</div>
+			<div class="field-name">CVC Code</div>
+			<div class="field-input">
+				<input ng-model="card.cvc" />
+			</div>
+			<div class="field-name">Expiry Month</div>
+			<div class="field-input">
+				<select type="date" ng-model="card.expMonth" ng-options="month for month in months"></select>
+			</div>
+			<div class="field-name">Expiry Year</div>
+			<div class="field-input">
+				<select type="date" ng-model="card.expYear" ng-options="year for year in years"></select>
+			</div>
+			<div class="field-name" ng-show="problemWithCardInfo">
+				There was a problem.  Please double check the info.
+			</div>
+			<div class="button-one-color" ng-click="addCard()">
+				Add card
+			</div>
+		</form>
+	</div>
+</div>

@@ -1,0 +1,21 @@
+<div class="register">
+	<div class="widget" ng-show="noHolibirthdayFound">
+		<div class="title">No Holibirthday Found</div>
+		<div class="feed-underline"></div>
+		<a href="#/claimBirthday">
+			<div class="feed-button left">Create Your Holibirthday</div>
+		</a>
+		<div class="clear"></div>
+	</div>
+	<div class="widget" ng-show="holibirthday">
+		<div class="title">Holibirthday Certificate</div>
+		<div class="feed-underline"></div>
+		<a href="javascript:void(0)" ng-click="openImage()">
+			<img class="certificate-img" ng-src="{{certificateImgDataUrl}}" />
+		</a>
+	</div>
+	<div ng-hide="true">
+		<canvas width="1280" height="1024"></canvas>
+		<img class="certificate-template" src="content/certificate.png" />
+	</div>
+</div>

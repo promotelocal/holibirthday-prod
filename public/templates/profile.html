@@ -1,0 +1,30 @@
+<div class="register" ng-show="profile">
+	<div class="widget">
+		<div class="title">
+			{{ profile.firstName }} {{ profile.lastName }}
+		</div>
+		<div class="feed-underline"></div>
+		<div class="profile-pic" ng-show="profile.profileImageURL">
+			<img style="width:100%" ng-src="{{profile.profileImageURL}}" />
+		</div>
+		<div class="feed-text profile-pic" ng-show="profile.profileImageName">
+			<img style="width:100%" ng-src="/api/uploadFile/find?filename={{profile.profileImageName}}" />
+		</div>
+		<div class="feed-text profile-pic" ng-show="!profile.profileImageURL">
+			<img style="width:100%" src="/content/noProfileImage.png" />
+		</div>
+		<div class="field-name" ng-bind="paragraph" ng-repeat="paragraph in bioParagraphs track by $index"></div>
+		<a ng-href="#/editProfile?user={{profile.user}}" ng-show="me">
+			<div class="feed-button right">
+				Edit Profile
+			</div>
+		</a>
+		<div class="clear"></div>
+	</div>
+	<div ng-repeat="story in stories">
+		<div class="widget-separator"><div></div></div>
+		<div class="widget">
+			<div story-small story="story"></div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,43 @@
+<div class="register">
+	<div class="widget">
+		<div class="title" ng-bind="titleByStoryType[story.storyType]"></div>
+		<div class="feed-underline"></div>
+		<input class="post-title" ng-model="story.name" placeholder="Title" />
+		<div class="feed-text select-story-image">
+			<div>
+				<div class="feed-text">
+					<div>
+						Select Story Image
+					</div>
+					<select ng-model="story.imageUrl" ng-options="photo.url as photo.name for photo in stockPhotos"></select>
+				</div>
+			</div>
+			<div>
+				<img ng-src="{{story.imageUrl}}" />
+			</div>
+		</div>
+		<textarea id="storytext" rows="20" ng-model="story.text"></textarea>
+		<div class="feed-text">&nbsp;</div>
+		<div class="feed-button left" ng-click="postStory()" ng-show="!story._id">
+			Post
+		</div>
+		<div class="feed-button right" ng-click="deleteStory()" ng-show="story._id">
+			Remove
+		</div>
+		<div class="feed-button left" ng-click="updateStory()" ng-show="story._id">
+			Update
+		</div>
+		<div class="feed-button left" ng-click="updateStory()" ng-show="story._id">
+			Preview
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div class="widget-separator"></div>
+	<div class="widget">
+		<div story-small story="story" no-read-more="true"></div>
+	</div>
+	<div class="widget-separator"></div>
+	<div class="widget">
+		<div story-full story="story"></div>
+	</div>
+</div>

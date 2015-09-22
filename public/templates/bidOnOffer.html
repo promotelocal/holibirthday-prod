@@ -1,0 +1,20 @@
+<div>
+	<div ng-repeat="offer in offers">
+		<div offer="offer" preview="true" expanded="true"></div>
+	</div>
+	<form>
+		<div class="form">
+			<div class="field-name" type="number">
+				Bid Price $
+			</div>
+			<div class="field-input">
+				<input ng-model="bid.bidPrice" type="number" />
+			</div>
+		</div>
+	</form>
+	<div class="bottom-right-button-margin"></div>
+	<div ng-click="createBid()" class="bottom-right-button button-one-color">
+		Bid Now
+	</div>
+	</a>
+</div>

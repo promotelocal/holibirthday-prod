@@ -1,0 +1,50 @@
+<div ng-class="{story: !blog, register: blog}">
+	<div ng-repeat="story in stories">
+		<div ng-show="!blog" sidebar class="sidebar below">
+			<div class="sidebar-handle">
+				<img src="./content/man2.png" />
+			</div>
+			<div class="widget">
+				<div class="date">
+					<div ng-show="story.storyType === schema.story.storyType.best">
+						More Best Birthday Stories
+					</div>
+					<div ng-show="story.storyType === schema.story.storyType.worst">
+						More Worst Birthday Stories
+					</div>
+					<div ng-show="story.storyType === schema.story.storyType.forgotmenot">
+						More Forgotmenot Stories
+					</div>
+				</div>
+				<div class="feed-underline"></div>
+				<div ng-repeat="s in relatedStories">
+					<a href="#/story?_id={{s._id}}">
+						<div class="feed-text">
+							{{s.name}}
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+		<div ng-class="{stories: !blog}">
+			<div class="widget">
+				<div story-full story="story"></div>
+				<a ng-href="#/addStory?_id={{story._id}}" ng-show="me._id === story.user">
+					<div class="feed-button right">
+						Edit Story
+					</div>
+				</a>
+				<div class="clear"></div>
+				<div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+					<a class="a2a_button_facebook"></a>
+					<a class="a2a_button_twitter"></a>
+					<a class="a2a_button_reddit"></a>
+					<a class="a2a_button_pinterest"></a>
+					<a class="a2a_button_linkedin"></a>
+					<a class="a2a_button_google_plus"></a>
+				</div>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>

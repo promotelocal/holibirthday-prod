@@ -1,0 +1,19 @@
+<div class="register">
+	<div class="widget" ng-show="admin">
+		<a href="#/addStory?storyType=blog">
+			<div class="feed-button row">
+				Add Blog Post
+			</div>
+		</a>
+	</div>
+	<div class="widget-separator" ng-show="admin"></div>
+	<div class="widget">
+		<div class="title">
+			Blog
+		</div>
+		<div ng-repeat="story in stories">
+			<div class="feed-separator"></div>
+			<div story-small story="story"></div>
+		</div>
+	</div>
+</div>

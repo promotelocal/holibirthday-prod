@@ -1,0 +1,36 @@
+<div>
+	<div ng-show="!holibirthday">
+		<div class="widget">
+			<div class="date">
+				Your Holibirthday
+			</div>
+			<div class="feed-underline"></div>
+			<div class="join-us">
+				Wish your birthday was on a more convenient day?  Click below to generate a new one!
+			</div>
+			<a href="#/claimBirthday">
+				<div class="feed-button row">
+					Create Your Holibirthday
+				</div>
+			</a>
+		</div>
+		<div class="widget-separator"><div></div></div>
+	</div>
+	<div ng-show="holibirthday">
+		<div class="widget">
+			<div class="date">
+				Your Holibirthday
+			</div>
+			<div class="feed-underline"></div>
+			<div class="join-us">
+				Your holibirthday is {{months[holibirthday.date.getMonth() - 1]}}&nbsp;{{holibirthday.date.getDate()}}
+			</div>
+			<a ng-href="#/holibirthdayCertificate?user={{me._id}}">
+				<div class="feed-button row">
+					View Your Certificate
+				</div>
+			</a>
+		</div>
+		<div class="widget-separator"><div></div></div>
+	</div>
+</div>

@@ -1,0 +1,5 @@
+company_id	order_id	date_purchased	customers_email_address	first_name	last_name	delivery_address_1	delivery_address_2	delivery_city	delivery_state	delivery_zipcode	country	design_number	design_description	print_location	style_number	style_description	color	size	product_quantity	gift_message	Insured_Order	shipping_method	orders_status
+78	6679	6/29/2010	kdkee3@yahoo.com	Don	Kegan	blk 305 Tampi		Singapore		520305	Singapore	X442B	Cool Grandpa	Front	G2200	Ultra Cotton Tank	Red	L	1		No	USPS - First Class International	2
+78	6687	6/29/2010	toadhopper@gmail.com	Oliver	Wiseman	103 Murra	P.O. BOX 223	Point Comfort	TX	77978	USA	X442B	Cool Grandpa	Front	G5000	Heavyweight Cotton Tee	Red	L	1		No	USPS - First Class (USA Only)	2
+78	6696	6/30/2010	sd33829.ssh@comcast.net	Stephan	LaC	102 Roberts A		Holbrook	MA	02343	USA	X032A	USA Soccer	Front	G5000	Heavyweight Cotton Tee	White	XXL	1		No	USPS - First Class (USA Only)	2
+78	6696	6/30/2010	sd33829.ssh@comcast.net	Stephan	LaC	102 Roberts A		Holbrook	MA	02343	USA	X039A	South Africa Soccer	Front	B1001	1x1 Rib Crewneck Tee	Fuchsia	L	1		No	USPS - First Class (USA Only)	2

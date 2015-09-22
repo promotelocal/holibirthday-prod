@@ -1,0 +1,10 @@
+<div>
+	<div ng-repeat="bid in bidderBids track by $index">
+		<div bid="bid"></div>
+		<div class="bid-separator" ng-show="$index < bidderBids.length - 1"></div>
+	</div>
+	<div ng-repeat="bid in providerBids track by $index">
+		<div bid="bid"></div>
+		<div class="bid-separator" ng-show="$index < providerBids.length - 1"></div>
+	</div>
+</div>

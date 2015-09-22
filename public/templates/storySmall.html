@@ -1,0 +1,50 @@
+<div class="feed-item" style="position: relative;">
+	<div class="title-author"><div class="title">
+		<a ng-href="#/story?_id={{story._id}}">
+			{{ story.name }}
+		</a>
+	</div><div class="author">
+		<a ng-href="#/profile?user={{profile.user}}">
+			By {{ profile.firstName }} {{ profile.lastName }}
+		</a>
+	</div></div>
+	<div class="story-image" >
+		<img ng-src="{{story.imageUrl}}" />
+	</div>
+	<div class="feed-text limit-view">
+		<div class="story-text" ng-bind-html="story.textSafe"></div>
+	</div>
+	<div style="position: absolute; bottom: 0;">
+		<div class="hidden-1">
+			<a ng-href="{{noReadMore ? '' : '#/story?_id=' + story._id}}">
+				<div class="feed-button row">
+					Read More
+				</div>
+			</a>
+		</div>
+		<div class="visible-1">
+			<a ng-href="{{noReadMore ? '' : '#/story?_id=' + story._id}}">
+				<div class="feed-button left">
+					Read More
+				</div>
+			</a>
+		</div>
+	</div>
+	<div style="visibility: hidden;">
+		<div class="hidden-1">
+			<a ng-href="{{noReadMore ? '' : '#/story?_id=' + story._id}}">
+				<div class="feed-button row">
+					Read More
+				</div>
+			</a>
+		</div>
+		<div class="visible-1">
+			<a ng-href="{{noReadMore ? '' : '#/story?_id=' + story._id}}">
+				<div class="feed-button left">
+					Read More
+				</div>
+			</a>
+		</div>
+	</div>
+	<div class="clear"></div>
+</div>

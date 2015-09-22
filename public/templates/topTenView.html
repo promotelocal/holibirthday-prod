@@ -1,0 +1,28 @@
+<div class="register">
+	<div class="top-ten-title">
+		<div class="widget">
+			<div class="title" ng-bind="countdown.title"></div>
+		</div>
+	</div>
+	<div class="countdown-stories">
+		<div ng-repeat="storyId in countdown.stories track by $index">
+			<div ng-repeat="story in storiesById[storyId] track by $index">
+				<div class="widget">
+					<div class="index">
+						{{countdown.stories.length - $parent.$index}})
+					</div>
+					<div class="top-story">
+						<div story-small story="story"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<a href="#/editTopTen">
+			<div class="feed-button right" ng-show="admin">
+				Edit Featured Posts
+			</div>
+		</a>
+		<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+</div>

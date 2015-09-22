@@ -1,0 +1,111 @@
+<div class="new-offer">
+	<div class="form">
+		<form>
+			<div class="field-name">Offer Title</div>
+			<div class="field-input">
+				<input ng-model="offer.title" />
+			</div>
+			<div class="field-name">Team Name</div>
+			<div class="field-input">
+				<input ng-model="offer.team" />
+			</div>
+			<div class="field-name">Description</div>
+			<div class="field-input">
+				<textarea rows="8" ng-model="offer.description"></textarea>
+			</div>
+		</form>
+	</div>
+	<div class="form">
+		<form>
+			<div class="add-remove">&nbsp;</div>
+			<div class="member-pay">
+				<div class="field-name">Pay $</div>
+			</div>
+			<div class="member-name">
+				<div class="field-name">Team Member Name</div>
+			</div>
+			<div class="clear"></div>
+			 <div ng-repeat="member in offerMembers track by $index">
+				<div class="add-remove" ng-click="removeMember($index)">
+					<i class="fa fa-minus"></i>
+				</div>
+				<div class="member-pay">
+					<div class="field-input">
+						<input ng-model="member.cost" />
+					</div>
+				</div>
+				<div class="member-name">
+					<div class="field-input">
+						<select ng-model="member.user" ng-options="profile.user as name(profile) for profile in profiles"></select>
+					</div>
+				</div>
+				<div class="clear"></div>
+			</div>
+			<div>
+				<div class="add-remove" ng-click="addMember()">
+					<i class="fa fa-plus"></i>
+				</div>
+				<div class="clear"></div>
+			</div>
+			<div>
+				<div class="field-name">
+					<input ng-model="offer.oneTimeRecurring" name="oneTimeRecurring" value="oneTime" type="radio" />
+					One-Time
+				</div>
+				<div class="field-name">
+					<input ng-model="offer.oneTimeRecurring" name="oneTimeRecurring" value="recurring" type="radio" />
+					Monthly
+				</div>
+			</div>
+			<div class="ask-price">
+				<div>
+					<div class="field-name ask-price-reason">Team Pay</div>
+					<div class="field-name ask-price-amount">${{roundDollars($parent.schema.offer.computedFields.teamMemberPay(offerMembers))}}</div>
+					<div class="clear"></div>
+				</div>
+				<div>
+					<div class="field-name ask-price-reason">Venue Fee (+ 60%)</div>
+					<div class="field-name ask-price-amount">${{roundDollars($parent.schema.offer.computedFields.venueFee(offerMembers))}}</div>
+					<div class="clear"></div>
+				</div>
+				<div>
+					<div class="field-name ask-price-reason">Referrer Fee (+ 40%)</div>
+					<div class="field-name ask-price-amount">${{roundDollars($parent.schema.offer.computedFields.referrerFee(offerMembers))}}</div>
+					<div class="clear"></div>
+				</div>
+				<div class="ask-price-separator"></div>
+				<div>
+					<div class="field-name ask-price-reason">Ask Price</div>
+					<div class="field-name ask-price-amount">${{roundDollars($parent.schema.offer.computedFields.askPrice(offerMembers))}} {{offer.oneTimeRecurring === 'oneTime' ? 'Fee' : ' / mo'}}</div>
+					<div class="clear"></div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div class="clear"></div>
+	<div class="field-name">Preview</div>
+	<div offer="offer" offer-members="offerMembers" preview="true"></div>
+	<div class="bottom-right-button-margin"></div>
+	<div class="bottom-right-button">
+		<div ng-show="offerId">
+			<div class="button-one-color" ng-click="updateOffer()">
+				Update Offer
+			</div>
+		</div>
+		<div ng-show="offerId && !removingOffer">
+			<div class="button-one-color" ng-click="removingOffer = true">
+				Remove Offer
+			</div>
+		</div>
+		<div ng-show="offerId && removingOffer">
+			<div class="button-one-color" ng-click="removeOffer()">
+				Really Remove Offer?
+			</div>
+		</div>
+		<div ng-show="!offerId">
+			<div class="button-one-color" ng-click="createOffer()">
+				Create Offer
+			</div>
+		</div>
+	</div>
+</div>

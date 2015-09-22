@@ -1,0 +1,73 @@
+<div>
+	<div ng-repeat="bid in bids track by $index">
+		<div ng-class="{'ask-price-bid-price': true, 'equal': bid.askPrice === bid.bidPrice}">
+			<div>Current ask price: ${{ bid.askPrice }}</div>
+			<div>Current bid price: ${{ bid.bidPrice }}</div>
+		</div>
+		<div ng-show="buyer">
+			<div class="bidder small-margin-bottom">
+				{{ offers[bid.offer].team }},&nbsp;
+			</div>
+			<div class="bidding-on small-margin-bottom">
+				selling
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div offer="offers[bid.offer]" preview="true"></div>
+		<div>
+			<div class="bids-form">
+				<form>
+					<div class="form">
+						<div class="field-name">Comment</div>
+						<div class="field-input">
+							<textarea rows="8" ng-model="comment"></textarea>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div ng-hide="bid.askPrice === bid.bidPrice" class="bids-form">
+				<form>
+					<div class="form">
+						<div class="field-name">Bid Price $</div>
+						<div class="field-input">
+							<input ng-model="bid.bidPrice" />
+						</div>
+					</div>
+				</form>
+			</div>
+			<div ng-show="bid.askPrice === bid.bidPrice" class="bids-form">
+				<div class="field-name">Ask Price = Bid Price = {{bid.askPrice}}</div>
+				<a href="/#agreements">
+					<div class="button-one-color">
+						Accept
+					</div>
+				</a>
+			</div>
+		</div>
+		<div>
+			<div class="bids-form form">
+				<div class="button-one-color">Leave Comment</div>
+			</div>
+			<div ng-hide="bid.askPrice === bid.bidPrice" class="bids-form form">
+				<div class="button-one-color">Raise Bid Price</div>
+			</div>
+		</div>
+		<div class="message" ng-repeat="message in bid.messages track by $index">
+			<div class="big-quote">
+				<i class="fa fa-quote-left"></i>
+			</div>
+			<div class="message-body">
+				<div class="message-from">
+					{{message.from}} said
+				</div>
+				<div class="message-text" ng-bind="message.text"></div>
+				<div class="message-date">
+					on {{message.date.getDay()}} / {{message.date.getMonth()}} / {{message.date.getYear()}}
+				</div>
+			</div>
+			<div class="clear"></div>
+			<div class="message-separator" ng-show="$index < bid.messages.length - 1"></div>
+		</div>
+		<div class="bid-separator" ng-show="$index < bids.length - 1"></div>
+	</div>
+</div>

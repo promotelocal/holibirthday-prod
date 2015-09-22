@@ -1,0 +1,54 @@
+<div class="edit-top-ten">
+	<div class="edit-active-countdown">
+		<div class="controls">
+			<div class="add-story-select">
+				<select ng-model="newStories[0]" ng-options="story._id as story.name for story in stories"></select>
+			</div>
+			<div class="add-story-select">
+				<input type="date" ng-model="newFeaturedPost.startDate" />
+			</div>
+			<div>
+				Select a story, and a date for it to appear on the front page
+			</div>
+			<div class="feed-button right" ng-click="addPost()">+ Add Story</div>
+		</div>
+		<div class="clear"></div>
+		<div ng-show="newStories.length > 0">
+			<div ng-repeat="newStory in newStories">
+				<div class="widget">
+					<div story-small story="storiesById[newStory]"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="clear"></div>
+	<hr>
+	<div class="edit-active-countdown">
+		<div ng-repeat="featuredPost in featuredPosts track by $index">
+			<div class="widget-separator" ng-show="$index > 0"></div>
+			<div class="controls">
+				<div class="close" title="Remove Story" ng-click="removePost($index)">
+					<i class="fa fa-close"></i>
+				</div>
+				<div class="clear"></div>
+				<div>
+					Featured On/After: {{featuredPost.startDate.getMonth() + 1}}&nbsp;/&nbsp;{{featuredPost.startDate.getDate()}}&nbsp;/&nbsp;{{featuredPost.startDate.getFullYear()}}
+				</div>
+			</div>
+			<div class="clear"></div>
+			<div class="widget">
+				<div story-small story="storiesById[featuredPost.story]"></div>
+			</div>
+		</div>
+	</div>
+	<div class="clear"></div>
+	<div>
+		<a href="#/editTopTen">
+			<div class="feed-button right" ng-show="admin" ng-click="saveAllChanges()">
+				Save All Changes
+			</div>
+		</a>
+		<div class="clear">
+		</div>
+	</div>
+</div>

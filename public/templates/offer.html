@@ -1,0 +1,36 @@
+<div class="offer">
+	<div class="offer-header" ng-click="clickOfferHeader(offer)">
+		<div class="price">
+			 ${{ askPrice() }} {{offer.oneTimeRecurring === 'oneTime' ? 'Fee' : ' / mo'}}
+		</div>
+		<div class="title" ng-bind="offer.title"></div>
+		<div class="team" ng-bind="offer.team"></div>
+	</div>
+	<div ng-class="{'offer-body': true, expanded: expanded}">
+		<div class="offer-body-padding">
+			<div class="description" ng-bind="paragraph" ng-repeat="paragraph in descriptionParagraphs() track by $index"></div>
+			<div ng-repeat="member in getOfferMembers()">
+				<a href="#/profile?user={{member.user}}">
+					{{ profileByUser[member.user].firstName }} {{ profileByUser[member.user].lastName }}
+				</a>
+			</div>
+			<div ng-show="!preview">
+				<div ng-show="$parent.me && $parent.me._id === offer.ownerUser">
+					<a href="#/editOffer?offerId={{offer._id}}">
+						<div class="bid-button button-one-color">
+							Edit Offer
+						</div>
+					</a>
+				</div>
+				<div ng-show="$parent.me && $parent.me._id !== offer.ownerUser">
+					<a href="#/bidOnOffer?offer={{offer._id}}">
+						<div class="bid-button button-one-color">
+							Bid on Offer
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,25 @@
+<div class="bid">
+	<div ng-repeat="agreementData in agreementDatas">
+		<div class="ask-price-bid-price">
+			<div>Cost: ${{ agreementData.bid.bidPrice }} {{agreementData.offer.oneTimeRecurring === 'oneTime' ? 'Fee' : ' / mo'}}</div>
+		</div>
+		<div ng-show="agreementData.buyer" class="bidder small-margin-bottom">
+			Agreement with {{ agreementData.provider.firstName }} {{ agreementData.provider.lastName }}
+		</div>
+		<div ng-show="!agreementData.buyer" class="bidder small-margin-bottom">
+			Agreement with {{ agreementData.bidder.firstName }} {{ agreementData.bidder.lastName }}
+		</div>
+		<div offer="agreementData.offer" preview="true"></div>
+		<div class="bottom-right-button-margin">&nbsp;</div>
+		<div ng-show="!cancelingAgreement" ng-click="cancelingAgreement = true">
+			<div class="bottom-right-button button-one-color">
+				Cancel Agreement
+			</div>
+		</div>
+		<div ng-show="cancelingAgreement" ng-click="cancelAgreement(agreementData.agreement)">
+			<div class="bottom-right-button button-one-color">
+				Really Cancel Agreement?
+			</div>
+		</div>
+	</div>
+</div>

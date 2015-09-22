@@ -1,0 +1,102 @@
+<div class="register">
+	<div class="widget">
+		<div class="title">
+			Alternate Birthday Generator
+		</div>
+		<div class="feed-underline"></div>
+		<div class="slot-machine">
+			<div class="slots">
+				<div class="month slot">
+					<div>JAN</div>
+					<div>FEB</div>
+					<div>MAR</div>
+					<div>APR</div>
+					<div>MAY</div>
+					<div>JUN</div>
+					<div>JUL</div>
+					<div>AUG</div>
+					<div>SEP</div>
+					<div>OCT</div>
+					<div>NOV</div>
+					<div>DEC</div>
+				</div>
+				<div class="dayTens slot">
+					<div>0</div>
+					<div>1</div>
+					<div>2</div>
+					<div>3</div>
+				</div>
+				<div class="dayOnes slot">
+					<div>0</div>
+					<div>1</div>
+					<div>2</div>
+					<div>3</div>
+					<div>4</div>
+					<div>5</div>
+					<div>6</div>
+					<div>7</div>
+					<div>8</div>
+					<div>9</div>
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="slot-machine-handle">
+			<div class="slot-machine-track"></div>
+			<div class="slot-machine-grabber">
+				Pull
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="claim-date">
+			<a href="javascript:void(0)">
+				<div ng-click="claimDate()" ng-class="{'feed-button': true, 'disabled': !date}">
+					Claim Date
+				</div>
+			</a>
+			<div class="text" ng-show="date">
+				{{months[date.month]}} {{date.dayTens}}{{date.dayOnes}} will become your new birthday!
+			</div>
+		</div>
+	</div>
+	<div class="widget-separator" ng-show="date"><div></div></div>
+	<div class="widget events" ng-show="date">
+		<div class="title">
+			{{months[date.month]}} {{date.dayTens}}{{date.dayOnes}} Celebrities, Events, and Discoveries
+		</div>
+		<div class="feed-underline"></div>
+		<div class="slideshow">
+			<div class="slideshow-item current">
+				<div class="little-bold">
+					{{todaysBirthdays[currentIndex].name}}
+				</div>
+				<img ng-src="{{todaysBirthdays[currentIndex].imgSrc}}" />
+			</div>
+			<div class="slideshow-item next">
+				<div class="little-bold">
+					{{todaysBirthdays[nextIndex].name}}
+				</div>
+				<img ng-src="{{todaysBirthdays[nextIndex].imgSrc}}" />
+			</div>
+			<div class="arrow left">
+				<a href="javascript:void(0)" ng-click="prevBirthday()">
+					<div class="arrow-img">
+						<
+					</div>
+				</a>
+				<div class="arrow-backdrop">
+				</div>
+			</div>
+			<div class="arrow right">
+				<a href="javascript:void(0)" ng-click="nextBirthday()">
+					<div class="arrow-img">
+						>
+					</div>
+				</a>
+				<div class="arrow-backdrop">
+				</div>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>

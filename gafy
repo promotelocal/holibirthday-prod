@@ -1,0 +1,14 @@
+One aggregate order per 24 hours
+cron job - midnight to midnight, not based on Date.Now
+
+Tab-delimited text file
+
+company id
+order id (a unique key)
+shipping address
+gift message / comment field
+design id - 5 character string
+shirt style
+color
+size
+qty (1)
