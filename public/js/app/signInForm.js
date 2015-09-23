@@ -1,11 +1,12 @@
 define([
+	'auth',
 	'bodyColumn',
 	'colors',
 	'fonts',
 	'loginWithFacebook',
 	'prettyForms',
 	'separatorSize',
-], function (bodyColumn, colors, fonts, loginWithFacebook, prettyForms, separatorSize) {
+], function (auth, bodyColumn, colors, fonts, loginWithFacebook, prettyForms, separatorSize) {
 	return function () {
 		var fillOutAllFields = Stream.once(false);
 		var incorrectEmailOrPassword = Stream.once(false);
@@ -100,7 +101,6 @@ define([
 		}));
 
 		return border(colors.middleGray, {
-			top: 1,
 			bottom: 1,
 		}, bodyColumn(padding({
 				top: separatorSize,

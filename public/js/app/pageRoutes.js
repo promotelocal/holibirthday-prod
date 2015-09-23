@@ -27,7 +27,7 @@ define([
 				return storeItemDetailView(id);
 			}),
 		}, {
-			string: '#!store',
+			string: '#!gifts',
 			router: routeToComponent(storeView),
 		}, {
 			string: '#!cart',

@@ -93,23 +93,11 @@ define([
 					}],
 				}),
 			]),
-			sideBySide({}, [
-				prettyForms.fileUpload({
-					name: 'Upload Image',
-					labelAll: labelsAll,
-					accept: 'image/*',
-				}, function (file) {
-					db.uploadFile(file).then(function (filename) {
-						storyStreams.imageUrl.push('/api/uploadFile/find?filename=' + encodeURIComponent(filename));
-					});
-				}).all([
-					withMinWidth(300, true),
-				]),
-				image({
-					src: storyStreams.imageUrl,
-					minWidth: 300,
-				}),
-			]),
+			prettyForms.imageUpload({
+				name: 'Upload Image',
+				labelAll: labelsAll,
+				stream: storyStreams.imageUrl,
+			}),
 			text('By submitting, I have checked that all sources and citations have been properly acknowledged.').all([
 				fonts.ralewayThinBold,
 			]),

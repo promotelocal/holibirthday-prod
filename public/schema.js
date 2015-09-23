@@ -409,18 +409,26 @@
 				name: '_id',
 				type: type.id,
 			}, {
+				name: 'active',
+				type: type.bool,
+				editorType: editorType.bool,
+			}, {
 				name: 'styleNumber',
 				type: type.string,
+				editorType: editorType.string,
 			}, {
 				name: 'styleDescription',
 				type: type.string,
+				editorType: editorType.string,
 			}, {
 				// array of sizes
 				name: 'sizes',
 				type: type.json,
+				editorType: editorType.listOf(editorType.string),
 			}, {
 				name: 'colors',
 				type: type.json,
+				editorType: editorType.listOf(editorType.string),
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(true);
@@ -434,14 +442,46 @@
 				name: '_id',
 				type: type.id,
 			}, {
-				name: 'design_number',
+				name: 'designNumber',
 				type: type.string,
+				displayName: 'Design Number',
+				editorType: editorType.string,
 			}, {
-				name: 'design_description',
+				name: 'designDescription',
 				type: type.string,
+				displayName: 'Design Description',
+				editorType: editorType.string,
 			}, {
-				name: 'print_location',
+				name: 'printLocation',
 				type: type.string,
+				displayName: 'Print Location',
+				editorType: editorType.string,
+			}, {
+				name: 'imageUrl',
+				type: type.string,
+				displayName: 'Design Image',
+				editorType: editorType.image,
+
+
+			}, {
+				name: 'month',
+				type: type.string,
+				displayName: 'Month / Timeless',
+				editorType: editorType.oneOf([
+					'Timeless',
+					'January',
+					'February',
+					'March',
+					'April',
+					'May',
+					'June',
+					'July',
+					'August',
+					'September',
+					'October',
+					'November',
+					'December',
+				]),
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(true);

@@ -98,7 +98,7 @@ define([
 				right: sideBySide({
 					gutterSize: separatorSize,
 				}, [
-					linkTo('#!store', submitButton(sideBySide({
+					linkTo('#!gifts', submitButton(sideBySide({
 						gutterSize: separatorSize,
 					}, [
 						fonts.fa('shopping-cart'),

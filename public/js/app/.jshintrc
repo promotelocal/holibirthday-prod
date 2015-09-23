@@ -1,2 +1,101 @@
 {
+	"eqeqeq": true,
+	"latedef": true,
+	"nocomma": true,
+	"undef": true,
+	"unused": true,
+	"globals": {
+		"storeItems": false,
+		
+		"$": false,
+		"CKEDITOR": false,
+		"console": false,
+		"define": false,
+		"FormData": false,
+		"Q": false,
+		"require": false,
+		"requirejs": false,
+		"schema": false,
+		"Stream": false,
+		"setTimeout": false,
+		"type": false,
+		"waitForWebfonts": false,
+		"window": false,
+		
+		"a": false,
+		"div": false,
+		"form": false,
+		"input": false,
+		"option": false,
+		"select": false,
+		"textarea": false,
+
+		"rootComponent": false,
+
+		"px": false,
+		
+		"nothing": false,
+
+		"changeThis": false,
+		"clickThis": false,
+		"keyupThis": false,
+		"submitThis": false,
+
+		"black": false,
+		"color": false,
+		"white": false,
+
+		"child": false,
+		"children": false,
+		"wireChildren": false,
+		"passThroughToFirst": false,
+		
+		"border": false,
+		"componentName": false,
+		"extendToWindowBottom": false,
+		"image": false,
+		"link": false,
+		"linkTo": false,
+		"padding": false,
+		"withBackgroundColor": false,
+		"withFontColor": false,
+		"withMinHeight": false,
+		"withMinWidth": false,
+		
+		"alignLRM": false,
+		"alignTBM": false,
+		"componentStream": false,
+		"dropdownPanel": false,
+		"fixedHeaderBody": false,
+		"grid": false,
+		"paragraph": false,
+		"sideBySide": false,
+		"stack": false,
+		"tabs": false,
+		"text": false,
+		"toggleComponent": false,
+		"toggleHeight": false,
+
+		"evenSplitSurplusWidth": false,
+		"giveToNth": false,
+		"giveToFirst": false,
+		"giveToSecond": false,
+		"justifyAndCenterSurplusWidth": false,
+		"justifySurplusWidth": false,
+		"superSurplusWidth": false,
+
+		"$addClass": false,
+		"$css": false,
+		"$html": false,
+		"$prop": false,
+
+		"matchStrings": false,
+		"route": false,
+		"routeMatchRest": false,
+		"routeToComponent": false,
+		"routeToFirst": false,
+
+		"windowHash": false,
+		"windowScroll": false
+	}
 }

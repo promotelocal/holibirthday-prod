@@ -31,10 +31,17 @@
 		oneOf: function (options) {
 			return {
 				name: 'oneOf',
+				options: options,
 			};
 		},
 		file: file,
 		image: file('image/*'),
+		listOf: function (editorType) {
+			return {
+				name: 'listOf',
+				editorType: editorType,
+			};
+		},
 	};
 
 	if (typeof exports === 'undefined') {

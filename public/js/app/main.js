@@ -11,7 +11,7 @@ require(['app'], function (app) {
 			'Open Sans',
 			'Raleway Thin',
 		], function () {
-			var i = rootComponent(app);
+			rootComponent(app);
 		});
 	});
 });

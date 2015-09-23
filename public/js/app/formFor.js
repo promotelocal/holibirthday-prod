@@ -7,7 +7,7 @@ define([
 		var fields = {};
 		table.fields.map(function (field) {
 			fields[field.name] = function (labelAll, stream) {
-				switch (field.editorType) {
+				switch (field.editorType && field.editorType.name) {
 				case 'string':
 					return prettyForms.input({
 						name: field.displayName,
@@ -39,49 +39,50 @@ define([
 						stream: stream,
 						type: 'date',
 					});
-				// case 'image':
-				// 	return prettyForms.imageUpload({
-				// 		name: field.displayName,
-				// 		fieldName: field.name,
-				// 		labelAll: labelAll,
-				// 		stream: stream,
-				// 		type: 'date',
-				// 	});
-				// case 'bool':
-				// 	return prettyForms.input({
-				// 		name: field.displayName,
-				// 		fieldName: field.name,
-				// 		labelAll: labelAll,
-				// 		stream: stream,
-				// 		type: 'date',
-				// 	});
+				case 'file':
+					if (field.editorType.accept.indexOf('image') !== -1) {
+						return prettyForms.imageUpload({
+							name: field.displayName,
+							fieldName: field.name,
+							labelAll: labelAll,
+							stream: stream,
+						});
+					}
+					return prettyForms.fileUpload({
+							name: field.displayName,
+							fieldName: field.name,
+							labelAll: labelAll,
+							stream: stream,
+					});
+				case 'bool':
+					return prettyForms.input({
+						name: field.displayName,
+						fieldName: field.name,
+						labelAll: labelAll,
+						stream: stream,
+						type: 'date',
+					});
+				default:
+					return text('no form element');
 				}
 			};
 		});
 		
-		var componentForField = function (field) {
-		};
-
-		for (var i = 0; i < table.fields; i++) {
-			var field = table.fields[i];
-		}
-
 		return function (labelAll) {
 			return function (object, cb) {
 				var objectStreams = {};
 				var objectFields = {};
 				for (var key in object) {
-					var stream = Stream.once(object[key]);
+					var stream = (object[key] !== undefined) ?
+						Stream.once(object[key]) :
+						Stream.create();
 					objectStreams[key] = stream;
 					if (fields[key]) {
-						objectFields = fields[key](labelAll, stream);
-					}
-					else {
-						console.warn("field missing " + key);
+						objectFields[key] = fields[key](labelAll, stream);
 					}
 				}
 				return form.all([
-					child(cb(Stream.combineObject(objectStreams))),
+					child(cb(Stream.combineObject(objectStreams), objectFields)),
 					wireChildren(passThroughToFirst),
 				]);
 			};
@@ -91,7 +92,7 @@ define([
 	var formFor = [];
 	
 	schema.map(function (table) {
-		formFieldsForTable = fromTable(table);
+		var formFieldsForTable = fromTable(table);
 		formFor.push(formFieldsForTable);
 		formFor[table.name] = formFieldsForTable;
 	});

@@ -1,5 +1,4 @@
-define([
-], function () {
+define([], function () {
 	return {
 		inputBox: function (stream, type, name, all) {
 			type = type || 'text';
@@ -43,7 +42,7 @@ define([
 				changeThis(function (val) {
 					stream.push($(val.target).val());
 				}),
-				function (instance, context) {
+				function (instance) {
 					stream.onValue(function (v) {
 						instance.$el.val(v);
 					});
@@ -69,10 +68,10 @@ define([
 							instance.$el.val(text);
 							CKEDITOR.config.resize_enabled = false;
 							var editor = CKEDITOR.replace(instance.$el[0]);
-							editor.on('change', function () {
-								stream.push(editor.getData());
-							});
-							setTimeout(function () {
+							editor.on('instanceReady', function () {
+								editor.on('change', function () {
+									stream.push(editor.getData());
+								});
 								Stream.combine([
 									context.width,
 									context.height,
@@ -81,17 +80,19 @@ define([
 										editor.resize(px(w), px(h));
 									}
 								});
-							}, 3000);
+							});
 							return editor;
 						});
 						return function () {
 							gone = true;
 							editorP.then(function (editor) {
-								try {
-									editor.destroy();
-								}
-								catch (e) {
-									console.log('ckeditor exception happened');
+								if (!gone) {
+									try {
+										editor.destroy();
+									}
+									catch (e) {
+										console.log('ckeditor exception happened');
+									}
 								}
 							});
 						};

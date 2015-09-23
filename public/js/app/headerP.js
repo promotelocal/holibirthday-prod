@@ -35,7 +35,7 @@ define([
 			buttons.push(linkTo('#!admin', headerButton('Admin')));
 		}
 		
-		buttons.push(linkTo('#!store', headerButton('Store')));
+		buttons.push(linkTo('#!gifts', headerButton('Store')));
 
 		if (cart.items.length > 0) {
 			buttons.push(linkTo('#!cart', headerButton('Cart (' + cart.items.length + ')')));
@@ -72,7 +72,9 @@ define([
 	return meP.then(function (me) {
 		return adminP.then(function (admin) {
 			var signInStream = Stream.never();
-			return dropdownPanel(alignLRM({
+			return dropdownPanel(border(colors.middleGray, {
+				bottom: 1,
+			}, alignLRM({
 				middle: bodyColumn(stack({}, [
 					alignLRM({
 						left: toggleComponent([
@@ -111,7 +113,7 @@ define([
 						}, headerRightButtons(me, admin, signInStream)),
 					}),
 				])),
-			}).all([
+			})).all([
 				withBackgroundColor(colors.pageBackgroundColor),
 			]), signInForm(), signInStream);
 		});

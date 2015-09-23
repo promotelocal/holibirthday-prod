@@ -100,7 +100,7 @@ define([
 		});
 	};
 
-	return function (story, editable) {
+	return function (story) {
 		return profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
