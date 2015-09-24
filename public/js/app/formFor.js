@@ -217,6 +217,7 @@ define([
 									]),
 								}),
 								text(gafyColor.name),
+								text(rgbColorString(gafyColor.color)),
 							]),
 							value: gafyColor.name,
 						};

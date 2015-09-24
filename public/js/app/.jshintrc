@@ -45,6 +45,8 @@
 
 		"black": false,
 		"color": false,
+		"colorString": false,
+		"rgbColorString": false,
 		"transparent": false,
 		"white": false,
 
