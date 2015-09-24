@@ -10,7 +10,7 @@ define([
 ], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, submitButton) {
 	return promiseComponent(db.dailyTheme.find({}).then(function (themes) {
 		var theme = themes.sort(function (t1, t2) {
-			return t1.updateDate.getTicks() - t2.updateDate.getTicks();
+			return t2.updateDate.getTicks() - t1.updateDate.getTicks();
 		})[0];
 		if (!theme) {
 			return holibirthdayRow(stack({
