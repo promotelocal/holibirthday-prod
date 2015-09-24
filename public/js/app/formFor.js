@@ -1,10 +1,12 @@
 define([
+	'db',
 	'fonts',
 	'forms',
 	'gafyColors',
+	'gafyStyleSmall',
 	'prettyForms',
 	'separatorSize',
-], function (fonts, forms, gafyColors, prettyForms, separatorSize) {
+], function (db, fonts, forms, gafyColors, gafyStyleSmall, prettyForms, separatorSize) {
 	var gridSelect = function (gridConfig, backdropStates) {
 		return function (options, name, stream, multiple) {
 			return grid(gridConfig, options.map(function (option, i) {
@@ -184,7 +186,7 @@ define([
 				case 'gafyColor':
 					return prettify(field.displayName, opacityGridSelect(gafyColors.map(function (gafyColor) {
 						return {
-							component: stackTwo({}, [
+							component: stack({}, [
 								alignLRM({
 									middle: div.all([
 										withBackgroundColor(gafyColor.color),
@@ -197,6 +199,15 @@ define([
 							value: gafyColor.name,
 						};
 					}), field.displayName, stream, true));
+				case 'gafyStyle':
+					return promiseComponent(db.gafyStyle.find({}).then(function (gafyStyles) {
+						return prettify(field.displayName, opacityGridSelect(gafyStyles.map(function (gafyStyle) {
+							return {
+								component: gafyStyleSmall(gafyStyle),
+								value: gafyStyle._id,
+							};
+						}), field.displayName, stream, true));
+					}));
 				default:
 					return text('no form element');
 				}

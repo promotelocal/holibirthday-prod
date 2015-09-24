@@ -6,11 +6,13 @@ define([
 	'defaultFormFor',
 	'fonts',
 	'formLayouts',
+	'gafyDesignSmall',
+	'gafyStyleSmall',
 	'prettyForms',
 	'separatorSize',
 	'storiesP',
 	'submitButton',
-], function (bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, prettyForms, separatorSize, storiesP, submitButton) {
+], function (bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, gafyDesignSmall, gafyStyleSmall, prettyForms, separatorSize, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
@@ -209,29 +211,6 @@ define([
 		]);
 	}));
 
-	var gafyDesignSmall = function (gafyDesign) {
-		return border(colors.middleGray, {
-			all: 1,
-		}, stack({}, [
-			alignLRM({
-				middle: image({
-					src: gafyDesign.imageUrl,
-					chooseWidth: 0,
-					minHeight: 200,
-				}),
-			}),
-			padding({
-				all: 10,
-			}, alignLRM({
-				middle: text(gafyDesign.designDescription).all([
-					fonts.h2,
-				]),
-			})),
-		])).all([
-			withMinWidth(300, true),
-		]);
-	};
-
 	var designsEditor = promiseComponent(db.gafyDesign.find({}).then(function (designs) {
 		var designsS = Stream.once(designs);
 
@@ -246,7 +225,8 @@ define([
 				'printLocation',
 				'imageUrl',
 				'month',
-				'stylesAndColors',
+				'styles',
+				'colors',
 			],
 		});
 
@@ -302,6 +282,8 @@ define([
 						designDescription: undefined,
 						printLocation: undefined,
 						imageUrl: './content/man.png',
+						styles: [],
+						colors: [],
 					}, function (gafyDesignS) {
 						var mustFillFields = Stream.once(0);
 						gafyDesignS.onValue(function () {
@@ -356,6 +338,8 @@ define([
 						fonts.h2,
 					]),
 					componentStream(editingDesignS.map(function (design) {
+						design.styles = design.styles || [];
+						design.colors = design.colors || [];
 						return designFormLayout(design, function (gafyDesignS) {
 							var mustFillFields = Stream.once(0);
 							gafyDesignS.onValue(function () {
@@ -397,29 +381,6 @@ define([
 			}], designsTabS),
 		]);
 	}));
-
-	var gafyStyleSmall = function (gafyStyle) {
-		return border(colors.middleGray, {
-			all: 1,
-		}, stack({}, [
-			alignLRM({
-				middle: image({
-					src: gafyStyle.imageUrl || './content/man.png',
-					chooseWidth: 0,
-					minHeight: 200,
-				}),
-			}),
-			padding({
-				all: 10,
-			}, alignLRM({
-				middle: text(gafyStyle.styleDescription).all([
-					fonts.h2,
-				]),
-			})),
-		])).all([
-			withMinWidth(300, true),
-		]);
-	};
 
 	var stylesEditor = promiseComponent(db.gafyStyle.find({}).then(function (gafyStyles) {
 		var stylesS = Stream.once(gafyStyles);

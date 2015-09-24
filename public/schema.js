@@ -474,20 +474,19 @@
 				displayName: 'Design Image',
 				editorType: editorType.image,
 			}, {
-				name: 'stylesAndColors',
+				name: 'styles',
 				type: type.json,
-				displayName: 'Available Styles and Colors',
+				displayName: 'Styles',
 				editorType: {
-					name: 'stylesAndColors',
+					name: 'gafyStyle',
 				},
-				/* example value:
-				   [{				   
-				     number: 'style number',
-					 colors: [
-					   'red',
-					 ]
-				   }]
-				*/
+			}, {
+				name: 'colors',
+				type: type.json,
+				displayName: 'Colors',
+				editorType: {
+					name: 'gafyColor',
+				},
 			}, {
 				name: 'month',
 				type: type.string,
