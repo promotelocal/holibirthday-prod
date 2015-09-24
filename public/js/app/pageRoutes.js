@@ -2,6 +2,7 @@ define([
 	'adminView',
 	'cartView',
 	'checkoutView',
+	'giftDetailView',
 	'homeViewP',
 	'meP',
 	'myHolibirthdayView',
@@ -9,11 +10,10 @@ define([
 	'profileViewP',
 	'registerView',
 	'storeView',
-	'storeItemDetailView',
 	'storiesP',
 	'storyDetailViewP',
 	'storyEditViewP',
-], function (adminView, cartView, checkoutView, homeViewP, meP, myHolibirthdayView, profileEditViewP, profileViewP, registerView, storeView, storeItemDetailView, storiesP, storyDetailViewP, storyEditViewP) {
+], function (adminView, cartView, checkoutView, giftDetailView, homeViewP, meP, myHolibirthdayView, profileEditViewP, profileViewP, registerView, storeView, storiesP, storyDetailViewP, storyEditViewP) {
 	return routeToFirst([
 		matchStrings([{
 			string: '#!admin',
@@ -22,9 +22,9 @@ define([
 			string: '#!register',
 			router: routeToComponent(registerView),
 		}, {
-			string: '#!storeItem/',
+			string: '#!gift/',
 			router: routeMatchRest(function (id) {
-				return storeItemDetailView(id);
+				return giftDetailView(id);
 			}),
 		}, {
 			string: '#!gifts',

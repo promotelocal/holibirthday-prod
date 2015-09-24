@@ -145,9 +145,25 @@ define([
 						stream: stream,
 						type: 'date',
 					});
+				case 'foreignKey':
+					return promiseComponent(db[field.editorType.table].find({}).then(function (rows) {
+						return prettify(field.displayName, forms.selectBox({
+							options: rows.map(function (row) {
+								return {
+									name: row[field.editorType.nameField],
+									value: row._id,
+								};
+							}),
+							name: field.name,
+							stream: stream,
+						}));
+					}));
 				case 'listOf':
 					var textStream = Stream.create();
 					stream.map(function (arr) {
+						if (!arr.join) {
+							arr = [];
+						}
 						return arr.join('\n');
 					}).pushAll(textStream);
 					textStream.map(function (str) {
@@ -183,6 +199,12 @@ define([
 							])),
 						]);
 					})));
+				case 'enumeration':
+					return prettify(field.displayName, forms.selectBox({
+						options: field.editorType.options,
+						name: field.name,
+						stream: stream,
+					}));
 				case 'gafyColor':
 					return prettify(field.displayName, opacityGridSelect(gafyColors.map(function (gafyColor) {
 						return {

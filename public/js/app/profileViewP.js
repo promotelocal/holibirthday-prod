@@ -14,7 +14,7 @@ define([
 	'submitButton',
 ], function (bar, bodyColumn, colors, confettiBackground, db, fonts, meP, months, profilesP, separatorSize, storiesP, storyRowP, submitButton) {
 	return function (user) {
-		return meP.then(function (me) {
+		return promiseComponent(meP.then(function (me) {
 			return profilesP.then(function (profiles) {
 				var profile = profiles.filter(function (profile) {
 					return profile.user === user;
@@ -52,16 +52,18 @@ define([
 											fonts.ralewayThinBold,
 											$css('font-size', 40),
 										]),
-										db.holibirthday.findOne({
+										promiseComponent(db.holibirthday.findOne({
 											user: user,
 										}).then(function (holibirthday) {
-											var date = new Date(holibirthday.date);
-											var humanReadableDate = months[date.getMonth()] + ' ' + date.getDate();
-											return text('Holiborn on ' + humanReadableDate).all([
-												fonts.ralewayThinBold,
-												$css('font-size', 20),
-											]);
-										}, function () {
+											if (holibirthday)
+											{
+												var date = new Date(holibirthday.date);
+												var humanReadableDate = months[date.getMonth()] + ' ' + date.getDate();
+												return text('Holiborn on ' + humanReadableDate).all([
+													fonts.ralewayThinBold,
+													$css('font-size', 20),
+												]);
+											}
 											return meP.then(function (me) {
 												if (me && me._id === user) {
 													return linkTo('#!myHolibirthday', text('(claim a holibirthday)').all([
@@ -72,7 +74,7 @@ define([
 													return nothing;
 												}
 											});
-										}),
+										})),
 										text('Holibirthday Points: ' + pointsTotal).all([
 											fonts.ralewayThinBold,
 											$css('font-size', 20),
@@ -87,7 +89,7 @@ define([
 						var stories = bodyColumn(
 							stack({
 								gutterSize: separatorSize,
-							}, Q.all(profileStories.map(storyRowP))));
+							}, profileStories.map(storyRowP)));
 
 						var points = pointsTotal === 0 ? nothing : bodyColumn(stack({
 							gutterSize: separatorSize,
@@ -156,6 +158,6 @@ define([
 					});
 				});
 			});
-		});
+		}));
 	};
 });

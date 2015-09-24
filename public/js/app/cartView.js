@@ -12,7 +12,7 @@ define([
 		return sideBySide({
 			handleSurplusWidth: giveToFirst,
 		}, [
-			linkTo('#!storeItem/' + cartItem.storeItem, grid({
+			linkTo('#!gift/' + cartItem.storeItem, grid({
 				minColumnWidth: 10,
 				gutterSize: separatorSize,
 			}, [

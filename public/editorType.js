@@ -28,10 +28,17 @@
 		bool: {
 			name: 'bool',
 		},
-		// dropdown
-		enum: function (options) {
+		foreignKey: function (name, nameField) {
 			return {
-				name: 'enum',
+				name: 'foreignKey',
+				table: name,
+				nameField: nameField,
+			};
+		},
+		// dropdown
+		enumeration: function (options) {
+			return {
+				name: 'enumeration',
 				options: options,
 			};
 		},

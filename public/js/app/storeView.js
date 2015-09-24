@@ -40,7 +40,7 @@ define([
 			]),
 		]);
 		
-		return linkTo('#!storeItem/' + index, holibirthdayRow(description, storeItem.imageSrc));
+		return linkTo('#!gift/' + index, holibirthdayRow(description, storeItem.imageSrc));
 	};
 
 	return stack({}, [

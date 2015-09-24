@@ -68,7 +68,12 @@ define([
 			config.stream.pushAll(imageSrc);
 			config.accept = config.accept || "image/*";
 			return grid({}, [
-				this.fileUpload(config, function (file) {
+				this.fileUpload({
+					name: config.name,
+					accept: config.accept,
+					labelAll: config.labelAll,
+					stream: Stream.create(),
+				}, function (file) {
 					db.uploadFile(file).then(function (filename) {
 						config.stream.push('/api/uploadFile/find?filename=' + encodeURIComponent(filename));
 					});
@@ -112,7 +117,7 @@ define([
 				return sideBySide({
 					gutterSize: separatorSize,
 				}, [
-					forms.inputBox(config.stream, 'radio', config.fieldName).all([
+					forms.inputBox(Stream.create(), 'radio', config.fieldName).all([
 						$prop('value', option.value),
 						function (instance) {
 							config.stream.onValue(function (value) {
@@ -121,6 +126,9 @@ define([
 								}
 							});
 						},
+						clickThis(function () {
+							config.stream.push(option.value);
+						}),
 					]),
 					padding({
 						top: 1,

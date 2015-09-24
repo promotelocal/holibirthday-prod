@@ -330,6 +330,12 @@
 				name: '_id',
 				type: type.id,
 			}, {
+				name: 'createDate',
+				type: type.date,
+			}, {
+				name: 'updateDate',
+				type: type.date,
+			}, {
 				name: 'type',
 				type: type.string,
 				options: {
@@ -338,37 +344,81 @@
 					poll: 'poll',
 					someText: 'someText',
 				},
+				displayName: 'Type',
+				editorType: editorType.enumeration([{
+					name: 'Featured Story',
+					value: 'featuredStory',
+				}, {
+					name: 'Featured Gift',
+					value: 'featuredGift',
+				}, {
+					name: 'Poll',
+					value: 'poll',
+				}, {
+					name: 'Some Text',
+					value: 'someText',
+				}]),
 			}, {
 				// used if type is featuredStory
 				name: 'storyId',
 				type: type.id,
+				displayName: 'Story',
+				editorType: editorType.foreignKey('story', 'name'),
 			}, {
 				name: 'storyText',
 				type: type.string,
+				displayName: 'Description',
+				editorType: editorType.html,
 			}, {
 				// used if type is featuredGift
 				name: 'giftId',
 				type: type.number, // change this to id later on
+				displayName: 'Gift',
+				editorType: {
+					name: 'gift',
+				},
 			}, {
 				name: 'giftText',
 				type: type.string,
+				displayName: 'Description',
+				editorType: editorType.html,
 			}, {
 				// used if type is poll
 				name: 'pollTitle',
 				type: type.string,
+				displayName: 'Title',
+				editorType: editorType.string,
 			}, {
 				name: 'pollDescription',
 				type: type.string,
+				displayName: 'Description',
+				editorType: editorType.html,
 			}, {
 				name: 'pollChoices',
+				type: type.json,
+				displayName: 'Choices',
+				editorType: editorType.listOf(editorType.string),
+			}, {
+				name: 'pollImage',
 				type: type.string,
+				displayName: 'Picture',
+				editorType: editorType.image,
 			}, {
 				// used if type is someText
 				name: 'someTextTitle',
 				type: type.string,
+				displayName: 'Title',
+				editorType: editorType.string,
 			}, {
 				name: 'someTextText',
 				type: type.string,
+				displayName: 'Text',
+				editorType: editorType.html,
+			}, {
+				name: 'someTextImage',
+				type: type.string,
+				displayName: 'Picture',
+				editorType: editorType.image,
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(true);
@@ -382,10 +432,13 @@
 				name: '_id',
 				type: type.id,
 			}, {
+				name: 'user',
+				type: type.id,
+			}, {
 				name: 'dailyTheme',
 				type: type.id,
 			}, {
-				name: 'option',
+				name: 'choice',
 				type: type.number,
 			}, {
 				name: 'createDate',

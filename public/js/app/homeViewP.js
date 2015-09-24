@@ -3,11 +3,12 @@ define([
 	'bodyColumn',
 	'colors',
 	'confettiBackground',
+	'dailyTheme',
 	'fonts',
 	'separatorSize',
 	'storiesP',
 	'storyRowP',
-], function (bar, bodyColumn, colors, confettiBackground, fonts, separatorSize, storiesP, storyRowP) {
+], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, fonts, separatorSize, storiesP, storyRowP) {
 	var bannerButton = function (label, disabled) {
 		var darken = desaturate(disabled ? 0.8 : 0);
 		return border(darken(colors.holibirthdayDarkRed), {
@@ -28,8 +29,6 @@ define([
 		stories.sort(function (s1, s2) {
 			return new Date(s2.createDate).getTime() - new Date(s1.createDate).getTime();
 		});
-		var firstStory = stories[0];
-		var restStories = stories.slice(1);
 		
 		var useStoryPicture = function (story, c) {
 			return border(black, 1, withBackgroundImage({
@@ -68,11 +67,11 @@ define([
 			$css('font-size', 30),
 		]);
 		
-		var firstView = confettiBackground(bodyColumn(firstStory ? storyRowP(firstStory) : nothing));
+		var firstView = confettiBackground(bodyColumn(dailyTheme));
 
 		var restViews = bodyColumn(stack({
 			gutterSize: separatorSize,
-		}, intersperse(restStories.map(function (story) {
+		}, intersperse(stories.map(function (story) {
 			return storyRowP(story);
 		}), bar.horizontal(1, colors.middleGray))));
 

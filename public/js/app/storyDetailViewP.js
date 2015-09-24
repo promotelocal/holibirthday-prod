@@ -13,7 +13,7 @@ define([
 	'submitButton',
 ], function (bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, socialMedia, submitButton) {
 	var storyCommentViewP = function (story) {
-		return meP.then(function (me) {
+		return promiseComponent(meP.then(function (me) {
 			if (!me) {
 				return text('Sign in to comment').all([
 					fonts.bebasNeue,
@@ -41,7 +41,7 @@ define([
 						]),
 						alignLRM({
 							left: prettyForms.submit('Post Comment', function () {
-								db.comment.insert(latestComment).then(function (story) {
+								db.comment.insert(latestComment).then(function () {
 									window.location.reload();
 								});
 							}),
@@ -58,11 +58,11 @@ define([
 					return [context];
 				}),
 			]);
-		});
+		}));
 	};
 
 	var storyCommentsViewP = function (story) {
-		return db.comment.find({
+		return promiseComponent(db.comment.find({
 			story: story._id,
 		}).then(function (comments) {
 			comments.sort(function (c1, c2) {
@@ -97,11 +97,11 @@ define([
 					]);
 				}));
 			});
-		});
+		}));
 	};
 
 	return function (story) {
-		return profilesP.then(function (profiles) {
+		return promiseComponent(profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
@@ -184,6 +184,6 @@ define([
 					}) : nothing,
 				]);
 			});
-		});
+		}));
 	};
 });

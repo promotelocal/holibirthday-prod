@@ -28,7 +28,7 @@ define([], function () {
 				},
 				countShares: function () {
 				},
-				posts: function (origin) {
+				posts: function () {
 				},
 			},
 			twitter: {
