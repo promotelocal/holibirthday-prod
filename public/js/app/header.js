@@ -69,7 +69,7 @@ define([
 	};
 
 
-	return meP.then(function (me) {
+	return promiseComponent(meP.then(function (me) {
 		return adminP.then(function (admin) {
 			var signInStream = Stream.never();
 			return dropdownPanel(border(colors.middleGray, {
@@ -80,16 +80,17 @@ define([
 						left: toggleComponent([
 							linkTo('#!', image({
 								src: '/content/man.png',
-								minWidth: 0,
+								minHeight: 0,
 								chooseWidth: 0,
 							})),
 							image({
 								src: '/content/man.png',
-								minWidth: 0,
+								minHeight: 0,
 								chooseWidth: 0,
 							}).all([
-								$css('opacity', '0'),
 								function (i, context) {
+									i.$el.css('opacity', '0');
+									i.$el.css('cursor', 'pointer');
 									i.$el.css('transition', 'opacity 0.5s');
 									Stream.combine([
 										windowScroll,
@@ -98,7 +99,6 @@ define([
 										i.$el.css('opacity', (s > h) ? 1 : 0);
 									});
 								},
-								link,
 								clickThis(function () {
 									$('body').animate({scrollTop: 0}, 300);
 								}),
@@ -117,5 +117,5 @@ define([
 				withBackgroundColor(colors.pageBackgroundColor),
 			]), signInForm(), signInStream);
 		});
-	});
+	}));
 });	

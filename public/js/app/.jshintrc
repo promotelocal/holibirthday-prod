@@ -43,6 +43,7 @@
 
 		"black": false,
 		"color": false,
+		"transparent": false,
 		"white": false,
 
 		"child": false,
@@ -57,6 +58,7 @@
 		"link": false,
 		"linkTo": false,
 		"padding": false,
+		"promiseComponent": false,
 		"withBackgroundColor": false,
 		"withFontColor": false,
 		"withMinHeight": false,

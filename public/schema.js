@@ -404,31 +404,43 @@
 				return next(false);
 			},
 		}, {
-			name: 'gafyGarmentType',
+			name: 'gafyStyle',
 			fields: [{
 				name: '_id',
 				type: type.id,
 			}, {
-				name: 'active',
-				type: type.bool,
-				editorType: editorType.bool,
-			}, {
 				name: 'styleNumber',
 				type: type.string,
 				editorType: editorType.string,
+				displayName: 'Style Number',
 			}, {
 				name: 'styleDescription',
 				type: type.string,
 				editorType: editorType.string,
+				displayName: 'Style Description',
+			}, {
+				name: 'imageUrl',
+				type: type.string,
+				displayName: 'Style Picture',
+				editorType: editorType.image,
+			}, {
+				name: 'sizesImageUrl',
+				type: type.string,
+				displayName: 'Sizes Chart Picture',
+				editorType: editorType.image,
 			}, {
 				// array of sizes
 				name: 'sizes',
 				type: type.json,
 				editorType: editorType.listOf(editorType.string),
+				displayName: 'Sizes',
 			}, {
 				name: 'colors',
 				type: type.json,
-				editorType: editorType.listOf(editorType.string),
+				editorType: {
+					name: 'gafyColor',
+				},
+				displayName: 'Colors',
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(true);
@@ -461,8 +473,21 @@
 				type: type.string,
 				displayName: 'Design Image',
 				editorType: editorType.image,
-
-
+			}, {
+				name: 'stylesAndColors',
+				type: type.json,
+				displayName: 'Available Styles and Colors',
+				editorType: {
+					name: 'stylesAndColors',
+				},
+				/* example value:
+				   [{				   
+				     number: 'style number',
+					 colors: [
+					   'red',
+					 ]
+				   }]
+				*/
 			}, {
 				name: 'month',
 				type: type.string,
@@ -555,7 +580,8 @@
 				return next(false);
 			},
 		}];
-
+		
+		
 		schema.map(function (table) {
 			schema[table.name] = table;
 			table.fields.map(function (field) {

@@ -1,12 +1,12 @@
 define([
 	'bar',
 	'colors',
-	'headerP',
+	'header',
 	'pageRoutes',
 	'separatorSize',
-], function (bar, colors, headerP, pageRoutes, separatorSize) {
+], function (bar, colors, header, pageRoutes, separatorSize) {
 	var page = stack({}, [
-		fixedHeaderBody({}, headerP, stack({}, [
+		fixedHeaderBody({}, header, stack({}, [
 			bar.horizontal(separatorSize),
 			route(pageRoutes),
 		])),

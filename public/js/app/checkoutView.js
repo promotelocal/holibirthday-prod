@@ -60,7 +60,6 @@ define([
 			exp_month: Stream.once(''),
 			exp_year: Stream.once(''),
 		};
-		var stripeStream = Stream.combineObject(stripeStreams);
 
 		var heading = confettiBackground(alignLRM({
 			middle: bodyColumn(sideBySide({
@@ -187,7 +186,7 @@ define([
 		]);
 
 
-		var checkout = auth.StripeP.then(function (Stripe) {
+		var checkout = promiseComponent(auth.StripeP.then(function () {
 			return bodyColumn(stack({}, [
 				sideBySide({
 					handleSurplusWidth: evenSplitSurplusWidth,
@@ -204,7 +203,7 @@ define([
 					]),
 				}),
 			]));
-		});
+		}));
 
 		
 		return stack({}, [

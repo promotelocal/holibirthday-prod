@@ -13,7 +13,7 @@ define([
 		facebookAuthResponseD.resolve(response.authResponse);
 	}, true);
 	
-	return facebookAuthResponseD.promise.then(function (authResponse) {
+	return promiseComponent(facebookAuthResponseD.promise.then(function (authResponse) {
 		return button.all([
 			child(submitButton(sideBySide({
 				gutterSize: separatorSize,
@@ -45,5 +45,5 @@ define([
 				}
 			}),
 		]);
-	});
+	}));
 });

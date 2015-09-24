@@ -9,10 +9,8 @@ define([
 			}),
 		}).all([
 			withBackgroundColor(colors.holibirthdayRed),
-		]), Q.all([c]).then(function (cs) {
-			return cs[0].all([
-				withFontColor(white),
-			]);
-		}));
+		]), c.all([
+			withFontColor(white),
+		]));
 	};
 });

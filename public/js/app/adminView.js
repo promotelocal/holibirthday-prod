@@ -5,11 +5,12 @@ define([
 	'db',
 	'defaultFormFor',
 	'fonts',
+	'formLayouts',
 	'prettyForms',
 	'separatorSize',
 	'storiesP',
 	'submitButton',
-], function (bar, bodyColumn, colors, db, defaultFormFor, fonts, prettyForms, separatorSize, storiesP, submitButton) {
+], function (bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, prettyForms, separatorSize, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
@@ -52,7 +53,7 @@ define([
 		}, stuff));
 	};
 	
-	var dailyThemesEditor = db.dailyTheme.findOne({}).then(function (theme) {
+	var dailyThemesEditor = promiseComponent(db.dailyTheme.findOne({}).then(function (theme) {
 		theme = theme || {};
 		var dailyThemeStreams = {
 			_id: Stream.once(theme._id || null),
@@ -206,7 +207,7 @@ define([
 			})),
 			saveButton,
 		]);
-	});
+	}));
 
 	var gafyDesignSmall = function (gafyDesign) {
 		return border(colors.middleGray, {
@@ -226,36 +227,38 @@ define([
 					fonts.h2,
 				]),
 			})),
-		]));
+		])).all([
+			withMinWidth(300, true),
+		]);
 	};
 
-	var designsEditor = db.gafyDesign.find({}).then(function (designs) {
-		var addedGafyDesignsS = Stream.create();
-		var removedGafyDesignsS = Stream.create();
-		var designsS = Stream.combine([
-			addedGafyDesignsS.reduce(function (arr, d) {
-				return arr.concat([d]);
-			}, []),
-			removedGafyDesignsS.reduce(function (arr, d) {
-				return arr.concat([d]);
-			}, []),
-		], function (addedGafyDesigns, removedGafyDesigns) {
-			return designs.concat(addedGafyDesigns).filter(function (design) {
-				return removedGafyDesigns.filter(function (removedDesign) {
-					return design._id === removedDesign._id;
-				}).length === 0;
-			});
+	var designsEditor = promiseComponent(db.gafyDesign.find({}).then(function (designs) {
+		var designsS = Stream.once(designs);
+
+		var designFormLayout = formLayouts.stack({
+			formBuilder: defaultFormFor.gafyDesign,
+			stackConfig: {
+				gutterSize: separatorSize,
+			},
+			fields: [
+				'designDescription',
+				'designNumber',
+				'printLocation',
+				'imageUrl',
+				'month',
+				'stylesAndColors',
+			],
 		});
 
 		var designsTabS = Stream.once(0);
-		var editingDesignIdS = Stream.once(designs[0]._id);
+		var editingDesignIdS = Stream.once(designs.length > 0 ? designs[0]._id : null);
 		var editingDesignS = Stream.combine([
 			designsS,
 			editingDesignIdS,
 		], function (designs, _id) {
 			return designs.filter(function (design) {
 				return design._id === _id;
-			})[0];
+			})[0] || {};
 		});
 		return stack({
 			gutterSize: separatorSize,
@@ -275,50 +278,59 @@ define([
 						return grid({
 							gutterSize: separatorSize,
 							handleSurplusWidth: superSurplusWidth,
-						}, designs.map(gafyDesignSmall));
+						}, designs.map(function (design) {
+							return gafyDesignSmall(design).all([
+								link,
+								clickThis(function () {
+									editingDesignIdS.push(design._id);
+									designsTabS.push(2);
+								}),
+							]);
+						}));
 					})),
 				])),
 			}, {
 				tab: tab('Add Design'),
-				content: content(defaultFormFor.gafyDesign({
-					designNumber: undefined,
-					designDescription: undefined,
-					printLocation: undefined,
-					imageUrl: './content/man.png',
-				}, function (gafyDesignS, fields) {
-					var mustFillFields = Stream.once(0);
-					gafyDesignS.onValue(function () {
-						mustFillFields.push(0);	
-					});
-					
-					return stack({
-						gutterSize: separatorSize,
-					}, [
-						text('Add Design').all([
-							fonts.h2,
-						]),
-						fields.designNumber,
-						fields.designDescription,
-						fields.printLocation,
-						fields.imageUrl,
-						toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-						alignLRM({
-							left: submitButton(text('Add Design')).all([
-								link,
-								clickThis(function () {
-									var gafyDesign = gafyDesignS.lastValue();
-									if (!gafyDesign) {
-										mustFillFields.push(1);
-									}
-									db.gafyDesign.insert(gafyDesign).then(function (design) {
-										addedGafyDesignsS.push(design);
-										designsTabS.push(0);
-									});
-								}),
-							]),
-						}),
-					]);
-				})),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					text('Add Design').all([
+						fonts.h2,
+					]),
+					designFormLayout({
+						designNumber: undefined,
+						designDescription: undefined,
+						printLocation: undefined,
+						imageUrl: './content/man.png',
+					}, function (gafyDesignS) {
+						var mustFillFields = Stream.once(0);
+						gafyDesignS.onValue(function () {
+							mustFillFields.push(0);	
+						});
+						
+						return stack({
+							gutterSize: separatorSize,
+						}, [
+							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
+							alignLRM({
+								left: submitButton(text('Add Design')).all([
+									link,
+									clickThis(function () {
+										var gafyDesign = gafyDesignS.lastValue();
+										if (!gafyDesign) {
+											mustFillFields.push(1);
+											return;
+										}
+										db.gafyDesign.insert(gafyDesign).then(function (design) {
+											designsS.push(designsS.lastValue().concat([design]));
+											designsTabS.push(0);
+										});
+									}),
+								]),
+							}),
+						]);
+					}),
+				])),
 			}, {
 				tab: tab('Edit Design'),
 				content: content(stack({
@@ -329,7 +341,7 @@ define([
 							name: 'Editing Design',
 							options: designs.map(function (design) {
 								return {
-									name: design.designNumber + ' - ' + design.designDescription,
+									name: design.designDescription + ' - ' + design.designNumber,
 									value: design._id,
 								};
 							}),
@@ -344,7 +356,7 @@ define([
 						fonts.h2,
 					]),
 					componentStream(editingDesignS.map(function (design) {
-						return defaultFormFor.gafyDesign(design, function (gafyDesignS, fields) {
+						return designFormLayout(design, function (gafyDesignS) {
 							var mustFillFields = Stream.once(0);
 							gafyDesignS.onValue(function () {
 								mustFillFields.push(0);	
@@ -353,10 +365,6 @@ define([
 							return stack({
 								gutterSize: separatorSize,
 							}, [
-								fields.designNumber,
-								fields.designDescription,
-								fields.printLocation,
-								fields.imageUrl,
 								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
 								alignLRM({
 									left: submitButton(text('Edit Design')).all([
@@ -365,15 +373,19 @@ define([
 											var gafyDesign = gafyDesignS.lastValue();
 											if (!gafyDesign) {
 												mustFillFields.push(1);
+												return;
 											}
-											db.gafyDesign.remove({
+											db.gafyDesign.update({
 												_id: gafyDesign._id
-											}).then(function () {
-												db.gafyDesign.insert(gafyDesign).then(function (insertedDesign) {
-													addedGafyDesignsS.push(insertedDesign);
-													removedGafyDesignsS.push(gafyDesign);
-													designsTabS.push(0);
-												});
+											}, gafyDesign).then(function () {
+												var designs = designsS.lastValue().slice(0);
+												for (var i = 0; i < designs.length; i++) {
+													if (designs[i]._id === gafyDesign._id) {
+														designs[i] = gafyDesign;
+													}
+												}
+												designsS.push(designs);
+												designsTabS.push(0);
 											});
 										}),
 									]),
@@ -384,13 +396,205 @@ define([
 				])),
 			}], designsTabS),
 		]);
-	});
+	}));
+
+	var gafyStyleSmall = function (gafyStyle) {
+		return border(colors.middleGray, {
+			all: 1,
+		}, stack({}, [
+			alignLRM({
+				middle: image({
+					src: gafyStyle.imageUrl || './content/man.png',
+					chooseWidth: 0,
+					minHeight: 200,
+				}),
+			}),
+			padding({
+				all: 10,
+			}, alignLRM({
+				middle: text(gafyStyle.styleDescription).all([
+					fonts.h2,
+				]),
+			})),
+		])).all([
+			withMinWidth(300, true),
+		]);
+	};
+
+	var stylesEditor = promiseComponent(db.gafyStyle.find({}).then(function (gafyStyles) {
+		var stylesS = Stream.once(gafyStyles);
+
+		var styleFormLayout = formLayouts.stack({
+			formBuilder: defaultFormFor.gafyStyle,
+			stackConfig: {
+				gutterSize: separatorSize,
+			},
+			fields: [
+				'styleDescription',
+				'styleNumber',
+				'sizes',
+				'colors',
+				'imageUrl',
+				'sizesImageUrl',
+			],
+		});
+
+		var styleTabS = Stream.once(0);
+		var editingStyleIdS = Stream.once(gafyStyles.length > 0 ? gafyStyles[0]._id : null);
+		var editingStyleS = Stream.combine([
+			stylesS,
+			editingStyleIdS,
+		], function (designs, _id) {
+			return designs.filter(function (design) {
+				return design._id === _id;
+			})[0] || {};
+		});
+		return stack({
+			gutterSize: separatorSize,
+		}, [
+			text('GAFY Styles').all([
+				fonts.h1,
+			]),
+			tabs([{
+				tab: tab('Styles List'),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					text('Styles List').all([
+						fonts.h2,
+					]),
+					componentStream(stylesS.map(function (styles) {
+						return grid({
+							gutterSize: separatorSize,
+							handleSurplusWidth: superSurplusWidth,
+						}, styles.map(function (style) {
+							return gafyStyleSmall(style).all([
+								link,
+								clickThis(function () {
+									editingStyleIdS.push(style._id);
+									styleTabS.push(2);
+								}),
+							]);
+						}));
+					})),
+				])),
+			}, {
+				tab: tab('Add Style'),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					text('Add Style').all([
+						fonts.h2,
+					]),
+					styleFormLayout({
+						styleNumber: undefined,
+						styleDescription: undefined,
+						sizes: [],
+						colors: [],
+						imageUrl: './content/man.png',
+					}, function (gafyStylesS) {
+						var mustFillFields = Stream.once(0);
+						gafyStylesS.onValue(function () {
+							mustFillFields.push(0);	
+						});
+						return stack({
+							gutterSize: separatorSize,
+						}, [
+							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
+							alignLRM({
+								left: submitButton(text('Add Style')).all([
+									link,
+									clickThis(function () {
+										var gafyStyle = gafyStylesS.lastValue();
+										if (!gafyStyle) {
+											mustFillFields.push(1);
+											return;
+										}
+										db.gafyStyle.insert(gafyStyle).then(function (style) {
+											stylesS.push(stylesS.lastValue().concat([style]));
+											styleTabS.push(0);
+										});
+									}),
+								]),
+							}),
+						]);
+					}),
+				])),
+			}, {
+				tab: tab('Edit Style'),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					componentStream(stylesS.map(function (styles) {
+						return prettyForms.select({
+							name: 'Editing Style',
+							options: styles.map(function (style) {
+								return {
+									name: style.styleDescription + ' - ' + style.styleNumber,
+									value: style._id,
+								};
+							}),
+							stream: editingStyleIdS,
+						}).all([
+							changeThis(function (ev) {
+								editingStyleIdS.push($(ev.target).val());
+							}),
+						]);
+					})),
+					text('Edit Style').all([
+						fonts.h2,
+					]),
+					componentStream(editingStyleS.map(function (style) {
+						return styleFormLayout(style, function (gafyStyleS) {
+							var mustFillFields = Stream.once(0);
+							gafyStyleS.onValue(function () {
+								mustFillFields.push(0);	
+							});
+							
+							return stack({
+								gutterSize: separatorSize,
+							}, [
+								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
+								alignLRM({
+									left: submitButton(text('Edit Design')).all([
+										link,
+										clickThis(function () {
+											var gafyStyle = gafyStyleS.lastValue();
+											if (!gafyStyle) {
+												mustFillFields.push(1);
+												return;
+											}
+											db.gafyStyle.update({
+												_id: gafyStyle._id
+											}, gafyStyle).then(function () {
+												var styles = stylesS.lastValue().slice(0);
+												for (var i = 0; i < styles.length; i++) {
+													if (styles[i]._id === gafyStyle._id) {
+														styles[i] = gafyStyle;
+													}
+												}
+												stylesS.push(styles);
+												styleTabS.push(0);
+											});
+										}),
+									]),
+								}),
+							]);
+						});
+					})),
+				])),
+			}], styleTabS),
+		]);
+	}));
 	
 	return bodyColumn(stack({}, [
 		bar.horizontal(separatorSize),
 		tabs([{
 			tab: tab('Daily Theme'),
 			content: content(dailyThemesEditor),
+		}, {
+			tab: tab('Gafy Styles'),
+			content: content(stylesEditor),
 		}, {
 			tab: tab('Gafy Designs'),
 			content: content(designsEditor),

@@ -28,6 +28,14 @@
 		bool: {
 			name: 'bool',
 		},
+		// dropdown
+		enum: function (options) {
+			return {
+				name: 'enum',
+				options: options,
+			};
+		},
+		// radio buttons
 		oneOf: function (options) {
 			return {
 				name: 'oneOf',

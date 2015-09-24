@@ -4,7 +4,7 @@ define([
 	'separatorSize',
 ], function (fonts, profilesP, separatorSize) {
 	return function (story) {
-		return profilesP.then(function (profiles) {
+		return promiseComponent(profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
@@ -53,6 +53,6 @@ define([
 				])),
 				wireChildren(passThroughToFirst),
 			]);
-		});
+		}));
 	};
 });
