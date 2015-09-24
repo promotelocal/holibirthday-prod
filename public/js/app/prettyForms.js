@@ -124,6 +124,9 @@ define([
 								if (value === option.value) {
 									instance.$el.click();
 								}
+								else {
+									instance.$el.find('input').prop('checked', false);
+								}
 							});
 						},
 						clickThis(function () {
