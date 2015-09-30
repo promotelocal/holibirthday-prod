@@ -35,7 +35,7 @@ define([
 			buttons.push(linkTo('#!admin', headerButton('Admin')));
 		}
 		
-		buttons.push(linkTo('#!gifts', headerButton('Gifts')));
+		// buttons.push(linkTo('#!gifts', headerButton('Gifts')));
 
 		if (cart.items.length > 0) {
 			buttons.push(linkTo('#!cart', headerButton('Cart (' + cart.items.length + ')')));
