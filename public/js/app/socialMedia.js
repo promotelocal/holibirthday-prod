@@ -24,7 +24,10 @@ define([], function () {
 				name: 'Facebook',
 				shareVerb: 'share',
 				shareThisPage: function () {
-					return shareWindow('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href));
+					return FB.ui({
+						method: 'share',
+						href: location.href,
+					});
 				},
 				countShares: function () {
 				},

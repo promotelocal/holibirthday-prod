@@ -9,10 +9,12 @@ define([
 	'months',
 	'profilesP',
 	'separatorSize',
+	'socialMedia',
+	'socialMediaButton',
 	'storiesP',
 	'storyRowP',
 	'submitButton',
-], function (bar, bodyColumn, colors, confettiBackground, db, fonts, meP, months, profilesP, separatorSize, storiesP, storyRowP, submitButton) {
+], function (bar, bodyColumn, colors, confettiBackground, db, fonts, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton) {
 	return function (user) {
 		return promiseComponent(meP.then(function (me) {
 			return profilesP.then(function (profiles) {
@@ -86,12 +88,24 @@ define([
 							]),
 						])));
 
+						var profileSocialMediaButton = socialMediaButton(function (verb) {
+							return verb + ' this profile';
+						});
+
+						var shareButtons = bodyColumn(sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							profileSocialMediaButton(socialMedia.facebook),
+							profileSocialMediaButton(socialMedia.twitter),
+						]));
+
+
 						var stories = bodyColumn(
 							stack({
 								gutterSize: separatorSize,
 							}, profileStories.map(storyRowP)));
 
-						var points = pointsTotal === 0 ? nothing : bodyColumn(stack({
+						var pointsC = pointsTotal === 0 ? nothing : bodyColumn(stack({
 							gutterSize: separatorSize,
 						}, [
 							bar.horizontal(1, colors.middleGray),
@@ -145,14 +159,15 @@ define([
 							middle: linkTo('#!editProfile/' + me._id, submitButton(text('Edit Profile').all([
 								fonts.bebasNeue,
 							]))),
-						}) : nothing
+						}) : nothing;
 						
 						return stack({
 							gutterSize: separatorSize,
 						}, [
 							redBar,
+							shareButtons,
 							stories,
-							points,
+							pointsC,
 							editButton,
 						]);
 					});

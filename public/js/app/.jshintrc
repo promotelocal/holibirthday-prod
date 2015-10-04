@@ -11,6 +11,7 @@
 		"CKEDITOR": false,
 		"console": false,
 		"define": false,
+		"FB": false,
 		"FormData": false,
 		"location": false,
 		"Q": false,

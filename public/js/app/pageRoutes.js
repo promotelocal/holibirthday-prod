@@ -77,7 +77,7 @@ define([
 					user: (me && me._id) || '',
 					name: '',
 					text: '',
-					imageUrl: '/content/man.png',
+					imageUrl: './content/man.png',
 					storyType: '',
 					isPublic: true,
 				});

@@ -1,6 +1,4 @@
-define([
-	'colors',
-], function (colors) {
+define([], function () {
 	return function (c, color) {
 		color = color || black;
 		return border(color, {
@@ -9,7 +7,6 @@ define([
 		}, padding(10, alignLRM({
 			middle: c,
 		})).all([
-			withBackgroundColor(colors.pageBackgroundColor),
 			withFontColor(color),
 		]));
 	};

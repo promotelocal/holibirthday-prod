@@ -79,12 +79,12 @@ define([
 					alignLRM({
 						left: toggleComponent([
 							linkTo('#!', image({
-								src: '/content/man.png',
+								src: '/content/man3.png',
 								minHeight: 0,
 								chooseWidth: 0,
 							})),
 							image({
-								src: '/content/man.png',
+								src: '/content/man3.png',
 								minHeight: 0,
 								chooseWidth: 0,
 							}).all([

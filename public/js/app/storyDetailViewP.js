@@ -1,4 +1,5 @@
 define([
+	'areYouSure',
 	'bar',
 	'bodyColumn',
 	'confettiBackground',
@@ -10,8 +11,9 @@ define([
 	'profilesP',
 	'separatorSize',
 	'socialMedia',
+	'socialMediaButton',
 	'submitButton',
-], function (bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, socialMedia, submitButton) {
+], function (areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, socialMedia, socialMediaButton, submitButton) {
 	var storyCommentViewP = function (story) {
 		return promiseComponent(meP.then(function (me) {
 			if (!me) {
@@ -100,31 +102,15 @@ define([
 		}));
 	};
 
+	var storySocialMediaButton = socialMediaButton(function (verb) {
+		return verb + ' this story';
+	});
+
 	return function (story) {
 		return promiseComponent(profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
-			var socialMediaButton = function (sm) {
-				return border(sm.color, {
-					all: 2,
-					radius: 2,
-				}, padding(10, sideBySide({
-					gutterSize: separatorSize,
-				},[
-					text(sm.icon),
-					text(sm.shareVerb + ' this story').all([
-						fonts.bebasNeue,
-					]),
-				]))).all([
-					link,
-					withFontColor(sm.color),
-					clickThis(function () {
-						sm.shareThisPage();
-					}),
-				]);
-			};
-
 			return meP.then(function (me) {
 				return stack({
 					gutterSize: separatorSize,
@@ -172,15 +158,36 @@ define([
 					bodyColumn(sideBySide({
 						gutterSize: separatorSize,
 					}, [
-						socialMediaButton(socialMedia.facebook),
-						socialMediaButton(socialMedia.twitter),
+						storySocialMediaButton(socialMedia.facebook),
+						storySocialMediaButton(socialMedia.twitter),
 					])),
 					bodyColumn(storyCommentViewP(story)),
 					bodyColumn(storyCommentsViewP(story)),
 					(me && me._id === story.user) ? alignLRM({
-						middle: linkTo('#!editStory/' + story._id, submitButton(text('Edit Story').all([
-							fonts.bebasNeue,
-						]))),
+						middle: sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							linkTo('#!editStory/' + story._id, submitButton(text('Edit Story').all([
+								fonts.bebasNeue,
+							]))),
+							submitButton(text('Delete Story').all([
+								fonts.bebasNeue,
+							])).all([
+								link,
+								clickThis(function () {
+									return areYouSure({
+										onYes: function () {
+											db.story.remove({
+												_id: story._id,
+											}).then(function () {
+												window.location.hash = '#!';
+												window.location.reload();
+											});
+										}
+									});
+								}),
+							]),
+						]),
 					}) : nothing,
 				]);
 			});

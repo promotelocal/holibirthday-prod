@@ -335,7 +335,7 @@ define([
 				lastHolibirthday = v;
 			});
 			var playTheMachine = Stream.once(false);
-			holibirthday.date.map(function (d) {
+			holibirthday.date.map(function () {
 				return false;
 			}).pushAll(playTheMachine);
 			
@@ -406,37 +406,40 @@ define([
 			return db.holibirthday.findOne({
 				user: me._id,
 			}).then(function (oldHolibirthday) {
-				var oldHolibirthdate = new Date(oldHolibirthday.date);
-				var humanReadableDate = months[oldHolibirthdate.getMonth()] + ' ' + oldHolibirthdate.getDate();
-				return stack({
-					gutterSize: separatorSize * 2,
-				}, [
-					linkTo('#!user/' + me._id, header(stack({}, [
-						text('Your Holibirthday Is').all([
+				if (oldHolibirthday) {
+					var oldHolibirthdate = new Date(oldHolibirthday.date);
+					var humanReadableDate = months[oldHolibirthdate.getMonth()] + ' ' + oldHolibirthdate.getDate();
+					return stack({
+						gutterSize: separatorSize * 2,
+					}, [
+						linkTo('#!user/' + me._id, header(stack({}, [
+							text('Your Holibirthday Is').all([
+								fonts.ralewayThinBold,
+								$css('font-size', 40),
+							]),
+							text(humanReadableDate).all([
+								fonts.ralewayThinBold,
+								$css('font-size', 20),
+							]),
+						]))),
+						bodyColumn(alignLRM({
+							middle: machine(holibirthday),
+						})),
+					]);
+				}
+				else {
+					return stack({
+						gutterSize: separatorSize,
+					}, [
+						header(text('Claim Your Holibirthday').all([
 							fonts.ralewayThinBold,
 							$css('font-size', 40),
-						]),
-						text(humanReadableDate).all([
-							fonts.ralewayThinBold,
-							$css('font-size', 20),
-						]),
-					]))),
-					bodyColumn(alignLRM({
-						middle: machine(holibirthday),
-					})),
-				]);
-			}, function () {
-				return stack({
-					gutterSize: separatorSize,
-				}, [
-					header(text('Claim Your Holibirthday').all([
-						fonts.ralewayThinBold,
-						$css('font-size', 40),
-					])),
-					bodyColumn(alignLRM({
-						middle: machine(),
-					})),
-				]);
+						])),
+						bodyColumn(alignLRM({
+							middle: machine(),
+						})),
+					]);
+				}
 			});
 		}
 		return bodyColumn(stack({
