@@ -70,12 +70,12 @@
 				editorType: editorType.image,
 				displayName: 'Profile Picture',
 			}, {
-				name: 'holibirthdayer',
+				name: 'holibirther',
 				type: type.bool,
 				editorType: editorType.bool,
 				displayName: 'I am a Holibirther',
 			}, {
-				name: 'knowAHolibirthdayer',
+				name: 'knowAHolibirther',
 				type: type.bool,
 				editorType: editorType.bool,
 				displayName: 'I know a Holibirther',
@@ -154,12 +154,18 @@
 			}, {
 				name: 'month',
 				type: type.number,
+				editorType: editorType.number,
+				displayName: 'Holibirth-month',
 			}, {
 				name: 'day',
 				type: type.number,
+				editorType: editorType.number,
+				displayName: 'Holibirth-day',
 			}, {
 				name: 'date',
 				type: type.date,
+				editorType: editorType.date,
+				displayName: 'Holibirthdate',
 			}, {
 				name: 'createDate',
 				type: type.date,
@@ -594,7 +600,7 @@
 				return next(false);
 			},
 		}, {
-			name: 'order',
+			name: 'gafyOrder',
 			fields: [{
 				name: '_id',
 				type: type.id,

@@ -196,7 +196,7 @@ define([
 					billingAddress,
 				]),
 				alignLRM({
-					right: submitButton(text('Submit Payment')).all([
+					right: submitButton(black, text('Submit Payment')).all([
 						link,
 						clickThis(function () {
 						}),

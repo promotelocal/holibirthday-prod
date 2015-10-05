@@ -3,9 +3,7 @@ define([
 	'fonts',
 ], function (colors, fonts) {
 	return function (gafyDesign) {
-		return border(colors.middleGray, {
-			all: 1,
-		}, stack({}, [
+		return stack({}, [
 			alignLRM({
 				middle: image({
 					src: gafyDesign.imageUrl,
@@ -20,7 +18,7 @@ define([
 					fonts.h2,
 				]),
 			})),
-		])).all([
+		]).all([
 			withMinWidth(300, true),
 		]);
 	};

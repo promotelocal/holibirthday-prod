@@ -33,7 +33,7 @@ define([
 						$css('text-align', 'center'),
 					]),
 					alignLRM({
-						left: submitButton(text(config.noText).all([
+						left: submitButton(black, text(config.noText).all([
 							fonts.bebasNeue,
 						])).all([
 							link,
@@ -42,7 +42,7 @@ define([
 								destroyInstance();
 							}),
 						]),
-						right: submitButton(text(config.yesText).all([
+						right: submitButton(black, text(config.yesText).all([
 							fonts.bebasNeue,
 						])).all([
 							link,

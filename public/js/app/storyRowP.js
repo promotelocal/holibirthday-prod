@@ -35,7 +35,6 @@ define([
 					padding({
 						left: 30,
 						right: 30,
-						top: 30,
 					}, stack({
 						gutterSize: separatorSize,
 					}, [

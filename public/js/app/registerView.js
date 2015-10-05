@@ -17,8 +17,8 @@ define([
 			firstName: Stream.never(),
 			lastName: Stream.never(),
 			email: Stream.never(),
-			holibirthdayer: Stream.once(false),
-			knowAHolibirthdayer: Stream.once(false),
+			holibirther: Stream.once(false),
+			knowAHolibirther: Stream.once(false),
 			password: Stream.never(),
 			confirmPassword: Stream.never(),
 		};
@@ -29,7 +29,7 @@ define([
 		});
 
 		var registeredViewIndex = Stream.once(0);
-		var submit = prettyForms.submit('Submit', function () {
+		var submit = prettyForms.submit(black, 'Submit', function () {
 			auth.grecaptchaP.then(function (grecaptcha) {
 				var grecaptchaResponse = grecaptcha.getResponse();
 				if (latestModel === undefined || grecaptchaResponse === '') {
@@ -61,15 +61,15 @@ define([
 			fieldName: 'email',
 			stream: model.email,
 		});
-		var holibirthdayer = prettyForms.checkbox({
+		var holibirther = prettyForms.checkbox({
 			name: 'Am a Holibirther',
-			fieldName: 'holibirthdayer',
-			stream: model.holibirthdayer,
+			fieldName: 'holibirther',
+			stream: model.holibirther,
 		});
-		var knowAHolibirthdayer = prettyForms.checkbox({
+		var knowAHolibirther = prettyForms.checkbox({
 			name: 'Know a Holibirther',
-			fieldName: 'knowAHolibirthdayer',
-			stream: model.knowAHolibirthdayer,
+			fieldName: 'knowAHolibirther',
+			stream: model.knowAHolibirther,
 		});
 		var password = prettyForms.input({
 			name: 'Password',
@@ -143,8 +143,8 @@ define([
 							firstName,
 							lastName,
 							email,
-							holibirthdayer,
-							knowAHolibirthdayer,
+							holibirther,
+							knowAHolibirther,
 							password,
 							confirmPassword,
 							captcha,

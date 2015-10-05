@@ -355,7 +355,7 @@ define([
 						])),
 					}),
 					alignLRM({
-						middle: submitButton(text(oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
+						middle: submitButton(black, text(oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
 							link,
 							clickThis(function () {
 								if (lastHolibirthday) {

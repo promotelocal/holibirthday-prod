@@ -163,7 +163,7 @@ define([
 						promiseComponent(meP.then(function (me) {
 							if (me) {
 								return alignLRM({
-									left: submitButton(text('Vote (or Abstain)').all([
+									left: submitButton(white, text('Vote (or Abstain)').all([
 										fonts.bebasNeue,
 									])).all([
 										link,
@@ -182,7 +182,7 @@ define([
 							}
 							else {
 								return alignLRM({
-									left: submitButton(text('Sign in to vote').all([
+									left: submitButton(white, text('Sign in to vote').all([
 										fonts.bebasNeue,
 									])),
 								});

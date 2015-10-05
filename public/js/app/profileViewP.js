@@ -38,7 +38,7 @@ define([
 							}, [
 								alignTBM({
 									middle: image({
-										src: profile.profileImageURL || './content/man.png',
+										src: profile.imageUrl || './content/man2.png',
 										minWidth: 300,
 										chooseHeight: 0,
 									}),
@@ -156,7 +156,7 @@ define([
 						]));
 
 						var editButton = (me && me._id === profile.user) ? alignLRM({
-							middle: linkTo('#!editProfile/' + me._id, submitButton(text('Edit Profile').all([
+							middle: linkTo('#!editProfile/' + me._id, submitButton(black, text('Edit Profile').all([
 								fonts.bebasNeue,
 							]))),
 						}) : nothing;

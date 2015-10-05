@@ -42,7 +42,7 @@ define([
 							$prop('rows', 6),
 						]),
 						alignLRM({
-							left: prettyForms.submit('Post Comment', function () {
+							left: prettyForms.submit(black, 'Post Comment', function () {
 								db.comment.insert(latestComment).then(function () {
 									window.location.reload();
 								});
@@ -167,10 +167,10 @@ define([
 						middle: sideBySide({
 							gutterSize: separatorSize,
 						}, [
-							linkTo('#!editStory/' + story._id, submitButton(text('Edit Story').all([
+							linkTo('#!editStory/' + story._id, submitButton(black, text('Edit Story').all([
 								fonts.bebasNeue,
 							]))),
-							submitButton(text('Delete Story').all([
+							submitButton(black, text('Delete Story').all([
 								fonts.bebasNeue,
 							])).all([
 								link,

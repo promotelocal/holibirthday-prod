@@ -2,6 +2,7 @@ define([
 	'adminView',
 	'cartView',
 	'checkoutView',
+	'gafyDesignView',
 	'giftDetailView',
 	'homeViewP',
 	'meP',
@@ -13,7 +14,7 @@ define([
 	'storiesP',
 	'storyDetailViewP',
 	'storyEditViewP',
-], function (adminView, cartView, checkoutView, giftDetailView, homeViewP, meP, myHolibirthdayView, profileEditViewP, profileViewP, registerView, storeView, storiesP, storyDetailViewP, storyEditViewP) {
+], function (adminView, cartView, checkoutView, gafyDesignView, giftDetailView, homeViewP, meP, myHolibirthdayView, profileEditViewP, profileViewP, registerView, storeView, storiesP, storyDetailViewP, storyEditViewP) {
 	return routeToFirst([
 		matchStrings([{
 			string: '#!admin',
@@ -22,9 +23,9 @@ define([
 			string: '#!register',
 			router: routeToComponent(registerView),
 		}, {
-			string: '#!gift/',
+			string: '#!design/',
 			router: routeMatchRest(function (id) {
-				return giftDetailView(id);
+				return gafyDesignView(id);
 			}),
 		}, {
 			string: '#!gifts',

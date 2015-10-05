@@ -9,8 +9,8 @@ define([
 		fixedHeaderBody({}, header, stack({}, [
 			bar.horizontal(separatorSize),
 			route(pageRoutes),
+			extendToWindowBottom(bar.horizontal(separatorSize)),
 		])),
-		extendToWindowBottom(bar.horizontal(separatorSize)),
 	]).all([
 		withBackgroundColor(colors.pageBackgroundColor),
 	]);

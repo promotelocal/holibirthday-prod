@@ -9,6 +9,7 @@ define([], function () {
 			}), {
 				all: type === 'text' ||
 					type === 'password' ||
+					type === 'date' ||
 					type === 'number' ? 1 : 0,
 			}, input.all((all || []).concat([
 				$prop('name', name),
@@ -26,7 +27,19 @@ define([], function () {
 				function (instance) {
 					var $el = instance.$el;
 					stream.onValue(function (v) {
-						$el.val(v);
+						if (type === 'date') {
+							if (v) {
+								$el.val(moment(v).format('YYYY-MM-DD'));
+							}
+						}
+						else if (type === 'checkbox') {
+							setTimeout(function () {
+								$el.prop('checked', v);
+							});
+						}
+						else {
+							$el.val(v);
+						}
 					});
 				},
 			])));
@@ -114,6 +127,12 @@ define([], function () {
 				all: 1,
 			}, select.all([
 				children(config.options.map(function (o) {
+					if (!o.name || !o.value) {
+						o = {
+							name: o,
+							value: o,
+						};
+					}
 					return option.all([
 						$html(o.name),
 						$prop('value', o.value),

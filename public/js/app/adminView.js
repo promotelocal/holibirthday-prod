@@ -101,7 +101,7 @@ define([
 			]);
 			
 			var saveButton = alignLRM({
-				left: submitButton(text('Publish')).all([
+				left: submitButton(black, text('Publish')).all([
 					link,
 					clickThis(function () {
 						var theme = dailyThemeS.lastValue();
@@ -222,7 +222,7 @@ define([
 						}, [
 							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
 							alignLRM({
-								left: submitButton(text('Add Design')).all([
+								left: submitButton(black, text('Add Design')).all([
 									link,
 									clickThis(function () {
 										var gafyDesign = gafyDesignS.lastValue();
@@ -278,7 +278,7 @@ define([
 							}, [
 								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
 								alignLRM({
-									left: submitButton(text('Edit Design')).all([
+									left: submitButton(black, text('Edit Design')).all([
 										link,
 										clickThis(function () {
 											var gafyDesign = gafyDesignS.lastValue();
@@ -390,7 +390,7 @@ define([
 						}, [
 							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
 							alignLRM({
-								left: submitButton(text('Add Style')).all([
+								left: submitButton(black, text('Add Style')).all([
 									link,
 									clickThis(function () {
 										var gafyStyle = gafyStylesS.lastValue();
@@ -444,7 +444,7 @@ define([
 							}, [
 								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
 								alignLRM({
-									left: submitButton(text('Edit Design')).all([
+									left: submitButton(black, text('Edit Design')).all([
 										link,
 										clickThis(function () {
 											var gafyStyle = gafyStyleS.lastValue();

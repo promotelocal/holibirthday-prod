@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html prefix="og: http://ogp.me/ns#">
 	<head>
 		<title>Holibirthday</title>
-		<meta name="description" content="Dedicated to celebrating birthdays upstaged by Holidays, Bad Days like tax day, 9-11 and Birthdays Forgotten!">
+		<meta name="description" content="Dedicated to celebrating birthdays upstaged by Holidays, Bad Days like tax day, 9-11 and Birthdays Forgotten!" />
 		<link rel="icon" type="image/png" href="/content/favicon.png">
 		
+		<meta property="og:title" content="Holibirthday" />
+		<meta property="og:image" content="/content/favicon.png" />
+		
 		<!-- set scale for mobile devices -->
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 		<!-- required for search crawlers -->
 		<!-- see https://developers.google.com/webmasters/ajax-crawling/docs/getting-started -->
-		<meta name="fragment" content="!">
+		<meta name="fragment" content="!" />
 
 		<!-- a small amount of CSS -->
 		<link href="css/reset.css" rel="stylesheet" type="text/css" />
@@ -44,6 +47,7 @@
 		<script src="js/lib/jquery.min.js"></script>
 		<script src="js/lib/jquery.slotmachine.min.js"></script>
 		<script src="js/lib/localStorageShim.js"></script>
+		<script src="js/lib/moment.min.js"></script>
 		<script src="js/lib/ObjectID.js"></script>
 		<script src="js/lib/q.js"></script>
 		<script src="js/lib/require.min.js"></script>
@@ -83,5 +87,13 @@
 			 xfbml  : true  // parse XFBML
 		 });
         </script>
+		<script>
+		 $(function () {
+			 FB.ui({
+				 method: 'share',
+				 href: location.href.replace('#', '%23'),
+			 });
+		 });
+		</script>
 	</body>
 </html>

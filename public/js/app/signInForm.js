@@ -21,7 +21,7 @@ define([
 			fillOutAllFields.push(false);
 		});
 
-		var submit = prettyForms.submit('Submit', function () {
+		var submit = prettyForms.submit(black, 'Submit', function () {
 			if (latestModel === undefined) {
 				fillOutAllFields.push(true);
 			}

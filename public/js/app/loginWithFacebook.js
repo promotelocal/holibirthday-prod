@@ -15,14 +15,16 @@ define([
 	
 	return promiseComponent(facebookAuthResponseD.promise.then(function (authResponse) {
 		return button.all([
-			child(submitButton(sideBySide({
+			child(submitButton(socialMedia.facebook.color, sideBySide({
 				gutterSize: separatorSize,
 			}, [
 				text(socialMedia.facebook.icon),
 				text('sign in with Facebook').all([
 					fonts.bebasNeue,
 				]),
-			]), socialMedia.facebook.color)),
+			])).all([
+				withFontColor(socialMedia.facebook.color),
+			])),
 			wireChildren(passThroughToFirst),
 		]).all([
 			link,

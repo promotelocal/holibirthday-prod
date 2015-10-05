@@ -94,22 +94,18 @@ define([
 			return sideBySide({
 				gutterSize: separatorSize,
 			}, [
-				forms.inputBox(config.stream, 'checkbox', config.fieldName).all([
-					function (instance) {
-						config.stream.onValue(function (value) {
-							instance.$el.prop('checked', value);
-						});
-					},
-				]),
+				forms.inputBox(config.stream, 'checkbox', config.fieldName),
 				padding({
 					top: 1,
 				}, text(config.name).all([
 					fonts.ralewayThinBold,
-				])).all([
-					clickThis(function () {
-						config.stream.push(!currentValue);
-					}),
-				]),
+				])),
+			]).all([
+				clickThis(function (e) {
+					config.stream.push(!currentValue);
+					e.stopPropagation();
+					return false;
+				}),
 			]);
 		},
 		radios: function (config) {
@@ -141,7 +137,7 @@ define([
 				]);
 			}));
 		},
-		submit: function (label, cb) {
+		submit: function (color, label, cb) {
 			return stack({}, [
 				input.all([
 					$prop('type', 'submit'),
@@ -152,7 +148,7 @@ define([
 					withMinHeight(0, true),
 					$css('display', 'none'),
 				]),
-				submitButton(text(label).all([
+				submitButton(color, text(label).all([
 					fonts.bebasNeue,
 				])).all([
 					link,

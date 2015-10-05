@@ -98,13 +98,13 @@ define([
 				right: sideBySide({
 					gutterSize: separatorSize,
 				}, [
-					linkTo('#!gifts', submitButton(sideBySide({
+					linkTo('#!gifts', submitButton(black, sideBySide({
 						gutterSize: separatorSize,
 					}, [
 						fonts.fa('shopping-cart'),
 						text('Continue Shopping'),
 					]))),
-					linkTo('#!checkout', submitButton(sideBySide({
+					linkTo('#!checkout', submitButton(black, sideBySide({
 						gutterSize: separatorSize,
 					}, [
 						fonts.fa('tag'),

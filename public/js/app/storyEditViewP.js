@@ -102,7 +102,7 @@ define([
 				fonts.ralewayThinBold,
 			]),
 			alignLRM({
-				left: prettyForms.submit('Submit Story', function () {
+				left: prettyForms.submit(white, 'Submit Story', function () {
 					var latestStory = storyStream.lastValue();
 					if (latestStory._id) {
 						db.story.update({

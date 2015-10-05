@@ -196,7 +196,7 @@ define([
 				])),
 			]),
 			alignLRM({
-				middle: submitButton(sideBySide({
+				middle: submitButton(black, sideBySide({
 					gutterSize: separatorSize,
 				}, [
 					fonts.fa('shopping-cart'),
