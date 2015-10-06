@@ -1,10 +1,12 @@
 define([
 	'bar',
 	'bodyColumn',
+	'cart',
 	'colors',
 	'confettiBackground',
 	'db',
 	'fonts',
+	'forms',
 	'gafy',
 	'gafyColors',
 	'gafyDesignRow',
@@ -16,7 +18,7 @@ define([
 	'socialMedia',
 	'socialMediaButton',
 	'submitButton',
-], function (bar, bodyColumn, colors, confettiBackground, db, fonts, gafy, gafyColors, gafyDesignRow, gafyDesignSmall, gafyStyleSmall, holibirthdayRow, opacityGridSelect, separatorSize, socialMedia, socialMediaButton, submitButton) {
+], function (bar, bodyColumn, cart, colors, confettiBackground, db, fonts, forms, gafy, gafyColors, gafyDesignRow, gafyDesignSmall, gafyStyleSmall, holibirthdayRow, opacityGridSelect, separatorSize, socialMedia, socialMediaButton, submitButton) {
 	return function (designId) {
 		return promiseComponent(db.gafyDesign.findOne({
 			_id: designId,
@@ -88,9 +90,20 @@ define([
 										text(gafyColor.name),
 										text(rgbColorString(gafyColor.color)),
 									]),
-									value: gafyColor.name,
+									value: gafyColors.indexOf(gafyColor),
 								};
-							})) : nothing;
+							})) : text('Choose a style');
+						})),
+						text('Size').all([
+							fonts.h1,
+							fonts.ralewayThinBold,
+						]),
+						componentStream(gafyOrderStreams.style.map(function (style) {
+							return style ? forms.selectBox({
+								name: 'size',
+								options: style.sizes,
+								stream: gafyOrderStreams.size,
+							}) : text('Choose a style');
 						})),
 						componentStream(mustChooseEverythingS.map(function (mustChooseEverything) {
 							return mustChooseEverything ? alignLRM({
@@ -104,26 +117,64 @@ define([
 								submitButton(black, sideBySide({
 									gutterSize: separatorSize,
 								}, [
-									fonts.fa('shopping-cart'),
-									text('Add to Cart'),
+									fonts.fa('shopping-cart-plus'),
+									text('Add to Wishlist'),
 								])).all([
 									link,
 									clickThis(function () {
 										var order = gafyOrderS.lastValue();
-										if (!order.design ||
-											!order.style ||
+										if (!order.style ||
 											!order.color ||
 											!order.size) {
 											mustChooseEverythingS.push(true);
 										}
 										else {
 											var cartItem = {
-												designNumber: order.design.designNumber,
-												designDescription: order.design.designDescription,
-												printLocation: order.design.printLocation,
+												designId: design._id,
+												styleId: order.style._id,
+												designNumber: design.designNumber,
+												designDescription: design.designDescription,
+												printLocation: design.printLocation,
 												styleNumber: order.style.styleNumber,
 												styleDescription: order.style.styleDescription,
+												color: order.color,
+												size: order.size,
 											};
+											cart.addItem(cartItem);
+											window.location.hash = '#!cart';
+											window.location.reload();
+										}
+									}),
+								]),
+								submitButton(black, sideBySide({
+									gutterSize: separatorSize,
+								}, [
+									fonts.fa('shopping-cart'),
+									text('Add to Cart'),
+								])).all([
+									link,
+									clickThis(function () {
+										var order = gafyOrderS.lastValue();
+										if (!order.style ||
+											!order.color ||
+											!order.size) {
+											mustChooseEverythingS.push(true);
+										}
+										else {
+											var cartItem = {
+												designId: design._id,
+												styleId: order.style._id,
+												designNumber: design.designNumber,
+												designDescription: design.designDescription,
+												printLocation: design.printLocation,
+												styleNumber: order.style.styleNumber,
+												styleDescription: order.style.styleDescription,
+												color: order.color,
+												size: order.size,
+											};
+											cart.addItem(cartItem);
+											window.location.hash = '#!cart';
+											window.location.reload();
 										}
 									}),
 								]),

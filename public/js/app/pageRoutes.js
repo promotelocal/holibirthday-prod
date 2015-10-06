@@ -1,44 +1,51 @@
 define([
-	'adminView',
-	'cartView',
-	'checkoutView',
-	'gafyDesignView',
-	'giftDetailView',
-	'homeViewP',
 	'meP',
-	'myHolibirthdayView',
-	'profileEditViewP',
-	'profileViewP',
-	'registerView',
-	'storeView',
 	'storiesP',
-	'storyDetailViewP',
-	'storyEditViewP',
-], function (adminView, cartView, checkoutView, gafyDesignView, giftDetailView, homeViewP, meP, myHolibirthdayView, profileEditViewP, profileViewP, registerView, storeView, storiesP, storyDetailViewP, storyEditViewP) {
+], function (meP, storiesP) {
+	var loadAsync = function (thing, args) {
+		var d = Q.defer();
+		require([thing], function (thing) {
+			if (!args) {
+				d.resolve(thing);
+			}
+			else {
+				d.resolve(thing.apply(null, args));
+			}
+		});
+		return d.promise;
+	};
 	return routeToFirst([
 		matchStrings([{
 			string: '#!admin',
-			router: routeToComponent(adminView),
+			router: routeToComponent(promiseComponent(loadAsync('adminView'))),
 		}, {
 			string: '#!register',
-			router: routeToComponent(registerView),
+			router: routeToComponent(promiseComponent(loadAsync('registerView'))),
 		}, {
 			string: '#!design/',
 			router: routeMatchRest(function (id) {
-				return gafyDesignView(id);
+				return promiseComponent(loadAsync('gafyDesignView', [id]));
 			}),
 		}, {
 			string: '#!gifts',
-			router: routeToComponent(storeView),
+			router: routeToComponent(promiseComponent(loadAsync('storeView'))),
 		}, {
 			string: '#!cart',
-			router: routeToComponent(cartView),
+			router: routeToComponent(promiseComponent(loadAsync('cartView'))),
+		}, {
+			string: '#!wishlist',
+			router: routeToComponent(promiseComponent(loadAsync('wishlistView'))),
 		}, {
 			string: '#!checkout',
-			router: routeToComponent(checkoutView),
+			router: routeToComponent(promiseComponent(loadAsync('checkoutView'))),
+		}, {
+			string: '#!orderSuccess/',
+			router: routeMatchRest(function (orderBatch) {
+				return promiseComponent(loadAsync('orderSuccess', [orderBatch]));
+			}),
 		}, {
 			string: '#!myHolibirthday',
-			router: routeToComponent(myHolibirthdayView),
+			router: routeToComponent(promiseComponent(loadAsync('myHolibirthdayView'))),
 		}, {
 			string: '#!story/',
 			router: routeMatchRest(function (id) {
@@ -46,7 +53,7 @@ define([
 					var story = stories.filter(function (s) {
 						return s._id === id;
 					})[0];
-					return storyDetailViewP(story, true);
+					return promiseComponent(loadAsync('storyDetailViewP', [story, true]));
 				});
 			}),
 		}, {
@@ -54,12 +61,12 @@ define([
 		}, {
 			string: '#!user/',
 			router: routeMatchRest(function (id) {
-				return profileViewP(id);
+				return promiseComponent(loadAsync('profileViewP', [id]));
 			}),
 		}, {
 			string: '#!editProfile/',
 			router: routeMatchRest(function (id) {
-				return profileEditViewP(id);
+				return promiseComponent(loadAsync('profileEditViewP', [id]));
 			}),
 		}, {
 			string: '#!editStory/',
@@ -68,22 +75,22 @@ define([
 					var story = stories.filter(function (s) {
 						return s._id === id;
 					})[0];
-					return storyEditViewP(story);
+					return promiseComponent(loadAsync('storyEditViewP'[story]));
 				});
 			}),
 		}, {
 			string: '#!editStory',
 			router: routeToComponent(meP.then(function (me) {
-				return storyEditViewP({
+				return promiseComponent(loadAsync('storyEditViewP', [{
 					user: (me && me._id) || '',
 					name: '',
 					text: '',
 					imageUrl: './content/man.png',
 					storyType: '',
 					isPublic: true,
-				});
+				}]));
 			})),
 		}]),
-		routeToComponent(homeViewP),
+		routeToComponent(promiseComponent(loadAsync('homeViewP'))),
 	]);
 });

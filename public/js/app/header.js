@@ -41,6 +41,10 @@ define([
 			buttons.push(linkTo('#!cart', headerButton('Cart (' + cart.items.length + ')')));
 		}
 		
+		if (cart.wishlistItems.length > 0) {
+			buttons.push(linkTo('#!wishlist', headerButton('Wishlist (' + cart.wishlistItems.length + ')')));
+		}
+		
 		var signIn = false;
 		signInStream.push(signIn);
 		if (me) {

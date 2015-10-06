@@ -500,6 +500,11 @@
 					name: 'gafyColor',
 				},
 				displayName: 'Colors',
+			}, {
+				name: 'price',
+				type: type.json,
+				editorType: editorType.number,
+				displayName: 'Price',
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(true);
@@ -600,42 +605,173 @@
 				return next(false);
 			},
 		}, {
+			name: 'siteCopyItem',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'uniqueName',
+				type: type.string,
+			}, {
+				name: 'value',
+				type: type.string,
+			}],
+			mayFind: function (user, doc, db, next) {
+				return next(true);
+			},
+			mayInsert: onlyIfAdmin,
+			mayUpdate: onlyIfAdmin,
+			mayRemove: onlyIfAdmin,
+			options: [{
+				name: 'Short Description',
+				multiline: false,
+			}, {
+				name: 'Order Confirmation Email: From',
+				multiline: false,
+			}, {
+				name: 'Order Confirmation Email: From Name',
+				multiline: false,
+			}, {
+				name: 'Order Confirmation Email: Subjct',
+				multiline: false,
+			}, {
+				name: 'Order Confirmation Email: Text ( {{orderNumber}} includes order number)',
+				multiline: true,
+			}],
+		}, {
 			name: 'gafyOrder',
 			fields: [{
 				name: '_id',
 				type: type.id,
 			}, {
 				name: 'user',
-				type: type.user,
+				type: type.id,
 			}, {
-				name: 'shopItems',
-				type: type.json,
+				name: 'orderBatch',
+				type: type.string,
 			}, {
-				name: 'shippingAddress',
-				/*
-				  name
-				  line 1
-				  line 2
-				  city
-				  state
-				  zip
-				 */
-				type: type.json,
+				name: 'customerEmailAddress',
+				type: type.string,
+			}, {
+				name: 'firstName',
+				type: type.string,
+			}, {
+				name: 'lastName',
+				type: type.string,
+			}, {
+				name: 'addressLine1',
+				type: type.string,
+			}, {
+				name: 'addressLine2',
+				type: type.string,
+			}, {
+				name: 'addressCity',
+				type: type.string,
+			}, {
+				name: 'addressState',
+				type: type.string,
+			}, {
+				name: 'addressZip',
+				type: type.string,
+			}, {
+				name: 'addressCountry',
+				type: type.string,
+			}, {
+				name: 'designNumber',
+				type: type.string,
+			}, {
+				name: 'designDescription',
+				type: type.string,
+			}, {
+				name: 'printLocation',
+				type: type.string,
+			}, {
+				name: 'styleNumber',
+				type: type.string,
+			}, {
+				name: 'styleDescription',
+				type: type.string,
+			}, {
+				name: 'color',
+				type: type.string,
+			}, {
+				name: 'size',
+				type: type.string,
+			}, {
+				name: 'quantity',
+				type: type.number,
+			}, {
+				name: 'shippingMethod',
+				type: type.string,
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(false);
 			},
 			mayInsert: function (user, doc, db, next) {
-				if (user) {
-					return next(true);
-				}
-				return next(false);
+				return next(true);
 			},
 			mayUpdate: function (user, doc, db, next) {
 				return next(false);
 			},
 			mayRemove: function (user, doc, db, next) {
 				return next(false);
+			},
+		}, {
+			name: 'stripePayment',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type.id,
+			}, {
+				name: 'email',
+				type: type.string,
+			}, {
+				name: 'orderBatch',
+				type: type.string,
+			}, {
+				name: 'amount',
+				type: type.number,
+			}, {
+				name: 'stripeToken',
+				type: type.string,
+			}],
+			mayFind: function (user, doc, db, next) {
+				return next(false);
+			},
+			mayInsert: function (user, doc, db, next) {
+				return next(true);
+			},
+			mayUpdate: function (user, doc, db, next) {
+				return next(false);
+			},
+			mayRemove: function (user, doc, db, next) {
+				return next(false);
+			},
+		}, {
+			name: 'gafyWishlist',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type._id,
+			}, {
+				name: 'items',
+				type: type.json,
+			}],
+			mayFind: function (user, doc, db, next) {
+				return next(true);
+			},
+			mayInsert: function (user, doc, db, next) {
+				return next(ObjectId.equal(user._id, doc.user));
+			},
+			mayUpdate: function (user, doc, db, next) {
+				return next(ObjectId.equal(user._id, doc.user));
+			},
+			mayRemove: function (user, doc, db, next) {
+				return next(ObjectId.equal(user._id, doc.user));
 			},
 		}];
 		

@@ -58,6 +58,14 @@ define([
 						stream: stream,
 						type: 'date',
 					});
+				case 'number':
+					return prettyForms.input({
+						name: field.displayName,
+						fieldName: field.name,
+						labelAll: labelAll,
+						stream: stream,
+						type: 'number',
+					});
 				case 'file':
 					if (field.editorType.accept.indexOf('image') !== -1) {
 						return prettyForms.imageUpload({

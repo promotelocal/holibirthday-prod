@@ -310,6 +310,9 @@ define([
 	}));
 
 	var stylesEditor = promiseComponent(db.gafyStyle.find({}).then(function (gafyStyles) {
+		gafyStyles.map(function (gafyStyle) {
+			gafyStyle.price /= 100;
+		});
 		var stylesS = Stream.once(gafyStyles);
 
 		var styleFormLayout = formLayouts.stack({
@@ -324,6 +327,7 @@ define([
 				'colors',
 				'imageUrl',
 				'sizesImageUrl',
+				'price',
 			],
 		});
 
@@ -380,6 +384,7 @@ define([
 						sizes: [],
 						colors: [],
 						imageUrl: './content/man.png',
+						price: 0,
 					}, function (gafyStylesS) {
 						var mustFillFields = Stream.once(0);
 						gafyStylesS.onValue(function () {
@@ -394,6 +399,7 @@ define([
 									link,
 									clickThis(function () {
 										var gafyStyle = gafyStylesS.lastValue();
+										gafyStyle.price = Math.round(gafyStyle.price * 100);
 										if (!gafyStyle) {
 											mustFillFields.push(1);
 											return;
@@ -444,10 +450,11 @@ define([
 							}, [
 								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
 								alignLRM({
-									left: submitButton(black, text('Edit Design')).all([
+									left: submitButton(black, text('Edit Style')).all([
 										link,
 										clickThis(function () {
 											var gafyStyle = gafyStyleS.lastValue();
+											gafyStyle.price = Math.round(gafyStyle.price * 100);
 											if (!gafyStyle) {
 												mustFillFields.push(1);
 												return;
@@ -474,6 +481,71 @@ define([
 			}], styleTabS),
 		]);
 	}));
+
+	var copyItemEditor = function (uniqueName, formElement) {
+		var item = siteCopyItems.filter(function (item) {
+			return item.uniqueName === uniqueName;
+		})[0] || {
+			uniqueName: uniqueName,
+			value: '',
+		};
+
+		var valueS = Stream.once(item.value);
+		var modifiedS = valueS.map(function () {
+			return true;
+		});
+		modifiedS.push(false);
+		
+		return stack({
+			gutterSize: separatorSize,
+		}, [
+			prettyForms[formElement || 'input']({
+				name: uniqueName,
+				stream: valueS,
+			}),
+			alignLRM({
+				left: sideBySide({
+					gutterSize: separatorSize,
+				}, [
+					submitButton(black, text('Save')).all([
+						link,
+						clickThis(function () {
+							item.value = valueS.lastValue();
+							(item._id ?
+							 db.siteCopyItem.update({
+								 _id: item._id,
+							 }, item) :
+							 db.siteCopyItem.insert(item)).then(function (res) {
+								 item._id = item._id || res._id;
+								 modifiedS.push(false);
+							 });
+						}),
+					]),
+					componentStream(modifiedS.map(function (modified) {
+						return modified ? alignTBM({
+							middle: text('(unsaved)'),
+						}) : nothing;
+					})),
+				]),
+			}),
+		]);
+	};
+	
+	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
+		return stack({
+			gutterSize: separatorSize,
+		}, [
+			text('Site Copy').all([
+				fonts.h1,
+			]),
+			copyItemEditor('Short Description'),
+			copyItemEditor('Order Confirmation Email: From'),
+			copyItemEditor('Order Confirmation Email: From Name'),
+			copyItemEditor('Order Confirmation Email: Subjct'),
+			copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
+		]);
+	}));
+
 	
 	return bodyColumn(stack({}, [
 		bar.horizontal(separatorSize),
@@ -486,7 +558,10 @@ define([
 		}, {
 			tab: tab('Gafy Designs'),
 			content: content(designsEditor),
-		}]),
+		}, {
+			tab: tab('Site Copy'),
+			content: content(copyEditor),
+		}], Stream.once(3)),
 	]));
 });
 
