@@ -482,68 +482,80 @@ define([
 		]);
 	}));
 
-	var copyItemEditor = function (uniqueName, formElement) {
-		var item = siteCopyItems.filter(function (item) {
-			return item.uniqueName === uniqueName;
-		})[0] || {
-			uniqueName: uniqueName,
-			value: '',
-		};
-
-		var valueS = Stream.once(item.value);
-		var modifiedS = valueS.map(function () {
-			return true;
-		});
-		modifiedS.push(false);
-		
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			prettyForms[formElement || 'input']({
-				name: uniqueName,
-				stream: valueS,
-			}),
-			alignLRM({
-				left: sideBySide({
-					gutterSize: separatorSize,
-				}, [
-					submitButton(black, text('Save')).all([
-						link,
-						clickThis(function () {
-							item.value = valueS.lastValue();
-							(item._id ?
-							 db.siteCopyItem.update({
-								 _id: item._id,
-							 }, item) :
-							 db.siteCopyItem.insert(item)).then(function (res) {
-								 item._id = item._id || res._id;
-								 modifiedS.push(false);
-							 });
-						}),
-					]),
-					componentStream(modifiedS.map(function (modified) {
-						return modified ? alignTBM({
-							middle: text('(unsaved)'),
-						}) : nothing;
-					})),
-				]),
-			}),
-		]);
-	};
-	
 	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			text('Site Copy').all([
-				fonts.h1,
-			]),
-			copyItemEditor('Short Description'),
-			copyItemEditor('Order Confirmation Email: From'),
-			copyItemEditor('Order Confirmation Email: From Name'),
-			copyItemEditor('Order Confirmation Email: Subjct'),
-			copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
-		]);
+		var copyItemEditor = function (uniqueName, formElement) {
+			var item = siteCopyItems.filter(function (item) {
+				return item.uniqueName === uniqueName;
+			})[0] || {
+				uniqueName: uniqueName,
+				value: '',
+			};
+
+			var valueS = Stream.once(item.value);
+			var modifiedS = valueS.map(function () {
+				return true;
+			});
+			modifiedS.push(false);
+			
+			return stack({
+				gutterSize: separatorSize,
+			}, [
+				prettyForms[formElement || 'input']({
+					name: uniqueName,
+					stream: valueS,
+				}),
+				alignLRM({
+					left: sideBySide({
+						gutterSize: separatorSize,
+					}, [
+						submitButton(black, text('Save')).all([
+							link,
+							clickThis(function () {
+								item.value = valueS.lastValue();
+								(item._id ?
+								 db.siteCopyItem.update({
+									 _id: item._id,
+								 }, item) :
+								 db.siteCopyItem.insert(item)).then(function (res) {
+									 item._id = item._id || res._id;
+									 modifiedS.push(false);
+								 });
+							}),
+						]),
+						componentStream(modifiedS.map(function (modified) {
+							return modified ? alignTBM({
+								middle: text('(unsaved)'),
+							}) : nothing;
+						})),
+					]),
+				}),
+			]);
+		};
+		
+		return tabs([{
+			tab: tab('Static Text'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				text('Site Copy').all([
+					fonts.h1,
+				]),
+				copyItemEditor('Short Description'),
+			])),
+		}, {
+			tab: tab('Order Confirmation Email'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				text('Site Copy').all([
+					fonts.h1,
+				]),
+				copyItemEditor('Order Confirmation Email: From'),
+				copyItemEditor('Order Confirmation Email: From Name'),
+				copyItemEditor('Order Confirmation Email: Subjct'),
+				copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
+			])),
+		}]);
 	}));
 
 	
