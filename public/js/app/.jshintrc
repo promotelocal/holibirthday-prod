@@ -104,6 +104,7 @@
 		"route": false,
 		"routeMatchRest": false,
 		"routeToComponent": false,
+		"routeToComponentF": false,
 		"routeToFirst": false,
 
 		"windowHash": false,

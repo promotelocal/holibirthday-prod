@@ -35,6 +35,13 @@ define([
 						stream: stream,
 						type: 'text',
 					});
+				case 'paragraph':
+					return prettyForms.plainTextarea({
+						name: field.displayName,
+						fieldName: field.name,
+						labelAll: labelAll,
+						stream: stream,
+					});
 				case 'password':
 					return prettyForms.input({
 						name: field.displayName,

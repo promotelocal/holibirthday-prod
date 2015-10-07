@@ -22,14 +22,20 @@ define([], function () {
 					}
 				}),
 				changeThis(function (val) {
-					stream.push($(val.target).val());
+					if (type === 'date') {
+						stream.push(moment($(val.target).val()).toDate());
+					}
+					else {
+						stream.push($(val.target).val());
+					}
 				}),
 				function (instance) {
 					var $el = instance.$el;
 					stream.onValue(function (v) {
+						var newVal;
 						if (type === 'date') {
 							if (v) {
-								$el.val(moment(v).format('YYYY-MM-DD'));
+								newVal = moment(v).format('YYYY-MM-DD');
 							}
 						}
 						else if (type === 'checkbox') {
@@ -38,7 +44,11 @@ define([], function () {
 							});
 						}
 						else {
-							$el.val(v);
+							newVal = v;
+						}
+						
+						if (newVal && $el.val() !== newVal) {
+							$el.val(newVal);
 						}
 					});
 				},

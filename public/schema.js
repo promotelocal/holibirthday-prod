@@ -79,6 +79,11 @@
 				type: type.bool,
 				editorType: editorType.bool,
 				displayName: 'I know a Holibirther',
+			}, {
+				name: 'receiveMarketingEmails',
+				type: type.bool,
+				editorType: editorType.bool,
+				displayName: 'I wish to receive emails from Holibirthday',
 			}],
 			mayFind: function (user, doc, db, next) {
 				return next(true);
@@ -623,8 +628,29 @@
 			mayUpdate: onlyIfAdmin,
 			mayRemove: onlyIfAdmin,
 			options: [{
-				name: 'Short Description',
+				name: 'Home Tagline',
 				multiline: false,
+			}, {
+				name: 'Home Share Your Story',
+				multiline: false,
+			}, {
+				name: 'Home Claim Your Holibirthday',
+				multiline: false,
+			}, {
+				name: 'Home Find Friends',
+				multiline: false,
+			}, {
+				name: 'Edit Story Title',
+				multiline: false,
+			}, {
+				name: 'Edit Story Smaller Title',
+				multiline: false,
+			}, {
+				name: 'Edit Story Instructions',
+				multiline: true,
+			}, {
+				name: 'Edit Story Submit Instructions',
+				multiline: true,
 			}, {
 				name: 'Order Confirmation Email: From',
 				multiline: false,
@@ -632,10 +658,34 @@
 				name: 'Order Confirmation Email: From Name',
 				multiline: false,
 			}, {
-				name: 'Order Confirmation Email: Subjct',
+				name: 'Order Confirmation Email: Subject',
 				multiline: false,
 			}, {
 				name: 'Order Confirmation Email: Text ( {{orderNumber}} includes order number)',
+				multiline: true,
+			}, {
+				name: 'Header Gifts',
+				multiline: true,
+			}, {
+				name: 'Header Cart',
+				multiline: true,
+			}, {
+				name: 'Header Wishlist',
+				multiline: true,
+			}, {
+				name: 'Header My Profile',
+				multiline: true,
+			}, {
+				name: 'Header Sign In',
+				multiline: true,
+			}, {
+				name: 'Header Sign Out',
+				multiline: true,
+			}, {
+				name: 'Header Register',
+				multiline: true,
+			}, {
+				name: 'Header Admin',
 				multiline: true,
 			}],
 		}, {
@@ -756,7 +806,7 @@
 				type: type.id,
 			}, {
 				name: 'user',
-				type: type._id,
+				type: type.id,
 			}, {
 				name: 'items',
 				type: type.json,
@@ -773,6 +823,81 @@
 			mayRemove: function (user, doc, db, next) {
 				return next(ObjectId.equal(user._id, doc.user));
 			},
+		}, {
+			name: 'sendEmail',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'constraintSource',
+				type: type.string,
+			}, {
+				name: 'monthGT',
+				type: type.number,
+			}, {
+				name: 'dayGT',
+				type: type.number,
+			}, {
+				name: 'monthLT',
+				type: type.number,
+			}, {
+				name: 'dayLT',
+				type: type.number,
+			}, {
+				name: 'from',
+				type: type.string,
+			}, {
+				name: 'fromName',
+				type: type.string,
+			}, {
+				name: 'subject',
+				type: type.string,
+			}, {
+				name: 'text',
+				type: type.string,
+			}],
+			mayFind: function (user, doc, db, next) {
+				return next(false);
+			},
+			mayInsert: onlyIfAdmin,
+			mayUpdate: function (user, doc, db, next) {
+				return next(false);
+			},
+			mayRemove: function (user, doc, db, next) {
+				return next(false);
+			},
+		}, {
+			name: 'famousBirthday',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'name',
+				type: type.string,
+				displayName: 'Name',
+				editorType: editorType.string,
+			}, {
+				name: 'birthday',
+				type: type.date,
+				displayName: 'Birthday (year doesn\'t matter)',
+				editorType: editorType.date,
+			}, {
+				name: 'description',
+				type: type.string,
+				displayName: 'Description',
+				editorType: editorType.paragraph,
+			}, {
+				name: 'imageUrl',
+				type: type.string,
+				displayName: 'Image',
+				editorType: editorType.image,
+			}],
+			mayFind: function (user, doc, db, next) {
+				return next(true);
+			},
+			mayInsert: onlyIfAdmin,
+			mayUpdate: onlyIfAdmin,
+			mayRemove: onlyIfAdmin,
 		}];
 		
 		

@@ -1,6 +1,6 @@
 define([], function () {
 	var cartStorageName = 'shoppingCart';
-	var wishlistStorageName = 'shoppingCart';
+	var wishlistStorageName = 'wishlist';
 	var cartItems = JSON.parse(window.localStorage.getItem(cartStorageName)) || [];
 	var wishlistItems = JSON.parse(window.localStorage.getItem(wishlistStorageName)) || [];
 	
@@ -20,16 +20,16 @@ define([], function () {
 			window.localStorage.setItem(cartStorageName, JSON.stringify(cartItems));
 		},
 		addWishlistItem: function (item) {
-			cartItems.push(item);
-			window.localStorage.setItem(wishlistStorageName, JSON.stringify(cartItems));
+			wishlistItems.push(item);
+			window.localStorage.setItem(wishlistStorageName, JSON.stringify(wishlistItems));
 		},
 		removeWishlistItem: function (index) {
-			cartItems.splice(index, 1);
-			window.localStorage.setItem(wishlistStorageName, JSON.stringify(cartItems));
+			wishlistItems.splice(index, 1);
+			window.localStorage.setItem(wishlistStorageName, JSON.stringify(wishlistItems));
 		},
 		editWishlistItem: function (index, item) {
-			cartItems[index] = item;
-			window.localStorage.setItem(wishlistStorageName, JSON.stringify(cartItems));
+			wishlistItems[index] = item;
+			window.localStorage.setItem(wishlistStorageName, JSON.stringify(wishlistItems));
 		},
 	};
 });

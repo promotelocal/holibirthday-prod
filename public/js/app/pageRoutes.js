@@ -17,10 +17,14 @@ define([
 	return routeToFirst([
 		matchStrings([{
 			string: '#!admin',
-			router: routeToComponent(promiseComponent(loadAsync('adminView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('adminView'));
+			}),
 		}, {
 			string: '#!register',
-			router: routeToComponent(promiseComponent(loadAsync('registerView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('registerView'));
+			}),
 		}, {
 			string: '#!design/',
 			router: routeMatchRest(function (id) {
@@ -28,16 +32,29 @@ define([
 			}),
 		}, {
 			string: '#!gifts',
-			router: routeToComponent(promiseComponent(loadAsync('storeView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('storeView'));
+			}),
 		}, {
 			string: '#!cart',
-			router: routeToComponent(promiseComponent(loadAsync('cartView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('cartView'));
+			}),
+		}, {
+			string: '#!wishlist/',
+			router: routeMatchRest(function (id) {
+				return promiseComponent(loadAsync('wishlistView', [id]));
+			}),
 		}, {
 			string: '#!wishlist',
-			router: routeToComponent(promiseComponent(loadAsync('wishlistView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('wishlistView', []));
+			}),
 		}, {
 			string: '#!checkout',
-			router: routeToComponent(promiseComponent(loadAsync('checkoutView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('checkoutView'));
+			}),
 		}, {
 			string: '#!orderSuccess/',
 			router: routeMatchRest(function (orderBatch) {
@@ -45,7 +62,9 @@ define([
 			}),
 		}, {
 			string: '#!myHolibirthday',
-			router: routeToComponent(promiseComponent(loadAsync('myHolibirthdayView'))),
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('myHolibirthdayView'));
+			}),
 		}, {
 			string: '#!story/',
 			router: routeMatchRest(function (id) {
@@ -80,17 +99,21 @@ define([
 			}),
 		}, {
 			string: '#!editStory',
-			router: routeToComponent(meP.then(function (me) {
-				return promiseComponent(loadAsync('storyEditViewP', [{
-					user: (me && me._id) || '',
-					name: '',
-					text: '',
-					imageUrl: './content/man.png',
-					storyType: '',
-					isPublic: true,
-				}]));
-			})),
+			router: routeToComponentF(function () {
+				return promiseComponent(meP.then(function (me) {
+					return loadAsync('storyEditViewP', [{
+						user: (me && me._id) || '',
+						name: '',
+						text: '',
+						imageUrl: './content/man.png',
+						storyType: '',
+						isPublic: true,
+					}]);
+				}));
+			}),
 		}]),
-		routeToComponent(promiseComponent(loadAsync('homeViewP'))),
+		routeToComponentF(function () {
+			return promiseComponent(loadAsync('homeViewP'));
+		}),
 	]);
 });

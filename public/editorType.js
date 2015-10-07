@@ -13,6 +13,9 @@
 		string: {
 			name: 'string',
 		},
+		paragraph: {
+			name: 'paragraph',
+		},
 		html: {
 			name: 'html',
 		},

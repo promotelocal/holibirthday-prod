@@ -117,7 +117,7 @@ define([
 								submitButton(black, sideBySide({
 									gutterSize: separatorSize,
 								}, [
-									fonts.fa('shopping-cart-plus'),
+									fonts.fa('cart-plus'),
 									text('Add to Wishlist'),
 								])).all([
 									link,
@@ -140,8 +140,8 @@ define([
 												color: order.color,
 												size: order.size,
 											};
-											cart.addItem(cartItem);
-											window.location.hash = '#!cart';
+											cart.addWishlistItem(cartItem);
+											window.location.hash = '#!wishlist';
 											window.location.reload();
 										}
 									}),

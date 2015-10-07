@@ -1,4 +1,5 @@
 define([
+	'areYouSure',
 	'bar',
 	'bodyColumn',
 	'colors',
@@ -8,11 +9,12 @@ define([
 	'formLayouts',
 	'gafyDesignSmall',
 	'gafyStyleSmall',
+	'months',
 	'prettyForms',
 	'separatorSize',
 	'storiesP',
 	'submitButton',
-], function (bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, gafyDesignSmall, gafyStyleSmall, prettyForms, separatorSize, storiesP, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
@@ -22,7 +24,7 @@ define([
 		}, text(name).all([
 			fonts.h3,
 		]));
-			
+		
 		return {
 			left: border(colors.middleGray, {
 				top: 1,
@@ -533,29 +535,413 @@ define([
 		};
 		
 		return tabs([{
-			tab: tab('Static Text'),
+			tab: tab('Home Page'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
-				text('Site Copy').all([
-					fonts.h1,
-				]),
-				copyItemEditor('Short Description'),
+				copyItemEditor('Home Tagline'),
+				copyItemEditor('Home Share Your Story'),
+				copyItemEditor('Home Claim Your Holibirthday'),
+				copyItemEditor('Home Find Friends'),
 			])),
 		}, {
-			tab: tab('Order Confirmation Email'),
+			tab: tab('Edit Story'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
-				text('Site Copy').all([
-					fonts.h1,
-				]),
+				copyItemEditor('Edit Story Title'),
+				copyItemEditor('Edit Story Smaller Title'),
+				copyItemEditor('Edit Story Instructions', 'plainTextarea'),
+				copyItemEditor('Edit Story Submit Instructions'),
+			])),
+		}, {
+			tab: tab('Site Header'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Header Gifts'),
+				copyItemEditor('Header Cart'),
+				copyItemEditor('Header Wishlist'),
+				copyItemEditor('Header My Profile'),
+				copyItemEditor('Header Sign In'),
+				copyItemEditor('Header Sign Out'),
+				copyItemEditor('Header Register'),
+				copyItemEditor('Header Admin'),
+			])),
+		}, {
+			tab: tab('Order Email'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
 				copyItemEditor('Order Confirmation Email: From'),
 				copyItemEditor('Order Confirmation Email: From Name'),
-				copyItemEditor('Order Confirmation Email: Subjct'),
+				copyItemEditor('Order Confirmation Email: Subject'),
 				copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
 			])),
 		}]);
+	}));
+
+
+	var emailSentS = Stream.once(false);
+	var sendingEmailsS = Stream.once(false);
+	var recipientType = {
+		all: 'all',
+		hasHolibirthday: 'hasHolibirthday',
+		birthdayBetween: 'birthdayBetween',
+		holibirthdayBetween: 'holibirthdayBetween',
+	};
+	var recipientTypeS = Stream.once(recipientType.all);
+
+	var sendEmailStreams = {
+		constraintSource: recipientTypeS,
+		monthGT: Stream.once(12),
+		dayGT: Stream.once(24),
+		monthLT: Stream.once(1),
+		dayLT: Stream.once(2),
+		from: Stream.once('webmaster@holibirthday.com'),
+		fromName: Stream.once('Holibirthday'),
+		subject: Stream.once(''),
+		text: Stream.once(''),
+	};
+	var emailFillOutAllFieldsS = Stream.once(false);
+	var sendEmailS = Stream.combineObject(sendEmailStreams);
+	var sendEmail = stack({
+		gutterSize: separatorSize,
+	}, [
+		prettyForms.input({
+			name: 'From',
+			stream: sendEmailStreams.from,
+		}),
+		prettyForms.input({
+			name: 'From Name',
+			stream: sendEmailStreams.fromName,
+		}),
+		prettyForms.input({
+			name: 'Subject',
+			stream: sendEmailStreams.subject,
+		}),
+		prettyForms.plainTextarea({
+			name: 'Text',
+			stream: sendEmailStreams.text,
+		}),
+		prettyForms.select({
+			name: 'Recipients',
+			options: [{
+				name: 'All Users',
+				value: recipientType.all,
+			}, {
+				name: 'Has Holibirthday',
+				value: recipientType.hasHolibirthday,
+			}, {
+				name: 'Birthday Between',
+				value: recipientType.birthdayBetween,
+			}, {
+				name: 'Holibirthday Between',
+				value: recipientType.holibirthdayBetween,
+			}],
+			stream: recipientTypeS,
+		}),
+		componentStream(recipientTypeS.map(function (type) {
+			switch (type) {
+			case recipientType.birthdayBetween:
+			case recipientType.holibirthdayBetween:
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					text('On Or After Month/Day').all([
+						fonts.ralewayThinBold,
+					]),
+					prettyForms.input({
+						name: 'Month',
+						stream: sendEmailStreams.monthGT,
+					}),
+					prettyForms.input({
+						name: 'Day',
+						stream: sendEmailStreams.dayGT,
+					}),
+					text('On Or Before Month/Day').all([
+						fonts.ralewayThinBold,
+					]),
+					prettyForms.input({
+						name: 'Month',
+						stream: sendEmailStreams.monthLT,
+					}),
+					prettyForms.input({
+						name: 'Day',
+						stream: sendEmailStreams.dayLT,
+					}),
+				]);
+			default:
+				return nothing;
+			}
+		})),
+		componentStream(emailFillOutAllFieldsS.map(function (fillEm) {
+			return fillEm ? text('Please fill out all fields') : nothing;
+		})),
+		componentStream(Stream.combine([
+			sendingEmailsS,
+			emailSentS,
+		], function (sendingEmails, emailSent) {
+			if (sendingEmails) {
+				return text('Sending emails...');
+			}
+			if (emailSent) {
+				return text('Emails Sent');
+			}
+			return nothing;
+		})),
+		alignLRM({
+			left: submitButton(black, text('Send Email')).all([
+				link,
+				clickThis(function (ev, disable) {
+					emailFillOutAllFieldsS.push(false);
+					emailSentS.push(false);
+					var enable = disable();
+					var sendEmail = sendEmailS.lastValue();
+					if (!sendEmail.from ||
+						!sendEmail.fromName ||
+						!sendEmail.subject ||
+						!sendEmail.text) {
+						emailFillOutAllFieldsS.push(true);
+						enable();
+						return;
+					}
+					sendingEmailsS.push(true);
+					db.sendEmail.insert(sendEmail).then(function () {
+						enable();
+						sendingEmailsS.push(false);
+						emailSentS.push(true);
+					}, function () {
+						sendingEmailsS.push(false);
+					});
+				}),
+			]),
+		}),
+	]);
+
+	var famousBirthdaySmall = function (famousBirthday) {
+		return stack({}, [
+			text(famousBirthday.name).all([
+				fonts.h3,
+			]),
+		]);
+	};
+
+
+	var famousBirthdays = promiseComponent(db.famousBirthday.find({}).then(function (famousBirthdays) {
+		var famousBirthdaysS = Stream.once(famousBirthdays);
+
+		var famousBirthdayFormLayout = formLayouts.stack({
+			formBuilder: defaultFormFor.famousBirthday,
+			stackConfig: {
+				gutterSize: separatorSize,
+			},
+			fields: [
+				'name',
+				'birthday',
+				'imageUrl',
+			],
+		});
+
+		var tabS = Stream.once(0);
+
+		var editingFamousBirthdayIdS = Stream.once(famousBirthdays.length > 0 ? famousBirthdays[0]._id : null);
+		var editingFamousBirthdayS = Stream.combine([
+			famousBirthdaysS,
+			editingFamousBirthdayIdS,
+		], function (famousBirthdays, _id) {
+			return famousBirthdays.filter(function (famousBirthday) {
+				return famousBirthday._id === _id;
+			})[0] || {};
+		});
+		return stack({
+			gutterSize: separatorSize,
+		}, [
+			tabs([{
+				tab: tab('Famous Birthdays List'),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					text('Famous Birthdays List').all([
+						fonts.h2,
+					]),
+					componentStream(famousBirthdaysS.map(function (famousBirthdays) {
+						var people = [];
+						famousBirthdays.map(function (famousBirthday) {
+							var birthday = moment(famousBirthday.birthday);
+							var month = birthday.month();
+							var day = birthday.date();
+							people[month] = people[month] || [];
+							people[month][day] = people[month][day] || [];
+							people[month][day].push(famousBirthday);
+						});
+						return stack({
+							gutterSize: separatorSize,
+						}, people.map(function (daysInMonth, monthIndex) {
+							return stack({
+								gutterSize: separatorSize,
+							}, daysInMonth.map(function (famousBirthdays, dayIndex) {
+								return stack({}, [
+									text(months[monthIndex] + ' ' + dayIndex).all([
+										fonts.h2,
+									]),
+									stack({}, famousBirthdays.map(function (famousBirthday) {
+										return famousBirthdaySmall(famousBirthday).all([
+											link,
+											clickThis(function () {
+												editingFamousBirthdayIdS.push(famousBirthday._id);
+												tabS.push(2);
+											}),
+										]);
+									})),
+								]);
+							}).filter(function (a) {
+								return a;
+							}));
+						}).filter(function (a) {
+							return a;
+						}));
+					})),
+				])),
+			}, {
+				tab: tab('Add Famous Birthday'),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					text('Add Famous Birthday').all([
+						fonts.h2,
+					]),
+					famousBirthdayFormLayout({
+						name: '',
+						birthday: new Date(),
+						description: '',
+						imageUrl: './content/man.png',
+					}, function (famousBirthdayS) {
+						var mustFillFields = Stream.once(0);
+						famousBirthdayS.onValue(function () {
+							mustFillFields.push(0);	
+						});
+						
+						return stack({
+							gutterSize: separatorSize,
+						}, [
+							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
+							alignLRM({
+								left: submitButton(black, text('Add Famous Birthday')).all([
+									link,
+									clickThis(function () {
+										var famousBirthday = famousBirthdayS.lastValue();
+										if (!famousBirthday) {
+											mustFillFields.push(1);
+											return;
+										}
+										famousBirthday.birthday = moment(moment(famousBirthday.birthday).format('YYYY-MM-DD')).format();
+										db.famousBirthday.insert(famousBirthday).then(function (famousBirthday) {
+											famousBirthdaysS.push(famousBirthdaysS.lastValue().concat([famousBirthday]));
+											tabS.push(0);
+										});
+									}),
+								]),
+							}),
+						]);
+					}),
+				])),
+			}, {
+				tab: tab('Edit Famous Birthday'),
+				content: content(stack({
+					gutterSize: separatorSize,
+				}, [
+					componentStream(famousBirthdaysS.map(function (famousBirthdays) {
+						return prettyForms.select({
+							name: 'Editing Famous Birthday',
+							options: famousBirthdays.map(function (famousBirthday) {
+								return {
+									name: famousBirthday.name,
+									value: famousBirthday._id,
+								};
+							}),
+							stream: editingFamousBirthdayIdS,
+						}).all([
+							changeThis(function (ev) {
+								editingFamousBirthdayIdS.push($(ev.target).val());
+							}),
+						]);
+					})),
+					text('Edit Famous Birthday').all([
+						fonts.h2,
+					]),
+					componentStream(editingFamousBirthdayS.map(function (famousBirthday) {
+						return famousBirthdayFormLayout(famousBirthday, function (famousBirthdayS) {
+							var mustFillFields = Stream.once(0);
+							famousBirthdayS.onValue(function () {
+								mustFillFields.push(0);	
+							});
+							
+							return stack({
+								gutterSize: separatorSize,
+							}, [
+								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
+								alignLRM({
+									left: sideBySide({
+										gutterSize: separatorSize,
+									}, [
+										submitButton(black, text('Save Famous Birthday')).all([
+											link,
+											clickThis(function () {
+												var famousBirthday = famousBirthdayS.lastValue();
+												if (!famousBirthday) {
+													mustFillFields.push(1);
+													return;
+												}
+												famousBirthday.birthday = moment(moment(famousBirthday.birthday).format('YYYY-MM-DD')).format();
+												db.famousBirthday.update({
+													_id: famousBirthday._id
+												}, famousBirthday).then(function () {
+													var famousBirthdays = famousBirthdaysS.lastValue().slice(0);
+													for (var i = 0; i < famousBirthdays.length; i++) {
+														if (famousBirthdays[i]._id === famousBirthday._id) {
+															famousBirthdays[i] = famousBirthday;
+														}
+													}
+													famousBirthdaysS.push(famousBirthdays);
+													tabS.push(0);
+												});
+											}),
+										]),
+										submitButton(black, text('Delete Famous Birthday')).all([
+											link,
+											clickThis(function () {
+												areYouSure({
+													onYes: function () {
+														var famousBirthday = famousBirthdayS.lastValue();
+														if (!famousBirthday) {
+															mustFillFields.push(1);
+															return;
+														}
+														db.famousBirthday.remove({
+															_id: famousBirthday._id
+														}, famousBirthday).then(function () {
+															var famousBirthdays = famousBirthdaysS.lastValue().slice(0);
+															for (var i = 0; i < famousBirthdays.length; i++) {
+																if (famousBirthdays[i]._id === famousBirthday._id) {
+																	famousBirthdays.splice(i, 1);
+																}
+															}
+															famousBirthdaysS.push(famousBirthdays);
+															tabS.push(0);
+														});
+													},
+												});
+											}),
+										]),
+									]),
+								}),
+							]);
+						});
+					})),
+				])),
+			}], tabS),
+		]);
 	}));
 
 	
@@ -573,7 +959,13 @@ define([
 		}, {
 			tab: tab('Site Copy'),
 			content: content(copyEditor),
-		}], Stream.once(3)),
+		}, {
+			tab: tab('Famous Birthdays'),
+			content: content(famousBirthdays),
+		}, {
+			tab: tab('Send Marketing Email'),
+			content: content(sendEmail),
+		}], Stream.once(5)),
 	]));
 });
 

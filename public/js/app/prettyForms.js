@@ -67,7 +67,9 @@ define([
 			var imageSrc = Stream.once('./content/man.png');
 			config.stream.pushAll(imageSrc);
 			config.accept = config.accept || "image/*";
-			return grid({}, [
+			return grid({
+				gutterSize: separatorSize,
+			}, [
 				this.fileUpload({
 					name: config.name,
 					accept: config.accept,

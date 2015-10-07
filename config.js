@@ -17,10 +17,8 @@ module.exports = {
 		sitekey: '6Lf1ogkTAAAAABlzCh_MhCA8hlmkc5zmockoeQsc',
 	},
 	sendgrid: {
-		// username: 'holibirthdayapiuser',
-		// password: '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',
-		username: 'jcapiuser',
-		password: 'asoneuhras,.ckhasro.chuis1234aroecihrsaocegdi',
+		username: 'holibirthdayapiuser',
+		password: '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',
 	},
 	stripe: {
 		secretKey: 'sk_test_QyCMcBkLGoiw5a1TbwX0invx',

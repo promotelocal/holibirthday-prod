@@ -36,23 +36,6 @@ define([
 				holibirthday.month = months[holibirthday.month];
 				var holibirthdayStreams = Stream.splitObject(holibirthday);
 				var holibirthdayS = Stream.combineObject(holibirthdayStreams);
-				var holibirthdayMonth = prettyForms.select({
-					name: 'Holibirth-month',
-					options: months,
-					stream: holibirthdayStreams.month,
-				});
-				var holibirthdayDay = componentStream(holibirthdayStreams.month.map(function (month) {
-					var countDates = daysByMonth[month];
-					var dates = [];
-					for (var i = 0; i < countDates; i++) {
-						dates.push(i + 1);
-					}
-					return prettyForms.select({
-						name: 'Holibirth-day',
-						options: dates,
-						stream: holibirthdayStreams.day,
-					});
-				}));
 
 				return defaultFormFor.profile(profile, function (profileS, fields) {
 					return stack({
@@ -67,6 +50,7 @@ define([
 							fields.firstName,
 							fields.lastName,
 							fields.email,
+							fields.receiveMarketingEmails,
 							fields.birthday,
 							fields.bio,
 							fields.imageUrl,
@@ -77,8 +61,23 @@ define([
 										gutterSize: separatorSize,
 									}, [
 										nothing,
-										holibirthdayMonth,
-										holibirthdayDay,
+										prettyForms.select({
+											name: 'Holibirth-month',
+											options: months,
+											stream: holibirthdayStreams.month,
+										}),
+										componentStream(holibirthdayStreams.month.map(function (month) {
+											var countDates = daysByMonth[month];
+											var dates = [];
+											for (var i = 0; i < countDates; i++) {
+												dates.push(i + 1);
+											}
+											return prettyForms.select({
+												name: 'Holibirth-day',
+												options: dates,
+												stream: holibirthdayStreams.day,
+											});
+										})),
 									]) : nothing;
 								})),					  
 							]),
