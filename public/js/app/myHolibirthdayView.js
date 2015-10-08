@@ -59,7 +59,7 @@ define([
 						}, stopDelay);
 					});
 				});
-
+				
 				var chooseLargest = function (streams) {
 					return Stream.combine(streams, function () {
 						var args = Array.prototype.slice.call(arguments);
@@ -68,7 +68,7 @@ define([
 						}, 0);
 					});
 				};
-
+				
 				chooseLargest(is.map(function (i) {
 					return i.minHeight;
 				})).test().pushAll(instance.minHeight);
@@ -76,7 +76,7 @@ define([
 					return i.minWidth;
 				})).test().pushAll(instance.minWidth);
 				return [
-					is.map(function (i) {
+					is.map(function () {
 						return {
 							width: context.width,
 							height: context.height,
@@ -92,7 +92,7 @@ define([
 			return b1.month === b2.month &&
 				b1.dayTens === b2.dayTens &&
 				b1.dayOnes === b2.dayOnes;
-		}
+		};
 		var createDate = function () {
 			var randomDate = new Date(new Date().getTime() * Math.random());
 			
@@ -106,7 +106,7 @@ define([
 				dayOnes: dateOnes,
 				date: randomDate,
 			};
-		}
+		};
 
 		var matchesAnyHoliday = function (date) {
 
@@ -210,13 +210,13 @@ define([
 
 		var date = createDate();
 		while (matchesAnyHoliday(date)) {
-			var date = createDate();
+			date = createDate();
 		}
 		return date.date;
 	};
 
 	var famousBirthdaysDisplay = function (famousBirthdays) {
-		return bodyColumn(stack({
+		return famousBirthdays.length > 0 ? bodyColumn(stack({
 			gutterSize: separatorSize,
 		}, [
 			text('People with Nearby Birthdays').all([
@@ -246,10 +246,15 @@ define([
 					}),
 				]);
 			})),
-		]));
+		])) : nothing;
 	};
 	
 	var birthdayMachine = function (dateStream) {
+		var dateStreamDates = dateStream.filter(function (d, cb) {
+			if (d) {
+				cb(d);
+			}
+		});
 		var grabbed = false;
 		var grabMousePos;
 
@@ -277,7 +282,7 @@ define([
 						grabMousePos = ev.clientY;
 						return false;
 					}),
-					function (instance, context) {
+					function (instance) {
 						$('body').on('mouseup', function () {
 							if (grabbed) {
 								grabbed = false;
@@ -327,9 +332,9 @@ define([
 								'Nov',
 								'Dec'
 							],
-							stream: dateStream.map(function (date) {
+							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date.getMonth(),
+									index: date && date.getMonth(),
 								};
 							}),
 						}),
@@ -337,9 +342,9 @@ define([
 							options: [
 								0, 1, 2, 3,
 							],
-							stream: dateStream.map(function (date) {
+							stream: dateStreamDates.map(function (date) {
 								return {
-									index: Math.floor(date.getDate() / 10),
+									index: date && Math.floor(date.getDate() / 10),
 								};
 							}),
 						}),
@@ -347,9 +352,9 @@ define([
 							options: [
 								0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 							],
-							stream: dateStream.map(function (date) {
+							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date.getDate() % 10,
+									index: date && date.getDate() % 10,
 								};
 							}),
 						}),
@@ -362,7 +367,7 @@ define([
 		]);
 	};
 
-	return db.famousBirthday.find({}).then(function (famousBirthdays) {
+	return promiseComponent(db.famousBirthday.find({}).then(function (famousBirthdays) {
 		var withinDays = 15;
 		var famousBirthdaysForDate = function (date) {
 			if (!date) {
@@ -377,21 +382,21 @@ define([
 		};
 		
 		return meP.then(function (me) {
-			if (me) {
-				var holibirthday = {
-					user: Stream.once(me._id),
-					date: Stream.never(),
-				};
+			var holibirthday = {
+				user: Stream.once(me._id),
+				date: Stream.once(null),
+			};
 
-				var lastHolibirthday;
-				Stream.combineObject(holibirthday).onValue(function (v) {
-					lastHolibirthday = v;
-				});
-				var playTheMachine = Stream.once(false);
-				holibirthday.date.map(function () {
-					return false;
-				}).pushAll(playTheMachine);
-				
+			var lastHolibirthday;
+			Stream.combineObject(holibirthday).onValue(function (v) {
+				lastHolibirthday = v;
+			});
+			var playTheMachine = Stream.once(false);
+			holibirthday.date.map(function () {
+				return false;
+			}).pushAll(playTheMachine);
+			
+			if (me) {
 				var machine = function (oldHolibirthday) {
 					return stack({
 						gutterSize: separatorSize,
@@ -416,13 +421,13 @@ define([
 											db.holibirthday.update({
 												user: me._id,
 											}, lastHolibirthday).then(function () {
-												window.location.hash = '#!user/' + me._id;
+												window.location.hash = '#!holibirthday/' + me._id;
 												window.location.reload();
 											});
 										}
 										else {
 											db.holibirthday.insert(lastHolibirthday).then(function () {
-												window.location.hash = '#!user/' + me._id;
+												window.location.hash = '#!holibirthday/' + me._id;
 												window.location.reload();
 											});
 										}
@@ -438,13 +443,13 @@ define([
 				return db.holibirthday.findOne({
 					user: me._id,
 				}).then(function (oldHolibirthday) {
-					holibirthday.date.push(new Date(oldHolibirthday.date));
 					if (oldHolibirthday) {
 						var oldHolibirthdate = new Date(oldHolibirthday.date);
+						holibirthday.date.push(oldHolibirthdate);
 						return stack({
 							gutterSize: separatorSize * 2,
 						}, [
-							linkTo('#!user/' + me._id, confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
+							linkTo('#!holibirthday/' + me._id, confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
 								text('Your Holibirthday Is').all([
 									fonts.ralewayThinBold,
 									$css('font-size', 40),
@@ -491,5 +496,5 @@ define([
 				signInForm(),
 			]));
 		});
-	});
+	}));
 });

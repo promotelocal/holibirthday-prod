@@ -66,6 +66,11 @@ define([
 				return promiseComponent(loadAsync('myHolibirthdayView'));
 			}),
 		}, {
+			string: '#!contacts',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('contactsView'));
+			}),
+		}, {
 			string: '#!story/',
 			router: routeMatchRest(function (id) {
 				return storiesP.then(function (stories) {
@@ -94,7 +99,7 @@ define([
 					var story = stories.filter(function (s) {
 						return s._id === id;
 					})[0];
-					return promiseComponent(loadAsync('storyEditViewP'[story]));
+					return promiseComponent(loadAsync('storyEditViewP', [story]));
 				});
 			}),
 		}, {
@@ -110,6 +115,21 @@ define([
 						isPublic: true,
 					}]);
 				}));
+			}),
+		}, {
+			string: '#!holibirthday/',
+			router: routeMatchRest(function (id) {
+				return promiseComponent(loadAsync('holibirthdayView', [id]));
+			}),
+		}, {
+			string: '#!contactUs',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('contactUsView'));
+			}),
+		}, {
+			string: '#!privacyPolicy',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('privacyPolicyView'));
 			}),
 		}]),
 		routeToComponentF(function () {

@@ -6,10 +6,11 @@ define([
 	'fonts',
 	'formatPrice',
 	'gafyColors',
+	'holibirthdayRow',
 	'meP',
 	'separatorSize',
 	'submitButton',
-], function (bodyColumn, cart, confettiBackground, db, fonts, formatPrice, gafyColors, meP, separatorSize, submitButton) {
+], function (bodyColumn, cart, confettiBackground, db, fonts, formatPrice, gafyColors, holibirthdayRow, meP, separatorSize, submitButton) {
 	return function (user) {
 		var wishlistD = Q.defer();
 		return promiseComponent(db.gafyDesign.find().then(function (designs) {
@@ -133,22 +134,10 @@ define([
 						return stack({
 							gutterSize: separatorSize,
 						}, [
-							confettiBackground(bodyColumn(sideBySide({}, [
-								image({
-									src: './content/man.png',
-									minWidth: 300,
-									chooseHeight: true,
-								}),
-								padding({
-									left: 30,
-									right: 30,
-									top: 50,
-									bottom: 50,
-								}, text('Shopping Cart').all([
-									fonts.ralewayThinBold,
-									$css('font-size', 40),
-								])),
-							]))),
+							confettiBackground(bodyColumn(holibirthdayRow(text('Wish List').all([
+								fonts.ralewayThinBold,
+								$css('font-size', 40),
+							])))),
 							bodyColumn(stack({
 								gutterSize: separatorSize,
 							}, [

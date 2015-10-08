@@ -38,7 +38,7 @@ define([
 							}, [
 								alignTBM({
 									middle: image({
-										src: profile.imageUrl || './content/man2.png',
+										src: profile.imageUrl || './content/man.png',
 										minWidth: 300,
 										chooseHeight: 0,
 									}),
@@ -49,22 +49,26 @@ define([
 								}, alignTBM({
 									middle: stack({
 										gutterSize: separatorSize,
+										collapseGutters: true,
 									}, [
 										text(profile.firstName + ' ' + profile.lastName).all([
 											fonts.ralewayThinBold,
 											$css('font-size', 40),
 										]),
+										profile.birthday ? text('Born on ' + moment(profile.birthday).format('MMMM Do')).all([
+											fonts.ralewayThinBold,
+											$css('font-size', 20),
+										]) : nothing,
 										promiseComponent(db.holibirthday.findOne({
 											user: user,
 										}).then(function (holibirthday) {
 											if (holibirthday)
 											{
 												var date = new Date(holibirthday.date);
-												var humanReadableDate = months[date.getMonth()] + ' ' + date.getDate();
-												return text('Holiborn on ' + humanReadableDate).all([
+												return linkTo('#!holibirthday/' + holibirthday.user, text('Holiborn on ' + moment(date).format('MMMM Do') + ' (view certificate)').all([
 													fonts.ralewayThinBold,
 													$css('font-size', 20),
-												]);
+												]));
 											}
 											return meP.then(function (me) {
 												if (me && me._id === user) {
@@ -81,6 +85,21 @@ define([
 											fonts.ralewayThinBold,
 											$css('font-size', 20),
 										]),
+										me ? text('Add Contact').all([
+											fonts.ralewayThinBold,
+											$css('font-size', 20),
+											link,
+											clickThis(function (ev, disable) {
+												disable();
+												db.contactOtherUser.insert({
+													user: me._id,
+													otherUser: user,
+												}).then(function () {
+													window.location.hash = '#!contacts';
+													window.location.reload();
+												});
+											}),
+										]) : nothing,
 									])
 								})).all([
 									withMinWidth(300, true),
@@ -89,7 +108,7 @@ define([
 						])));
 
 						var profileSocialMediaButton = socialMediaButton(function (verb) {
-							return verb + ' this profile';
+							return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
 						});
 
 						var shareButtons = bodyColumn(sideBySide({

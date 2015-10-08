@@ -21,12 +21,15 @@ define([
 				var profile = profiles.filter(function (profile) {
 					return profile.user === user;
 				})[0];
-
+				profile.firstName = profile.firstName || '';
+				profile.lastName = profile.lastName || '';
+				profile.email = profile.email || '';
 				profile.birthday = profile.birthday || null;
 				profile.bio = profile.bio || null;
 				profile.imageUrl = profile.imageUrl || './content/man.png';
 				profile.holibirther = profile.holibirther || false;
 				profile.knowAHolibirther = profile.knowAHolibirther || false;
+				profile.receiveMarketingEmails = profile.receiveMarketingEmails || false;
 
 				holibirthday = holibirthday || {
 					user: user,

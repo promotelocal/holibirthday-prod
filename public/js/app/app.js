@@ -1,17 +1,19 @@
 define([
 	'bar',
 	'colors',
+	'footer',
 	'header',
 	'pageRoutes',
 	'separatorSize',
-], function (bar, colors, header, pageRoutes, separatorSize) {
-	var page = stack({}, [
-		fixedHeaderBody({}, header, stack({}, [
+], function (bar, colors, footer, header, pageRoutes, separatorSize) {
+	var page = extendToWindowBottom(alignTBM({
+		top: fixedHeaderBody({}, header, stack({}, [
 			bar.horizontal(separatorSize),
 			route(pageRoutes),
-			extendToWindowBottom(bar.horizontal(separatorSize)),
+			bar.horizontal(separatorSize),
 		])),
-	]).all([
+		bottom: footer,
+	})).all([
 		withBackgroundColor(colors.pageBackgroundColor),
 	]);
 	return page;

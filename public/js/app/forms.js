@@ -78,7 +78,7 @@ define([], function () {
 				child(textarea.all([
 					$prop('id', name),
 					$prop('name', name),
-					$prop('rows', 20),
+					$prop('rows', 21),
 					keyupThis(function (val) {
 						stream.push($(val.target).val());
 					}),
@@ -100,7 +100,7 @@ define([], function () {
 									context.height,
 								], function (w, h) {
 									if (!gone) {
-										editor.resize(px(w), px(h));
+										editor.resize(px(w), px(h), true, true);
 									}
 								});
 							});
@@ -124,7 +124,10 @@ define([], function () {
 				wireChildren(function (instance, context, i) {
 					i.minHeight.pushAll(instance.minHeight);
 					i.minWidth.pushAll(instance.minWidth);
-					return [context];
+					return [{
+						width: context.width,
+						height: context.height,
+					}];
 				}),
 			]);
 		},

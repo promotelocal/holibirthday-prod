@@ -3,14 +3,13 @@ define([
 	'auth',
 	'bar',
 	'bodyColumn',
-	'cart',
 	'colors',
 	'fonts',
 	'meP',
 	'separatorSize',
 	'signInForm',
 	'siteCopyItemsP',
-], function (adminP, auth, bar, bodyColumn, cart, colors, fonts, meP, separatorSize, signInForm, siteCopyItemsP) {
+], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, siteCopyItemsP) {
 	return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 		var holibirthdayButton = function (config) {
 			config.all = config.all || [];
@@ -39,18 +38,11 @@ define([
 			
 			buttons.push(linkTo('#!gifts', headerButton(siteCopyItems.find('Header Gifts'))));
 
-			if (cart.items.length > 0) {
-				buttons.push(linkTo('#!cart', headerButton(siteCopyItems.find('Header Cart') + ' (' + cart.items.length + ')')));
-			}
-			
-			if (cart.wishlistItems.length > 0) {
-				buttons.push(linkTo('#!wishlist', headerButton(siteCopyItems.find('Header Wishlist') + ' (' + cart.wishlistItems.length + ')')));
-			}
-			
 			var signIn = false;
 			signInStream.push(signIn);
 			if (me) {
 				buttons.push(linkTo('#!user/' + me._id, headerButton(siteCopyItems.find('Header My Profile'))));
+				buttons.push(linkTo('#!contacts', headerButton(siteCopyItems.find('Header Contacts'))));
 				buttons.push(headerButton(siteCopyItems.find('Header Sign Out')).all([
 					link,
 					clickThis(function () {

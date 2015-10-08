@@ -555,14 +555,22 @@ define([
 				copyItemEditor('Edit Story Submit Instructions'),
 			])),
 		}, {
+			tab: tab('Gifts'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Gifts Title'),
+				copyItemEditor('Gifts Cart'),
+				copyItemEditor('Gifts Wishlist'),
+			])),
+		}, {
 			tab: tab('Site Header'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
 				copyItemEditor('Header Gifts'),
-				copyItemEditor('Header Cart'),
-				copyItemEditor('Header Wishlist'),
 				copyItemEditor('Header My Profile'),
+				copyItemEditor('Header Contacts'),
 				copyItemEditor('Header Sign In'),
 				copyItemEditor('Header Sign Out'),
 				copyItemEditor('Header Register'),

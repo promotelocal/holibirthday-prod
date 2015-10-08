@@ -1,5 +1,11 @@
 (function () {
 	var genSchema = function (editorType, Err, type, ObjectId) {
+		var always = function (user, doc, db, next) {
+			return next(true);
+		};
+		var never = function (user, doc, db, next) {
+			return next(false);
+		};
 		var onlyIfAdmin = function (user, doc, db, next) {
 			if (!user) {
 				return next(false);
@@ -10,6 +16,20 @@
 				return next(admin);
 			});
 		};
+		var ifOwner = function (userProp) {
+			return function (user, doc, db, next) {
+				if (!user) {
+					return next(false);
+				}
+				if (!doc) {
+					return next(false);
+				}
+				return next(ObjectId.equal(user._id, doc[userProp]));
+			};
+		};
+		var ifLoggedIn = function (user, doc, db, next) {
+			return next(user);
+		};
 		var schema = [{
 			name: 'upload',
 			fields: [{
@@ -19,18 +39,10 @@
 				name: 'creator',
 				type: type.id,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.creator));
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.creator));
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: always,
+			mayInsert: ifOwner('creator'),
+			mayUpdate: ifOwner('creator'),
+			mayRemove: never,
 		}, {
 			name: 'profile',
 			fields: [{
@@ -85,18 +97,10 @@
 				editorType: editorType.bool,
 				displayName: 'I wish to receive emails from Holibirthday',
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: always,
+			mayInsert: never,
+			mayUpdate: ifOwner('user'),
+			mayRemove: never,
 		}, {
 			name: 'user',
 			fields: [{
@@ -115,18 +119,10 @@
 				name: 'facebookId',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: never,
+			mayInsert: never,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'admin',
 			fields: [{
@@ -136,18 +132,10 @@
 				name: 'user',
 				type: type.id,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: ifOwner('user'),
+			mayInsert: never,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'holibirthday',
 			fields: [{
@@ -175,18 +163,10 @@
 				name: 'createDate',
 				type: type.date,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
+			mayFind: always,
+			mayInsert: ifOwner('user'),
+			mayUpdate: ifOwner('user'),
+			mayRemove: ifOwner('user'),
 		}, {
 			name: 'pointsChange',
 			fields: [{
@@ -205,18 +185,10 @@
 				name: 'createDate',
 				type: type.date,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: always,
+			mayInsert: never,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'storyLike',
 			fields: [{
@@ -229,18 +201,10 @@
 				name: 'story',
 				type: type.story,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: always,
+			mayInsert: ifOwner('user'),
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'story',
 			fields: [{
@@ -280,9 +244,7 @@
 				forgotmenot: 'forgotmenot',
 				blog: 'blog',
 			},
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
+			mayFind: always,
 			mayInsert: function (user, doc, db, next) {
 				if (doc.storyType === 'blog') {
 					if (!user) {
@@ -296,12 +258,8 @@
 				}
 				return next(ObjectId.equal(user._id, doc.user));
 			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
+			mayUpdate: ifOwner('user'),
+			mayRemove: ifOwner('user'),
 		}, {
 			name: 'comment',
 			fields: [{
@@ -323,18 +281,10 @@
 				name: 'updateDate',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
+			mayFind: always,
+			mayInsert: ifOwner('user'),
+			mayUpdate: ifOwner('user'),
+			mayRemove: ifOwner('user'),
 		}, {
 			name: 'dailyTheme',
 			fields: [{
@@ -431,9 +381,7 @@
 				displayName: 'Picture',
 				editorType: editorType.image,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
+			mayFind: always,
 			mayInsert: onlyIfAdmin,
 			mayUpdate: onlyIfAdmin,
 			mayRemove: onlyIfAdmin,
@@ -455,18 +403,10 @@
 				name: 'createDate',
 				type: type.date,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(user);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: always,
+			mayInsert: ifLoggedIn,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'gafyStyle',
 			fields: [{
@@ -511,9 +451,7 @@
 				editorType: editorType.number,
 				displayName: 'Price',
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
+			mayFind: always,
 			mayInsert: onlyIfAdmin,
 			mayUpdate: onlyIfAdmin,
 			mayRemove: onlyIfAdmin,
@@ -576,9 +514,7 @@
 					'December',
 				]),
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
+			mayFind: always,
 			mayInsert: onlyIfAdmin,
 			mayUpdate: onlyIfAdmin,
 			mayRemove: onlyIfAdmin,
@@ -594,21 +530,10 @@
 				name: 'message',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayInsert: function (user, doc, db, next) {
-				if (user) {
-					return next(true);
-				}
-				return next(false);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: never,
+			mayInsert: ifLoggedIn,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'siteCopyItem',
 			fields: [{
@@ -621,9 +546,7 @@
 				name: 'value',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
+			mayFind: always,
 			mayInsert: onlyIfAdmin,
 			mayUpdate: onlyIfAdmin,
 			mayRemove: onlyIfAdmin,
@@ -754,18 +677,10 @@
 				name: 'shippingMethod',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: never,
+			mayInsert: always,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'stripePayment',
 			fields: [{
@@ -787,18 +702,10 @@
 				name: 'stripeToken',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: never,
+			mayInsert: always,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'gafyWishlist',
 			fields: [{
@@ -811,18 +718,10 @@
 				name: 'items',
 				type: type.json,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
-			mayInsert: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayUpdate: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(ObjectId.equal(user._id, doc.user));
-			},
+			mayFind: always,
+			mayInsert: ifOwner('user'),
+			mayUpdate: ifOwner('user'),
+			mayRemove: ifOwner('user'),
 		}, {
 			name: 'sendEmail',
 			fields: [{
@@ -856,16 +755,10 @@
 				name: 'text',
 				type: type.string,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayFind: never,
 			mayInsert: onlyIfAdmin,
-			mayUpdate: function (user, doc, db, next) {
-				return next(false);
-			},
-			mayRemove: function (user, doc, db, next) {
-				return next(false);
-			},
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'famousBirthday',
 			fields: [{
@@ -879,7 +772,7 @@
 			}, {
 				name: 'birthday',
 				type: type.date,
-				displayName: 'Birthday (year doesn\'t matter)',
+				displayName: 'Birthday (year is ignored)',
 				editorType: editorType.date,
 			}, {
 				name: 'description',
@@ -892,12 +785,48 @@
 				displayName: 'Image',
 				editorType: editorType.image,
 			}],
-			mayFind: function (user, doc, db, next) {
-				return next(true);
-			},
+			mayFind: always,
 			mayInsert: onlyIfAdmin,
 			mayUpdate: onlyIfAdmin,
 			mayRemove: onlyIfAdmin,
+		}, {
+			name: 'contactOtherUser',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type.id,
+			}, {
+				name: 'otherUser',
+				type: type.id,
+			}],
+			mayFind: ifOwner('user'),
+			mayInsert: ifOwner('user'),
+			mayUpdate: ifOwner('user'),
+			mayRemove: ifOwner('user'),
+		}, {
+			name: 'contactCustom',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type.id,
+			}, {
+				name: 'name',
+				type: type.string,
+			}, {
+				name: 'birthday',
+				type: type.date,
+			}, {
+				name: 'email',
+				type: type.date,
+			}],
+			mayFind: ifOwner('user'),
+			mayInsert: ifOwner('user'),
+			mayUpdate: ifOwner('user'),
+			mayRemove: ifOwner('user'),
 		}];
 		
 		

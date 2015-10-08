@@ -10,6 +10,7 @@
 		"console": false,
 		"define": false,
 		"document": false,
+		"Image": false,
 		"FB": false,
 		"FormData": false,
 		"location": false,
@@ -43,6 +44,7 @@
 		"changeThis": false,
 		"clickThis": false,
 		"keyupThis": false,
+		"mousedownThis": false,
 		"submitThis": false,
 
 		"black": false,
@@ -79,6 +81,7 @@
 		"dropdownPanel": false,
 		"fixedHeaderBody": false,
 		"grid": false,
+		"overlays": false,
 		"paragraph": false,
 		"sideBySide": false,
 		"stack": false,

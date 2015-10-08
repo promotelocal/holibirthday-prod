@@ -7,7 +7,7 @@ define([
 ], function (auth, fonts, separatorSize, socialMedia, submitButton) {
 	var facebookAuthResponseD = Q.defer();
 	FB.getLoginStatus(function (response) {
-		if (response.status === 'unknown' || response.status === 'not_authorized') {
+		if (response.status === 'unknown' || response.status === 'not_authorized' || response.status === 'connected') {
 			facebookAuthResponseD.resolve(false);
 		}
 		facebookAuthResponseD.resolve(response.authResponse);
@@ -42,7 +42,7 @@ define([
 							window.location.reload();
 						});
 					}, {
-						scope: 'email, public_profile',
+						scope: 'email, public_profile, user_friends, user_birthday',
 					});
 				}
 			}),
