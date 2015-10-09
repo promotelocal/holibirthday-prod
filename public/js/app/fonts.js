@@ -40,5 +40,8 @@ define([], function () {
 		fa: function (fontAwesomeIcon) {
 			return text('<i class="fa fa-' + fontAwesomeIcon + '"></i>');
 		},
+		faI: function (fontAwesomeIcon) {
+			return '<i class="fa fa-' + fontAwesomeIcon + '"></i>';
+		},
 	};
 });	

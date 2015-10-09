@@ -6,7 +6,7 @@
 		var never = function (user, doc, db, next) {
 			return next(false);
 		};
-		var onlyIfAdmin = function (user, doc, db, next) {
+		var ifAdmin = function (user, doc, db, next) {
 			if (!user) {
 				return next(false);
 			}
@@ -29,6 +29,13 @@
 		};
 		var ifLoggedIn = function (user, doc, db, next) {
 			return next(user);
+		};
+		var any = function (constraints) {
+			// ahahahahahaaaaaaaaaahahaha
+			var async = require('async');
+			return function (user, doc, db, next) {
+				
+			};
 		};
 		var schema = [{
 			name: 'upload',
@@ -382,9 +389,9 @@
 				editorType: editorType.image,
 			}],
 			mayFind: always,
-			mayInsert: onlyIfAdmin,
-			mayUpdate: onlyIfAdmin,
-			mayRemove: onlyIfAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
 		}, {
 			name: 'dailyThemePollResponse',
 			fields: [{
@@ -452,9 +459,9 @@
 				displayName: 'Price',
 			}],
 			mayFind: always,
-			mayInsert: onlyIfAdmin,
-			mayUpdate: onlyIfAdmin,
-			mayRemove: onlyIfAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
 		}, {
 			name: 'gafyDesign',
 			fields: [{
@@ -515,9 +522,9 @@
 				]),
 			}],
 			mayFind: always,
-			mayInsert: onlyIfAdmin,
-			mayUpdate: onlyIfAdmin,
-			mayRemove: onlyIfAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
 		}, {
 			name: 'contactUsMessage',
 			fields: [{
@@ -547,9 +554,9 @@
 				type: type.string,
 			}],
 			mayFind: always,
-			mayInsert: onlyIfAdmin,
-			mayUpdate: onlyIfAdmin,
-			mayRemove: onlyIfAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
 			options: [{
 				name: 'Home Tagline',
 				multiline: false,
@@ -756,7 +763,7 @@
 				type: type.string,
 			}],
 			mayFind: never,
-			mayInsert: onlyIfAdmin,
+			mayInsert: ifAdmin,
 			mayUpdate: never,
 			mayRemove: never,
 		}, {
@@ -786,9 +793,9 @@
 				editorType: editorType.image,
 			}],
 			mayFind: always,
-			mayInsert: onlyIfAdmin,
-			mayUpdate: onlyIfAdmin,
-			mayRemove: onlyIfAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
 		}, {
 			name: 'contactOtherUser',
 			fields: [{

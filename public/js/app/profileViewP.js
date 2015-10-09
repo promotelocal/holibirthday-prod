@@ -48,7 +48,7 @@ define([
 									right: 30,
 								}, alignTBM({
 									middle: stack({
-										gutterSize: separatorSize,
+										gutterSize: separatorSize / 2,
 										collapseGutters: true,
 									}, [
 										text(profile.firstName + ' ' + profile.lastName).all([
@@ -85,21 +85,28 @@ define([
 											fonts.ralewayThinBold,
 											$css('font-size', 20),
 										]),
-										me ? text('Add Contact').all([
-											fonts.ralewayThinBold,
-											$css('font-size', 20),
-											link,
-											clickThis(function (ev, disable) {
-												disable();
-												db.contactOtherUser.insert({
-													user: me._id,
-													otherUser: user,
-												}).then(function () {
-													window.location.hash = '#!contacts';
-													window.location.reload();
-												});
-											}),
-										]) : nothing,
+										me ? promiseComponent(db.contactOtherUser.findOne({
+											user: me._id,
+											otherUser: user,
+										}).then(function (cou) {
+											return cou ?
+												nothing :
+												text('Add Contact').all([
+													fonts.ralewayThinBold,
+													$css('font-size', 20),
+													link,
+													clickThis(function (ev, disable) {
+														disable();
+														db.contactOtherUser.insert({
+															user: me._id,
+															otherUser: user,
+														}).then(function () {
+															window.location.hash = '#!contacts';
+															window.location.reload();
+														});
+													}),
+												]);
+										})) : nothing,
 									])
 								})).all([
 									withMinWidth(300, true),

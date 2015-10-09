@@ -85,6 +85,7 @@
 		"paragraph": false,
 		"sideBySide": false,
 		"stack": false,
+		"table": false,
 		"tabs": false,
 		"text": false,
 		"toggleComponent": false,
@@ -111,6 +112,7 @@
 		"routeToFirst": false,
 
 		"windowHash": false,
-		"windowScroll": false
+		"windowScroll": false,
+		"windowWidth": false
 	}
 }

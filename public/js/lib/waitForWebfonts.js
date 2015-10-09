@@ -1,4 +1,6 @@
 function waitForWebfonts(fonts, callback) {
+	var maxTime = 5 * 1000;
+	var startTime = new Date().getTime();
 	var loadedFonts = 0;
 	var callbackIsRun = false;
 	for(var i = 0, l = fonts.length; i < l; ++i) {
@@ -28,7 +30,7 @@ function waitForWebfonts(fonts, callback) {
 			var interval;
 			function checkFont() {
 				// Compare current width with original width
-				if(node && node.offsetWidth != width) {
+				if (node && (new Date().getTime() - startTime > maxTime || node.offsetWidth != width)) {
 					++loadedFonts;
 					node.parentNode.removeChild(node);
 					node = null;
@@ -49,9 +51,11 @@ function waitForWebfonts(fonts, callback) {
 				}
 			};
 
-			if(!checkFont()) {
-				interval = setInterval(checkFont, 50);
-			}
+			setTimeout(function () {
+				if(!checkFont()) {
+					interval = setInterval(checkFont, 50);
+				}
+			});
 		})(fonts[i]);
 	}
 };

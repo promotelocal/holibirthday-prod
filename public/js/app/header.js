@@ -70,7 +70,9 @@ define([
 		return meP.then(function (me) {
 			return adminP.then(function (admin) {
 				var signInStream = Stream.never();
-				return dropdownPanel(border(colors.middleGray, {
+				var menuOpenStream = Stream.never();
+				var rightButtons = headerRightButtons(me, admin, signInStream);
+				return dropdownPanel(dropdownPanel(border(colors.middleGray, {
 					bottom: 1,
 				}, alignLRM({
 					middle: bodyColumn(stack({}, [
@@ -106,14 +108,34 @@ define([
 										h === '#' ||
 										h === '#!') ? 1 : 0;
 							})),
-							right: sideBySide({
-								gutterSize: separatorSize,
-							}, headerRightButtons(me, admin, signInStream)),
+							right: componentStream(windowWidth.map(function (width) {
+								if (width > 560) {
+									menuOpenStream.push(false);
+									return sideBySide({
+										gutterSize: separatorSize,
+									}, rightButtons);
+								}
+								return headerButton(fonts.faI('bars')).all([
+									link,
+									clickThis(function () {
+										menuOpenStream.push(!menuOpenStream.lastValue());
+									}),
+								]);
+							})),
 						}),
 					])),
 				})).all([
 					withBackgroundColor(colors.pageBackgroundColor),
-				]), signInForm(), signInStream);
+				]), alignLRM({
+					right: border(black, {
+						left: 1,
+						bottom: 1,
+					}, stack({
+						gutterSize: separatorSize,
+					}, rightButtons).all([
+						withBackgroundColor(colors.pageBackgroundColor),
+					])),
+				}), menuOpenStream), signInForm(), signInStream);
 			});
 		});
 	}));

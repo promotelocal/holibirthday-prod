@@ -60,7 +60,7 @@ define([
 					middle: linkTo('#!myHolibirthday', bannerButton(siteCopyItems.find('Home Claim Your Holibirthday'))),
 				}),
 				alignLRM({
-					middle: bannerButton(siteCopyItems.find('Home Find Friends') + '(coming soon)', true),
+					middle: linkTo('#!contacts', bannerButton(siteCopyItems.find('Home Find Friends'))),
 				}),
 			]));
 

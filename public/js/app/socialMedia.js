@@ -29,9 +29,14 @@ define([], function () {
 						href: location.href,
 					});
 				},
-				countShares: function () {
-				},
-				posts: function () {
+				api: function () {
+					var args = Array.prototype.slice.call(arguments);
+					var d = Q.defer();
+					args[3] = function (result) {
+						d.resolve(result);
+					};
+					FB.api.apply(null, args);
+					return d.promise;
 				},
 			},
 			twitter: {

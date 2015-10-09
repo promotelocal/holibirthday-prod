@@ -83,12 +83,14 @@ define([
 			}, alignLRM({
 				middle: or,
 			})),
-			sideBySide({
-				gutterSize: separatorSize,
-			}, [
-				username,
-				password,
-			]),
+			alignLRM({
+				middle: sideBySide({
+					gutterSize: separatorSize,
+				}, [
+					username,
+					password,
+				]),
+			}),
 			toggleHeight(fillOutAllFields)(text('Please fill out all fields')),
 			toggleHeight(incorrectEmailOrPassword)(text('Incorrect email or password')),
 			alignLRM({
@@ -106,7 +108,9 @@ define([
 				top: separatorSize,
 				bottom: separatorSize,
 		}, form.all([
-			child(wideForm),
+			child(componentStream(windowWidth.map(function (width) {
+				return width > 700 ? wideForm : narrowForm;
+			}))),
 			wireChildren(passThroughToFirst),
 		]))).all([
 			withBackgroundColor(colors.pageBackgroundColor),
