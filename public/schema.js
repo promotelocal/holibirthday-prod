@@ -31,16 +31,19 @@
 			return next(user);
 		};
 		var any = function (constraints) {
-			var async = require('async');
-			return function (user, doc, db, next) {
-				return async.map(constraints, function (constraint, next) {
-					constraint(user, doc, db, next);
-				}, function (results) {
-					return next(results.reduce(function (a, r) {
-						return a || r;
-					}, false));
-				});
-			};
+			if (typeof exports !== 'undefined') {
+				var async = require('async');
+				return function (user, doc, db, next) {
+					return async.map(constraints, function (constraint, next) {
+						constraint(user, doc, db, next);
+					}, function (results) {
+						return next(results.reduce(function (a, r) {
+							return a || r;
+						}, false));
+					});
+				};
+			}
+			return null;
 		};
 		var schema = [{
 			name: 'upload',
