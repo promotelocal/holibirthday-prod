@@ -11,7 +11,7 @@
 				return next(false);
 			}
 			return db.admin.findOne({
-				user: user._id
+				user: user._id,
 			}, function (admin) {
 				return next(admin);
 			});
@@ -31,10 +31,15 @@
 			return next(user);
 		};
 		var any = function (constraints) {
-			// ahahahahahaaaaaaaaaahahaha
 			var async = require('async');
 			return function (user, doc, db, next) {
-				
+				return async.map(constraints, function (constraint, next) {
+					constraint(user, doc, db, next);
+				}, function (results) {
+					return next(results.reduce(function (a, r) {
+						return a || r;
+					}, false));
+				});
 			};
 		};
 		var schema = [{
@@ -106,7 +111,10 @@
 			}],
 			mayFind: always,
 			mayInsert: never,
-			mayUpdate: ifOwner('user'),
+			mayUpdate: any([
+				ifOwner('user'),
+				ifAdmin,
+			]),
 			mayRemove: never,
 		}, {
 			name: 'user',
@@ -263,10 +271,15 @@
 						return next(admin);
 					});
 				}
-				return next(ObjectId.equal(user._id, doc.user));
 			},
-			mayUpdate: ifOwner('user'),
-			mayRemove: ifOwner('user'),
+			mayUpdate: any([
+				ifAdmin,
+				ifOwner('user')
+			]),
+			mayRemove: any([
+				ifAdmin,
+				ifOwner('user')
+			]),
 		}, {
 			name: 'comment',
 			fields: [{
@@ -291,7 +304,10 @@
 			mayFind: always,
 			mayInsert: ifOwner('user'),
 			mayUpdate: ifOwner('user'),
-			mayRemove: ifOwner('user'),
+			mayRemove: any([
+				ifAdmin,
+				ifOwner('user')
+			]),
 		}, {
 			name: 'dailyTheme',
 			fields: [{

@@ -155,7 +155,9 @@ define([
 						stream: stream,
 					}));
 				case 'gafyColor':
-					return prettify(field.displayName, opacityGridSelect(stream, gafyColors.map(function (gafyColor) {
+					return prettify(field.displayName, opacityGridSelect(stream, gafyColors.sort(function (gc1, gc2) {
+						return gc1.name.localeCompare(gc2.name);
+					}).map(function (gafyColor) {
 						return {
 							component: stack({}, [
 								alignLRM({
