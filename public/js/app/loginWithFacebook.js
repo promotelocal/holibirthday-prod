@@ -13,39 +13,41 @@ define([
 		facebookAuthResponseD.resolve(response.authResponse);
 	}, true);
 	
-	return promiseComponent(facebookAuthResponseD.promise.then(function (authResponse) {
-		return button.all([
-			child(submitButton(socialMedia.facebook.color, sideBySide({
-				gutterSize: separatorSize,
-			}, [
-				text(socialMedia.facebook.icon),
-				text('sign in with Facebook').all([
-					fonts.bebasNeue,
-				]),
-			])).all([
-				withFontColor(socialMedia.facebook.color),
-			])),
-			wireChildren(passThroughToFirst),
-		]).all([
-			link,
-			clickThis(function (e) {
-				e.stopPropagation();
-				e.preventDefault();
-				if (authResponse) {
-					auth.loginWithFacebook(authResponse).then(function () {
-						window.location.reload();
-					});
-				}
-				else {
-					FB.login(function (r) {
-						auth.loginWithFacebook(r.authResponse).then(function () {
+	return function () {
+		return promiseComponent(facebookAuthResponseD.promise.then(function (authResponse) {
+			return button.all([
+				child(submitButton(socialMedia.facebook.color, sideBySide({
+					gutterSize: separatorSize,
+				}, [
+					text(socialMedia.facebook.icon),
+					text('sign in with Facebook').all([
+						fonts.bebasNeue,
+					]),
+				])).all([
+					withFontColor(socialMedia.facebook.color),
+				])),
+				wireChildren(passThroughToFirst),
+			]).all([
+				link,
+				clickThis(function (e) {
+					e.stopPropagation();
+					e.preventDefault();
+					if (authResponse) {
+						auth.loginWithFacebook(authResponse).then(function () {
 							window.location.reload();
 						});
-					}, {
-						scope: 'email, public_profile, user_friends, user_birthday',
-					});
-				}
-			}),
-		]);
-	}));
+					}
+					else {
+						FB.login(function (r) {
+							auth.loginWithFacebook(r.authResponse).then(function () {
+								window.location.reload();
+							});
+						}, {
+							scope: 'email, public_profile, user_friends, user_birthday',
+						});
+					}
+				}),
+			]);
+		}));
+	};
 });

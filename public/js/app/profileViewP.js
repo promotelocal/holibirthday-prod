@@ -89,23 +89,30 @@ define([
 											user: me._id,
 											otherUser: user,
 										}).then(function (cou) {
-											return cou ?
-												nothing :
-												text('Add Contact').all([
+											if (cou) {
+												return nothing;
+											}
+											else if (me._id === user) {
+												return linkTo('#!contacts', text('My Contacts').all([
 													fonts.ralewayThinBold,
 													$css('font-size', 20),
-													link,
-													clickThis(function (ev, disable) {
-														disable();
-														db.contactOtherUser.insert({
-															user: me._id,
-															otherUser: user,
-														}).then(function () {
-															window.location.hash = '#!contacts';
-															window.location.reload();
-														});
-													}),
-												]);
+												]));
+											}
+											return text('Add Contact').all([
+												fonts.ralewayThinBold,
+												$css('font-size', 20),
+												link,
+												clickThis(function (ev, disable) {
+													disable();
+													db.contactOtherUser.insert({
+														user: me._id,
+														otherUser: user,
+													}).then(function () {
+														window.location.hash = '#!contacts';
+														window.location.reload();
+													});
+												}),
+											]);
 										})) : nothing,
 									])
 								})).all([
@@ -135,10 +142,10 @@ define([
 							gutterSize: separatorSize,
 						}, [
 							bar.horizontal(1, colors.middleGray),
-							text('Holibirthday Points').all([
+							linkTo('#!leaderboards', text('Holibirthday Points').all([
 								fonts.ralewayThinBold,
 								$css('font-size', 40),
-							]),
+							])),
 							stack({
 								gutterSize: separatorSize,
 							}, points.map(function (point) {

@@ -9,10 +9,11 @@ define([
 	'meP',
 	'months',
 	'prettyForms',
+	'profileP',
 	'separatorSize',
 	'signInForm',
 	'submitButton',
-], function (bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, prettyForms, separatorSize, signInForm, submitButton) {
+], function (bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -382,119 +383,121 @@ define([
 		};
 		
 		return meP.then(function (me) {
-			var holibirthday = {
-				user: Stream.once(me._id),
-				date: Stream.once(null),
-			};
-
-			var lastHolibirthday;
-			Stream.combineObject(holibirthday).onValue(function (v) {
-				lastHolibirthday = v;
-			});
-			var playTheMachine = Stream.once(false);
-			holibirthday.date.map(function () {
-				return false;
-			}).pushAll(playTheMachine);
-			
-			if (me) {
-				var machine = function (oldHolibirthday) {
-					return stack({
-						gutterSize: separatorSize,
-					}, [
-						alignLRM({
-							middle: birthdayMachine(holibirthday.date),
-						}),
-						alignLRM({
-							middle: toggleHeight(playTheMachine)(stack({}, [
-								text('You must pull the lever first').all([
-									fonts.ralewayThinBold,
-									$css('font-size', 30),
-								]),
-							])),
-						}),
-						alignLRM({
-							middle: submitButton(black, text(oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
-								link,
-								clickThis(function () {
-									if (lastHolibirthday) {
-										if (oldHolibirthday) {
-											db.holibirthday.update({
-												user: me._id,
-											}, lastHolibirthday).then(function () {
-												window.location.hash = '#!holibirthday/' + me._id;
-												window.location.reload();
-											});
-										}
-										else {
-											db.holibirthday.insert(lastHolibirthday).then(function () {
-												window.location.hash = '#!holibirthday/' + me._id;
-												window.location.reload();
-											});
-										}
-									}
-									else {
-										playTheMachine.push(true);
-									}
-								}),
-							]),
-						}),
-					]);
+			return profileP.then(function (profile) {
+				var holibirthday = {
+					user: Stream.once(me._id),
+					date: Stream.once(null),
 				};
-				return db.holibirthday.findOne({
-					user: me._id,
-				}).then(function (oldHolibirthday) {
-					if (oldHolibirthday) {
-						var oldHolibirthdate = new Date(oldHolibirthday.date);
-						holibirthday.date.push(oldHolibirthdate);
-						return stack({
-							gutterSize: separatorSize * 2,
-						}, [
-							linkTo('#!holibirthday/' + me._id, confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
-								text('Your Holibirthday Is').all([
-									fonts.ralewayThinBold,
-									$css('font-size', 40),
-								]),
-								text(moment(oldHolibirthdate).format('MMMM Do')).all([
-									fonts.ralewayThinBold,
-									$css('font-size', 20),
-								]),
-							]))))),
-							bodyColumn(alignLRM({
-								middle: machine(holibirthday),
-							})),
-							componentStream(holibirthday.date.map(function (date) {
-								return famousBirthdaysDisplay(famousBirthdaysForDate(date));
-							})),
-						]);
-					}
-					else {
+
+				var lastHolibirthday;
+				Stream.combineObject(holibirthday).onValue(function (v) {
+					lastHolibirthday = v;
+				});
+				var playTheMachine = Stream.once(false);
+				holibirthday.date.map(function () {
+					return false;
+				}).pushAll(playTheMachine);
+				
+				if (me) {
+					var machine = function (oldHolibirthday) {
 						return stack({
 							gutterSize: separatorSize,
 						}, [
-							confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
-								fonts.ralewayThinBold,
-								$css('font-size', 40),
-							])))),
-							bodyColumn(alignLRM({
-								middle: machine(),
-							})),
-							componentStream(holibirthday.date.map(function (date) {
-								return famousBirthdaysDisplay(famousBirthdaysForDate(date));
-							})),
+							alignLRM({
+								middle: birthdayMachine(holibirthday.date),
+							}),
+							alignLRM({
+								middle: toggleHeight(playTheMachine)(stack({}, [
+									text('You must pull the lever first').all([
+										fonts.ralewayThinBold,
+										$css('font-size', 30),
+									]),
+								])),
+							}),
+							alignLRM({
+								middle: submitButton(black, text(oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
+									link,
+									clickThis(function () {
+										if (lastHolibirthday) {
+											if (oldHolibirthday) {
+												db.holibirthday.update({
+													user: me._id,
+												}, lastHolibirthday).then(function () {
+													window.location.hash = '#!holibirthday/' + me._id;
+													window.location.reload();
+												});
+											}
+											else {
+												db.holibirthday.insert(lastHolibirthday).then(function () {
+													window.location.hash = '#!holibirthday/' + me._id;
+													window.location.reload();
+												});
+											}
+										}
+										else {
+											playTheMachine.push(true);
+										}
+									}),
+								]),
+							}),
 						]);
-					}
-				});
-			}
-			return bodyColumn(stack({
-				gutterSize: separatorSize,
-			}, [
-				nothing,
-				paragraph('You must sign in to claim a holibirthday').all([
-					$css('font-size', '30px'),
-					fonts.bebasNeue,
-				]),
-				signInForm(),
-			]));
+					};
+					return db.holibirthday.findOne({
+						user: me._id,
+					}).then(function (oldHolibirthday) {
+						if (profile.holibirther && oldHolibirthday) {
+							var oldHolibirthdate = new Date(oldHolibirthday.date);
+							holibirthday.date.push(oldHolibirthdate);
+							return stack({
+								gutterSize: separatorSize * 2,
+							}, [
+								linkTo('#!holibirthday/' + me._id, confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
+									text('Your Holibirthday Is').all([
+										fonts.ralewayThinBold,
+										$css('font-size', 40),
+									]),
+									text(moment(oldHolibirthdate).format('MMMM Do')).all([
+										fonts.ralewayThinBold,
+										$css('font-size', 20),
+									]),
+								]))))),
+								bodyColumn(alignLRM({
+									middle: machine(holibirthday),
+								})),
+								componentStream(holibirthday.date.map(function (date) {
+									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
+								})),
+							]);
+						}
+						else {
+							return stack({
+								gutterSize: separatorSize,
+							}, [
+								confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
+									fonts.ralewayThinBold,
+									$css('font-size', 40),
+								])))),
+								bodyColumn(alignLRM({
+									middle: machine(),
+								})),
+								componentStream(holibirthday.date.map(function (date) {
+									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
+								})),
+							]);
+						}
+					});
+				}
+				return bodyColumn(stack({
+					gutterSize: separatorSize,
+				}, [
+					nothing,
+					paragraph('You must sign in to claim a holibirthday').all([
+						$css('font-size', '30px'),
+						fonts.bebasNeue,
+					]),
+					signInForm(),
+				]));
+			});
 		});
 	}));
 });

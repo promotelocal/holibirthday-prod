@@ -42,6 +42,15 @@ define([
 					latestModel.captchaResponse = grecaptchaResponse;
 					auth.register(latestModel).then(function () {
 						registeredViewIndex.push(1);
+						setTimeout(function () {
+							auth.signIn({
+								username: model.email.lastValue(),
+								password: model.password.lastValue(),
+							}).then(function () {
+								window.location.hash = model.holibirther.lastValue() ? '#!myHolibirthday' : '#!';
+								window.location.reload();
+							});
+						}, 3000);
 					});
 				}
 			});
@@ -132,7 +141,7 @@ define([
 				child(stack({
 					gutterSize: separatorSize,
 				}, [
-					loginWithFacebook,
+					loginWithFacebook(),
 					alignLRM({
 						middle: or,
 					}),
@@ -160,21 +169,14 @@ define([
 								submit,
 							]),
 						]),
-						paragraph('Success!  You can now sign in.').all([
+						paragraph('Success!  You will now be signed in.').all([
 							fonts.ralewayThinBold,
 						]),
 					], registeredViewIndex).all([
 						withMinWidth(300, true),
 					]),
 				])),
-				wireChildren(function (instance, context, i) {
-					i.minHeight.pushAll(instance.minHeight);
-					i.minWidth.pushAll(instance.minWidth);
-					return [{
-						width: context.width,
-						height: context.height,
-					}];
-				}),
+				wireChildren(passThroughToFirst),
 			]),
 		]))).all([
 			function () {

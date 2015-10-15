@@ -53,7 +53,7 @@ define([
 			handleSurplusWidth: giveToSecond,
 		}, [
 			alignTBM({
-				middle: stack({}, [loginWithFacebook]),
+				middle: stack({}, [loginWithFacebook()]),
 			}),
 			alignLRM({
 				middle: alignTBM({
@@ -75,7 +75,7 @@ define([
 		
 		var narrowForm = stack({}, [
 			alignLRM({
-				middle: stack({}, [loginWithFacebook]),
+				middle: stack({}, [loginWithFacebook()]),
 			}),
 			padding({
 				top: 10,
@@ -102,15 +102,20 @@ define([
 			}, c);
 		}));
 
+		var widthS = Stream.never();
+		
 		return border(colors.middleGray, {
 			bottom: 1,
 		}, bodyColumn(padding({
 				top: separatorSize,
 				bottom: separatorSize,
 		}, form.all([
-			child(componentStream(windowWidth.map(function (width) {
+			child(componentStream(widthS.map(function (width) {
 				return width > 700 ? wideForm : narrowForm;
 			}))),
+			function (instance, context) {
+				context.width.pushAll(widthS);
+			},
 			wireChildren(passThroughToFirst),
 		]))).all([
 			withBackgroundColor(colors.pageBackgroundColor),

@@ -71,6 +71,11 @@ define([
 				return promiseComponent(loadAsync('contactsView'));
 			}),
 		}, {
+			string: '#!leaderboards',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('leaderboardsView'));
+			}),
+		}, {
 			string: '#!story/',
 			router: routeMatchRest(function (id) {
 				return storiesP.then(function (stories) {

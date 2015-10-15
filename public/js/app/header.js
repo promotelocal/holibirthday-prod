@@ -38,11 +38,8 @@ define([
 			
 			buttons.push(linkTo('#!gifts', headerButton(siteCopyItems.find('Header Gifts'))));
 
-			var signIn = false;
-			signInStream.push(signIn);
 			if (me) {
 				buttons.push(linkTo('#!user/' + me._id, headerButton(siteCopyItems.find('Header My Profile'))));
-				buttons.push(linkTo('#!contacts', headerButton(siteCopyItems.find('Header Contacts'))));
 				buttons.push(headerButton(siteCopyItems.find('Header Sign Out')).all([
 					link,
 					clickThis(function () {
@@ -56,9 +53,9 @@ define([
 			else {
 				buttons.push(headerButton(siteCopyItems.find('Header Sign In')).all([
 					link,
-					clickThis(function () {
-						signIn = !signIn;
-						signInStream.push(signIn);
+					clickThis(function (ev) {
+						signInStream.push(!signInStream.lastValue());
+						ev.stopPropagation();
 					}),
 				]));
 				buttons.push(linkTo('#!register', headerButton(siteCopyItems.find('Header Register'))));
@@ -71,6 +68,10 @@ define([
 			return adminP.then(function (admin) {
 				var signInStream = Stream.never();
 				var menuOpenStream = Stream.never();
+				$('body').on('click', function () {
+					signInStream.push(false);
+					menuOpenStream.push(false);
+				});
 				var rightButtons = headerRightButtons(me, admin, signInStream);
 				return dropdownPanel(dropdownPanel(border(colors.middleGray, {
 					bottom: 1,
@@ -117,8 +118,9 @@ define([
 								}
 								return headerButton(fonts.faI('bars')).all([
 									link,
-									clickThis(function () {
+									clickThis(function (ev) {
 										menuOpenStream.push(!menuOpenStream.lastValue());
+										ev.stopPropagation();
 									}),
 								]);
 							})),

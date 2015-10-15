@@ -35,15 +35,16 @@
 				var async = require('async');
 				return function (user, doc, db, next) {
 					return async.map(constraints, function (constraint, next) {
-						constraint(user, doc, db, next);
-					}, function (results) {
+						return constraint(user, doc, db, function (v) {
+							return next(null, v);
+						});
+					}, function (err, results) {
 						return next(results.reduce(function (a, r) {
 							return a || r;
 						}, false));
 					});
 				};
 			}
-			return null;
 		};
 		var schema = [{
 			name: 'upload',
@@ -208,6 +209,25 @@
 			mayUpdate: never,
 			mayRemove: never,
 		}, {
+			name: 'pointsTotal',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type.id,
+			}, {
+				name: 'amount',
+				type: type.number,
+			}, {
+				name: 'createDate',
+				type: type.date,
+			}],
+			mayFind: always,
+			mayInsert: never,
+			mayUpdate: never,
+			mayRemove: never,
+		}, {
 			name: 'storyLike',
 			fields: [{
 				name: '_id',
@@ -274,6 +294,7 @@
 						return next(admin);
 					});
 				}
+				return next(user);
 			},
 			mayUpdate: any([
 				ifAdmin,
@@ -550,14 +571,17 @@
 				name: '_id',
 				type: type.id,
 			}, {
-				name: 'user',
-				type: type.id,
+				name: 'name',
+				type: type.string,
+			}, {
+				name: 'email',
+				type: type.string,
 			}, {
 				name: 'message',
 				type: type.string,
 			}],
 			mayFind: never,
-			mayInsert: ifLoggedIn,
+			mayInsert: always,
 			mayUpdate: never,
 			mayRemove: never,
 		}, {
@@ -842,12 +866,18 @@
 			}, {
 				name: 'name',
 				type: type.string,
+				displayName: 'Name',
+				editorType: editorType.string,
 			}, {
 				name: 'birthday',
 				type: type.date,
+				displayName: 'Birthday',
+				editorType: editorType.date,
 			}, {
 				name: 'email',
-				type: type.date,
+				type: type.string,
+				displayName: 'Email',
+				editorType: editorType.string,
 			}],
 			mayFind: ifOwner('user'),
 			mayInsert: ifOwner('user'),

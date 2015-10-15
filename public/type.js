@@ -30,7 +30,8 @@
 			date: {
 				title: 'Date',
 				fromString: function (str) {
-					return new Date(str);
+					// dates are nullable, deal with it
+					return str && new Date(str);
 				},
 			},
 			bool: {

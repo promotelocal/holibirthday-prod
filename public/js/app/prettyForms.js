@@ -154,8 +154,9 @@ define([
 					fonts.bebasNeue,
 				])).all([
 					link,
-					clickThis(function () {
-						cb();
+					clickThis(function (ev, disable) {
+						var enable = disable();
+						cb(enable);
 					}),
 				]),
 			]);

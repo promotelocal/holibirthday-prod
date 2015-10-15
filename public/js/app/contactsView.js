@@ -1,30 +1,37 @@
 define([
 	'areYouSure',
+	'bar',
 	'bodyColumn',
 	'colors',
 	'confettiBackground',
 	'db',
+	'defaultFormFor',
 	'fonts',
 	'holibirthdayRow',
 	'meP',
 	'separatorSize',
+	'signInForm',
 	'socialMedia',
-], function (areYouSure, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, separatorSize, socialMedia) {
+	'submitButton',
+], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, fonts, holibirthdayRow, meP, separatorSize, signInForm, socialMedia, submitButton) {
 	return promiseComponent(meP.then(function (me) {
 		if (!me) {
-			window.location.hash = '#!';
-			return nothing;
+			return signInForm();
 		}
 		var now = new Date();
 		
+		var max = 365 * 24 * 60 * 60 * 1000;
 		var howLongUntilDate = function (date) {
+			if (!date) {
+				return max;
+			}
 			var nowThatMonth = new Date(now);
 			nowThatMonth.setMonth(date.getMonth());
 			nowThatMonth.setDate(date.getDate());
 			
 			var howLong = nowThatMonth.getTime() - now.getTime();
 			if (howLong < 0) {
-				howLong += 365 * 24 * 60 * 60 * 1000;
+				howLong += max;
 			}
 			return howLong;
 		};
@@ -39,90 +46,245 @@ define([
 				data: JSON.stringify(ids),
 				contentType: 'application/json',
 			}).then(function (userIds) {
-				return db.contactOtherUser.find({
-					user: me._id,
-				}).then(function (cous) {
-					var $or = userIds.map(function (userId) {
-						return {
-							user: userId,
-						};
+				return Q.all([
+					db.contactOtherUser.find({
+						user: me._id,
+					}),
+					db.contactCustom.find({
+						user: me._id,
+					}),
+				]).then(function (results) {
+					var cousS = Stream.once(results[0]);
+					var ccsS = Stream.once(results[1]);
+					var $orS = cousS.map(function (cous) {
+						return userIds.map(function (userId) {
+							return {
+								user: userId,
+							};
+						}).concat(cous.map(function (cou) {
+							return {
+								user: cou.otherUser,
+							};
+						}));
 					});
-					// var $or = cous.map(function (cou) {
-					// 	return {
-					// 		user: cou.otherUser,
-					// 	};
-					// });
-					return Q.all([
-						db.profile.find({
-							$or: $or,
-						}),
-						db.holibirthday.find({
-							$or: $or,
-						}),
-					]).then(function (results) {
-						var profiles = results[0];
-						var holibirthdays = results[1];
-						profiles.map(function (profile) {
-							var holibirthday = holibirthdays.filter(function (h) {
-								return h.user === profile.user;
-							})[0];
-							var max = 365 * 24 * 60 * 60 * 1000;
-							profile.holibirthday = holibirthday;
-							profile.howLong = Math.min(profile.birthday ?
-													   howLongUntilDate(profile.birthday) :
-													   max,
-													   holibirthday ?
-													   howLongUntilDate(holibirthday.date) :
-													   max);
-						});
-						profiles.sort(function (p1, p2) {
-							return p1.howLongUntilBirthday - p2.howLongUntilBirthday;
-						});
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
-								fonts.ralewayThinBold,
-								fonts.h1,
-							])))),
-							bodyColumn(alignLRM({
-								middle: table({
-									paddingSize: separatorSize,
-								}, profiles.map(function (p) {
-									return [
-										linkTo('#!user/' + p.user, text(p.firstName + ' ' + p.lastName).all([
-											fonts.ralewayThinBold,
-										])),
-										text(p.birthday ? 'Born on<br>' + moment(p.birthday).format('MMMM Do') : '&nbsp;').all([
-											fonts.ralewayThinBold,
-											$css('text-align', 'center'),
-										]),
-										text(p.holibirthday ? 'Holiborn on<br>' + moment(p.holibirthday.date).format('MMMM Do') : '&nbsp;').all([
-											fonts.ralewayThinBold,
-											$css('text-align', 'center'),
-										]),
-										// text('remove this contact').all([
-										// 	fonts.ralewayThinBold,
-										// ]).all([
-										// 	link,
-										// 	clickThis(function () {
-										// 		areYouSure({
-										// 			onYes: function () {
-										// 				db.contactOtherUser.remove({
-										// 					user: me._id,
-										// 					otherUser: p.user,
-										// 				}).then(function () {
-										// 					window.location.reload();
-										// 				});
-										// 			},
-										// 		});
-										// 	}),
-										// ]),
-									];
+					return componentStream($orS.map(function ($or) {
+						return promiseComponent(Q.all([
+							db.profile.find({
+								$or: $or,
+							}),
+							db.holibirthday.find({
+								$or: $or,
+							}),
+						]).then(function (results) {
+							var profiles = results[0];
+							var holibirthdays = results[1];
+
+							var couRowsS = cousS.map(function (cous) {
+								return cous.map(function (cou) {
+									var profile = profiles.filter(function (p) {
+										return p.user === cou.otherUser;
+									})[0];
+									var holibirthday = holibirthdays.filter(function (h) {
+										return h.user === profile.user;
+									})[0];
+									return {
+										row: [
+											linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
+												fonts.ralewayThinBold,
+											])),
+											text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).format('MMMM Do') : '&nbsp;').all([
+												fonts.ralewayThinBold,
+												$css('text-align', 'center'),
+											]),
+											text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).format('MMMM Do') : '&nbsp;').all([
+												fonts.ralewayThinBold,
+												$css('text-align', 'center'),
+											]),
+											text(profile.email || '&nbsp;').all([
+												fonts.ralewayThinBold,
+												$css('text-align', 'center'),
+											]),
+											alignTBM({
+												middle: submitButton(black, text('remove this contact').all([
+													fonts.ralewayThinBold,
+												])).all([
+													link,
+													clickThis(function () {
+														areYouSure({
+															onYes: function () {
+																db.contactOtherUser.remove({
+																	user: me._id,
+																	otherUser: profile.user,
+																}).then(function () {
+																	cousS.push(cousS.lastValue().filter(function (c) {
+																		return c._id !== cou._id;
+																	}));
+																});
+															},
+														});
+													}),
+												]),
+											}),
+										],
+										howLong: Math.min(howLongUntilDate(profile.birthday), howLongUntilDate(holibirthday && holibirthday.date)),
+									};
+								});
+							});
+							var ccRowsS = ccsS.map(function (ccs) {
+								return ccs.map(function (cc) {
+									return {
+										row: [
+											text(cc.name).all([
+												fonts.ralewayThinBold,
+											]),
+											text(cc.birthday ? 'Born on<br>' + moment(cc.birthday).format('MMMM Do') : '&nbsp;').all([
+												fonts.ralewayThinBold,
+												$css('text-align', 'center'),
+											]),
+											nothing,
+											text(cc.email || '&nbsp;').all([
+												fonts.ralewayThinBold,
+												$css('text-align', 'center'),
+											]),
+											alignTBM({
+												middle: submitButton(black, text('remove this contact').all([
+													fonts.ralewayThinBold,
+												])).all([
+													link,
+													clickThis(function () {
+														areYouSure({
+															onYes: function () {
+																db.contactCustom.remove({
+																	_id: cc._id,
+																}).then(function () {
+																	ccsS.push(ccsS.lastValue().filter(function (c) {
+																		return c._id !== cc._id;
+																	}));
+																});
+															},
+														});
+													}),
+												]),
+											}),
+										],
+										howLong: howLongUntilDate(cc.birthday),
+									};
+								});
+							});
+							var rowsS = Stream.combine([
+								couRowsS,
+								ccRowsS,
+							], function (couRows, ccRows) {
+								return couRows.concat(ccRows).sort(function (r1, r2) {
+									return r2.howLong - r1.howLong;
+								}).map(function (r) {
+									return r.row;
+								});
+							});
+							return stack({
+								gutterSize: separatorSize,
+							}, [
+								confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
+									fonts.ralewayThinBold,
+									fonts.h1,
+								])))),
+								bodyColumn(alignLRM({
+									middle: componentStream(rowsS.map(function (rows) {
+										return defaultFormFor.contactCustom({
+											user: me._id,
+											name: '',
+											birthday: null,
+											email: '',
+										}, function (newContactS, newContactFields) {
+											return table({
+												paddingSize: separatorSize,
+											}, rows.concat([[
+												newContactFields.name,
+												newContactFields.birthday,
+												nothing,
+												newContactFields.email,
+												alignTBM({
+													middle: submitButton(black, text('add contact').all([
+														fonts.ralewayThinBold,
+													])).all([
+														link,
+														clickThis(function (ev, disable) {
+															var enable = disable();
+															db.contactCustom.insert(newContactS.lastValue()).then(function (newContact) {
+																ccsS.push(ccsS.lastValue().concat([newContact]));
+																enable();
+															});
+														}),
+													]),
+												}),
+											]]));
+										});
+									})),
 								})),
-							})),
-						]);
-					});
+								bar.horizontal(1).all([
+									withBackgroundColor(black),
+								]),
+								bodyColumn(alignLRM({
+									middle: componentStream(cousS.map(function (cous) {
+										var additionalFacebookFriends = userIds.filter(function (userId) {
+											return cous.filter(function (cou) {
+												return userId === cou.otherUser;
+											}).length === 0;
+										});
+										if (additionalFacebookFriends.length === 0) {
+											return nothing;
+										}
+										return table({
+											paddingSize: separatorSize,
+										}, additionalFacebookFriends.map(function (userId) {
+											var profile = profiles.filter(function (p) {
+												return p.user === userId;
+											})[0];
+											var holibirthday = holibirthdays.filter(function (h) {
+												return h.user === profile.user;
+											})[0];
+											return [
+												linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
+													fonts.ralewayThinBold,
+												])),
+												text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).format('MMMM Do') : '&nbsp;').all([
+													fonts.ralewayThinBold,
+													$css('text-align', 'center'),
+												]),
+												text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).format('MMMM Do') : '&nbsp;').all([
+													fonts.ralewayThinBold,
+													$css('text-align', 'center'),
+												]),
+												text(profile.email || '&nbsp;').all([
+													fonts.ralewayThinBold,
+													$css('text-align', 'center'),
+												]),
+												alignTBM({
+													middle: submitButton(black, text('add this contact').all([
+														fonts.ralewayThinBold,
+													])).all([
+														link,
+														clickThis(function () {
+															areYouSure({
+																onYes: function () {
+																	db.contactOtherUser.insert({
+																		user: me._id,
+																		otherUser: profile.user,
+																	}).then(function (cou) {
+																		cousS.push(cousS.lastValue().concat([cou]));
+																	});
+																},
+															});
+														}),
+													]),
+												}),
+											];
+										}));
+									})),
+								})),
+							]);
+						}));
+					}));
 				});
 			});
 		});
