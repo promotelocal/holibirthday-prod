@@ -973,7 +973,7 @@ define([
 		}, {
 			tab: tab('Send Marketing Email'),
 			content: content(sendEmail),
-		}], Stream.once(5)),
+		}], Stream.once(0)),
 	]));
 });
 
