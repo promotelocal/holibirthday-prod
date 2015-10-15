@@ -11,7 +11,6 @@ module.exports = {
 		
 		name: "holibirthday",
 	},
-	maxSessionAgeSeconds: 3600, // 1 hour
 	grecaptcha: {
 		secret: '6Lf1ogkTAAAAAMfU6pXYGeOApwT2g7jHvS80DkM9',
 		sitekey: '6Lf1ogkTAAAAABlzCh_MhCA8hlmkc5zmockoeQsc',

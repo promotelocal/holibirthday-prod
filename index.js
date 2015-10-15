@@ -33,7 +33,6 @@ app.schema = schema;
 app.use(cookieParser('aoesutnfaoseckr,.ryf\'yl982faoseckxhq;jzzvuiwh'));
 app.use(expressSession({
 	secret: 'aoesutnfaoseckr,.ryf\'yl982faoseckxhq;jzzvuiwh',
-	cookie: { maxAge: config.maxSessionAgeSeconds * 1000 },
 	saveUninitialized: false,
 	resave: false,
 }));

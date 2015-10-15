@@ -142,7 +142,7 @@ define([
 							gutterSize: separatorSize,
 						}, [
 							bar.horizontal(1, colors.middleGray),
-							linkTo('#!leaderboards', text('Holibirthday Points').all([
+							linkTo('#!leaderboards', text('Holibirthday Points (view leaderboards)').all([
 								fonts.ralewayThinBold,
 								$css('font-size', 40),
 							])),
