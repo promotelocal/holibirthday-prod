@@ -143,11 +143,7 @@ define([
 									}, c);
 								})),
 							])),
-							wireChildren(function (instance, context, i) {
-								i.minHeight.pushAll(instance.minHeight);
-								i.minWidth.pushAll(instance.minWidth);
-								return [context];
-							}),
+							wireChildren(passThroughToFirst),
 						]),
 					]);
 				}

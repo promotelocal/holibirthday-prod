@@ -1,10 +1,10 @@
 (function () {
-	var genType = function (ObjectId) {
+	var genType = function (ObjectId, sanitizeHtml) {
 		return {
 			string: {
 				title: 'String',
 				fromString: function (str) {
-					return str;
+					return sanitizeHtml ? sanitizeHtml(str) : str;
 				},
 			},
 			id: {
@@ -48,7 +48,8 @@
 	}
 	else {
 		var ObjectID = require('mongodb').ObjectID;
+		var sanitizeHtml = require('sanitize-html');
 		
-		module.exports = genType(ObjectID);
+		module.exports = genType(ObjectID, sanitizeHtml);
 	}
 })();

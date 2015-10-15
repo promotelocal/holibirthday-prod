@@ -80,3 +80,12 @@ button {
 	padding: 0px;
 	font: inherit;
 }
+strong {
+	font-weight: bold;
+}
+em {
+	font-style: italic;
+}
+p {
+	margin-bottom: 1em;
+}

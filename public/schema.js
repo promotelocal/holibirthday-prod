@@ -732,6 +732,7 @@
 			mayUpdate: never,
 			mayRemove: never,
 		}, {
+			// for cart purchases
 			name: 'stripePayment',
 			fields: [{
 				name: '_id',
@@ -744,6 +745,29 @@
 				type: type.string,
 			}, {
 				name: 'orderBatch',
+				type: type.string,
+			}, {
+				name: 'amount',
+				type: type.number,
+			}, {
+				name: 'stripeToken',
+				type: type.string,
+			}],
+			mayFind: never,
+			mayInsert: always,
+			mayUpdate: never,
+			mayRemove: never,
+		}, {
+			// for direct donations
+			name: 'stripeDonation',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type.id,
+			}, {
+				name: 'email',
 				type: type.string,
 			}, {
 				name: 'amount',

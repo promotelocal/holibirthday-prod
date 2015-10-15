@@ -37,6 +37,7 @@ define([
 			}
 			
 			buttons.push(linkTo('#!gifts', headerButton(siteCopyItems.find('Header Gifts'))));
+			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
 			if (me) {
 				buttons.push(linkTo('#!user/' + me._id, headerButton(siteCopyItems.find('Header My Profile'))));
@@ -137,7 +138,11 @@ define([
 					}, rightButtons).all([
 						withBackgroundColor(colors.pageBackgroundColor),
 					])),
-				}), menuOpenStream), signInForm(), signInStream);
+				}), menuOpenStream), signInForm().all([
+					clickThis(function (ev) {
+						ev.stopPropagation();
+					}),
+				]), signInStream);
 			});
 		});
 	}));

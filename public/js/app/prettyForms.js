@@ -5,7 +5,7 @@ define([
 	'separatorSize',
 	'submitButton',
 ], function (db, fonts, forms, separatorSize, submitButton) {
-	return {
+	var prettyForms = {
 		input: function (config) {
 			return stack({}, [
 				text(config.name).all([
@@ -70,7 +70,7 @@ define([
 			return grid({
 				gutterSize: separatorSize,
 			}, [
-				this.fileUpload({
+				prettyForms.fileUpload({
 					name: config.name,
 					accept: config.accept,
 					labelAll: config.labelAll,
@@ -162,4 +162,5 @@ define([
 			]);
 		},
 	};
+	return prettyForms;
 });

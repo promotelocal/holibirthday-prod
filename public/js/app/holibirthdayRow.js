@@ -18,6 +18,7 @@ define([
 				middle: content,
 			})).all([
 				withMinWidth(300, true),
+				withMinHeight(240, true),
 			]),
 		]);
 	};

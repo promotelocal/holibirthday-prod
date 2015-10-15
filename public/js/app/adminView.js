@@ -490,7 +490,7 @@ define([
 				return item.uniqueName === uniqueName;
 			})[0] || {
 				uniqueName: uniqueName,
-				value: '',
+				value: formElement === 'imageUpload' ? '/content/man.png' : '',
 			};
 
 			var valueS = Stream.once(item.value);
@@ -564,11 +564,22 @@ define([
 				copyItemEditor('Gifts Wishlist'),
 			])),
 		}, {
+			tab: tab('Causes'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Causes Title'),
+				copyItemEditor('Causes Donate Now'),
+				copyItemEditor('Causes', 'textarea'),
+				copyItemEditor('Causes Image', 'imageUpload'),
+			])),
+		}, {
 			tab: tab('Site Header'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
 				copyItemEditor('Header Gifts'),
+				copyItemEditor('Header Causes'),
 				copyItemEditor('Header My Profile'),
 				copyItemEditor('Header Contacts'),
 				copyItemEditor('Header Sign In'),
@@ -585,6 +596,16 @@ define([
 				copyItemEditor('Order Confirmation Email: From Name'),
 				copyItemEditor('Order Confirmation Email: Subject'),
 				copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
+			])),
+		}, {
+			tab: tab('Donation Email'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Donate Confirmation Email: From'),
+				copyItemEditor('Donate Confirmation Email: From Name'),
+				copyItemEditor('Donate Confirmation Email: Subject'),
+				copyItemEditor('Donate Confirmation Email: Text ( {{donationNumber}} includes donation number)', 'plainTextarea'),
 			])),
 		}]);
 	}));

@@ -76,6 +76,21 @@ define([
 				return promiseComponent(loadAsync('leaderboardsView'));
 			}),
 		}, {
+			string: '#!causes',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('causesView'));
+			}),
+		}, {
+			string: '#!donateSuccess/',
+			router: routeMatchRest(function (id) {
+				return promiseComponent(loadAsync('donateSuccess', [id]));
+			}),
+		}, {
+			string: '#!donate',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('donateView'));
+			}),
+		}, {
 			string: '#!story/',
 			router: routeMatchRest(function (id) {
 				return storiesP.then(function (stories) {
