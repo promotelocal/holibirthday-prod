@@ -7,6 +7,7 @@
 	"globals": {
 		"$": false,
 		"CKEDITOR": false,
+		"clearInterval": false,
 		"console": false,
 		"define": false,
 		"document": false,
@@ -20,8 +21,9 @@
 		"requirejs": false,
 		"schema": false,
 		"Stream": false,
+		"setInterval": false,
 		"setTimeout": false,
-		"type": false,
+		"type": false,		"type": false,
 		"waitForWebfonts": false,
 		"window": false,
 		

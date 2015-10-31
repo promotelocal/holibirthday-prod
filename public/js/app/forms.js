@@ -1,4 +1,6 @@
-define([], function () {
+define([
+	'ckeditorP',
+], function (ckeditorP) {
 	return {
 		inputBox: function (stream, type, name, all) {
 			type = type || 'text';
@@ -74,62 +76,64 @@ define([], function () {
 			]);
 		},
 		textareaBox: function (stream, name) {
-			return div.all([
-				child(textarea.all([
-					$prop('id', name),
-					$prop('name', name),
-					$prop('rows', 21),
-					keyupThis(function (val) {
-						stream.push($(val.target).val());
-					}),
-					changeThis(function (val) {
-						stream.push($(val.target).val());
-					}),
-					function (instance, context) {
-						var gone = false;
-						var editorP = stream.promise.then(function (text) {
-							instance.$el.val(text);
-							CKEDITOR.config.resize_enabled = false;
-							var editor = CKEDITOR.replace(instance.$el[0]);
-							editor.on('instanceReady', function () {
-								editor.on('change', function () {
-									stream.push(editor.getData());
+			return promiseComponent(ckeditorP().then(function (ckeditor) {
+				return div.all([
+					child(textarea.all([
+						$prop('id', name),
+						$prop('name', name),
+						$prop('rows', 21),
+						keyupThis(function (val) {
+							stream.push($(val.target).val());
+						}),
+						changeThis(function (val) {
+							stream.push($(val.target).val());
+						}),
+						function (instance, context) {
+							var gone = false;
+							var editorP = stream.promise.then(function (text) {
+								instance.$el.val(text);
+								ckeditor.config.resize_enabled = false;
+								var editor = CKEDITOR.replace(instance.$el[0]);
+								editor.on('instanceReady', function () {
+									editor.on('change', function () {
+										stream.push(editor.getData());
+									});
+									Stream.combine([
+										context.width,
+										context.height,
+									], function (w, h) {
+										if (!gone) {
+											editor.resize(px(w), px(h), true, true);
+										}
+									});
 								});
-								Stream.combine([
-									context.width,
-									context.height,
-								], function (w, h) {
+								return editor;
+							});
+							return function () {
+								gone = true;
+								editorP.then(function (editor) {
 									if (!gone) {
-										editor.resize(px(w), px(h), true, true);
+										try {
+											editor.destroy();
+										}
+										catch (e) {
+											console.log('ckeditor exception happened');
+										}
 									}
 								});
-							});
-							return editor;
-						});
-						return function () {
-							gone = true;
-							editorP.then(function (editor) {
-								if (!gone) {
-									try {
-										editor.destroy();
-									}
-									catch (e) {
-										console.log('ckeditor exception happened');
-									}
-								}
-							});
-						};
-					},
-				])),
-				wireChildren(function (instance, context, i) {
-					i.minHeight.pushAll(instance.minHeight);
-					i.minWidth.pushAll(instance.minWidth);
-					return [{
-						width: context.width,
-						height: context.height,
-					}];
-				}),
-			]);
+							};
+						},
+					])),
+					wireChildren(function (instance, context, i) {
+						i.minHeight.pushAll(instance.minHeight);
+						i.minWidth.pushAll(instance.minWidth);
+						return [{
+							width: context.width,
+							height: context.height,
+						}];
+					}),
+				]);
+			}));
 		},
 		selectBox: function (config) {
 			return border(color({

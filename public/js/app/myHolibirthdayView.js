@@ -1,6 +1,7 @@
 define([
 	'bar',
 	'bodyColumn',
+	'chooseNonHoliday',
 	'colors',
 	'confettiBackground',
 	'db',
@@ -13,7 +14,7 @@ define([
 	'separatorSize',
 	'signInForm',
 	'submitButton',
-], function (bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -88,134 +89,6 @@ define([
 		]);
 	};
 	
-	var chooseNonHoliday = function () {
-		var equals = function (b1, b2) {
-			return b1.month === b2.month &&
-				b1.dayTens === b2.dayTens &&
-				b1.dayOnes === b2.dayOnes;
-		};
-		var createDate = function () {
-			var randomDate = new Date(new Date().getTime() * Math.random());
-			
-			var month = randomDate.getMonth();
-			var date = randomDate.getDate();
-			var dateTens = parseInt((date / 10) + '');
-			var dateOnes = date % 10;
-			return {
-				month: month,
-				dayTens: dateTens,
-				dayOnes: dateOnes,
-				date: randomDate,
-			};
-		};
-
-		var matchesAnyHoliday = function (date) {
-
-			if (date.month === 10) {
-				if (date.dayTens >= 2) {
-					return true;
-				}
-			}
-			
-			var holidays = [{
-				month: 0,
-				dayTens: 0,
-				dayOnes: 1,
-				reason: 'New Years',
-			}, {
-				month: 0,
-				dayTens: 0,
-				dayOnes: 2,
-				reason: 'day after new years',
-			}, {
-				month: 3,
-				dayTens: 0,
-				dayOnes: 1,
-				reason: 'April Fool\'s',
-			}, {
-				month: 6,
-				dayTens: 0,
-				dayOnes: 4,
-				reason: 'Independence Day',
-			}, {
-				month: 8,
-				dayTens: 0,
-				dayOnes: 7,
-				reason: 'labor day',
-			}, {
-				month: 9,
-				dayTens: 3,
-				dayOnes: 1,
-				reason: 'halloween',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 1,
-				reason: 'christmas eve eve eve eve',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 2,
-				reason: 'christmas eve eve eve',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 3,
-				reason: 'christmas eve eve',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 4,
-				reason: 'christmas eve',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 5,
-				reason: 'christmas',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 6,
-				reason: 'day after christmas',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 7,
-				reason: 'day after day after christmas',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 8,
-				reason: 'day after day after day after christmas',
-			}, {
-				month: 11,
-				dayTens: 2,
-				dayOnes: 9,
-				reason: 'day after day after day after day after christmas',
-			}, {
-				month: 11,
-				dayTens: 3,
-				dayOnes: 0,
-				reason: 'New Years eve eve',
-			}, {
-				month: 11,
-				dayTens: 3,
-				dayOnes: 1,
-				reason: 'New Years eve',
-			}];
-
-			return holidays.filter(function (h) {
-				return equals(h, date);
-			}).length > 0;
-		};
-
-		var date = createDate();
-		while (matchesAnyHoliday(date)) {
-			date = createDate();
-		}
-		return date.date;
-	};
-
 	var famousBirthdaysDisplay = function (famousBirthdays) {
 		return famousBirthdays.length > 0 ? bodyColumn(stack({
 			gutterSize: separatorSize,
