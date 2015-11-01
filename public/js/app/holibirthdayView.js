@@ -61,6 +61,7 @@ define([
 					}
 					setTimeout(function () {
 						srcS.push(canvas.toDataURL());
+						$canvas.remove();
 					});
 				};
 				img.src = './content/certificate-01.png';

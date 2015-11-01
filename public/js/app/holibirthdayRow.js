@@ -12,13 +12,14 @@ define([
 					chooseHeight: true,
 				}),
 			}),
-			padding({
+			adjustMinHeight(function (mh) {
+				return Math.max(240, mh);
+			})(padding({
 				all: separatorSize,
 			}, alignTBM({
 				middle: content,
-			})).all([
+			}))).all([
 				withMinWidth(300, true),
-				withMinHeight(240, true),
 			]),
 		]);
 	};

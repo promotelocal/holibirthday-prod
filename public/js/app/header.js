@@ -67,8 +67,8 @@ define([
 
 		return meP.then(function (me) {
 			return adminP.then(function (admin) {
-				var signInStream = Stream.never();
-				var menuOpenStream = Stream.never();
+				var signInStream = Stream.once(false);
+				var menuOpenStream = Stream.once(false);
 				$('body').on('click', function () {
 					signInStream.push(false);
 					menuOpenStream.push(false);
