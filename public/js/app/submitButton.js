@@ -6,8 +6,13 @@ define([], function () {
 		return border(color, {
 			all: 2,
 			radius: 5,
-		}, padding(10, alignLRM({
-			middle: c,
+		}, padding({
+			all: 8,
+			top: 10,
+		}, alignLRM({
+			middle: alignTBM({
+				middle: c,
+			}),
 		})));
 	};
 });

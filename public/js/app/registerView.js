@@ -169,8 +169,15 @@ define([
 								submit,
 							]),
 						]),
-						paragraph('Success!  You will now be signed in.').all([
-							fonts.ralewayThinBold,
+						stack({
+							gutterSize: separatorSize,
+						}, [
+							paragraph('Success!').all([
+								fonts.ralewayThinBold,
+							]),
+							paragraph('Please check your email to confirm your email address.').all([
+								fonts.ralewayThinBold,
+							]),
 						]),
 					], registeredViewIndex).all([
 						withMinWidth(300, true),

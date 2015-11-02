@@ -6,6 +6,11 @@ $(function () {
 		'Open Sans',
 		'Raleway Thin',
 	], function () {
-		$('body').append('<script src="app.js"></script>');
+		var interval = setInterval(function () {
+			if (document.readyState === 'complete') {
+				clearInterval(interval);
+				window.app();			
+			}
+		}, 100);
 	});
 });

@@ -132,10 +132,32 @@
 				name: 'emailConfirmationToken',
 				type: type.string,
 			}, {
+				name: 'passwordResetToken',
+				type: type.string,
+			}, {
+				name: 'passwordResetDate',
+				type: type.date,
+			}, {
 				name: 'passwordEncrypted',
 				type: type.string,
 			}, {
 				name: 'facebookId',
+				type: type.string,
+			}],
+			mayFind: never,
+			mayInsert: never,
+			mayUpdate: never,
+			mayRemove: never,
+		}, {
+			name: 'userEmailConfirmed',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'user',
+				type: type.id,
+			}, {
+				name: 'email',
 				type: type.string,
 			}],
 			mayFind: never,

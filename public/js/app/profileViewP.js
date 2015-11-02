@@ -16,7 +16,8 @@ define([
 	'storiesP',
 	'storyRowP',
 	'submitButton',
-], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton) {
+	'writeOnImage',
+], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
 	return function (user) {
 		return promiseComponent(meP.then(function (me) {
 			return adminP.then(function (admin) {
@@ -33,32 +34,107 @@ define([
 						}, 0);
 					});
 					var redBar = confettiBackground(bodyColumn(stack({}, [
-						holibirthdayRow(stack({
-							gutterSize: separatorSize / 2,
-							collapseGutters: true,
+						holibirthdayRow(sideBySide({
+							gutterSize: separatorSize,
+							useFullWidth: true,
 						}, [
-							text(profile.firstName + ' ' + profile.lastName).all([
-								fonts.ralewayThinBold,
-								$css('font-size', 40),
-							]),
-							profile.birthday ? text('Born on ' + moment(profile.birthday).format('MMMM Do')).all([
-								fonts.ralewayThinBold,
-								$css('font-size', 20),
-							]) : nothing,
+							alignTBM({
+								middle: stack({
+									gutterSize: separatorSize / 2,
+									collapseGutters: true,
+								}, [
+									text(profile.firstName + ' ' + profile.lastName).all([
+										fonts.ralewayThinBold,
+										$css('font-size', 40),
+									]),
+									profile.birthday ? text('Born on ' + moment(profile.birthday).format('MMMM Do')).all([
+										fonts.ralewayThinBold,
+										$css('font-size', 20),
+									]) : nothing,
+									promiseComponent(pointsTotalP.then(function (pointsTotal) {
+										return text('Holibirthday Points: ' + pointsTotal).all([
+											fonts.ralewayThinBold,
+											$css('font-size', 20),
+										]);
+									})),
+									me ? promiseComponent(db.contactOtherUser.findOne({
+										user: me._id,
+										otherUser: user,
+									}).then(function (cou) {
+										if (cou) {
+											return nothing;
+										}
+										else if (me._id === user) {
+											return linkTo('#!contacts', text('My Contacts').all([
+												fonts.ralewayThinBold,
+												$css('font-size', 20),
+											]));
+										}
+										return text('Add Contact').all([
+											fonts.ralewayThinBold,
+											$css('font-size', 20),
+											link,
+											clickThis(function (ev, disable) {
+												disable();
+												db.contactOtherUser.insert({
+													user: me._id,
+													otherUser: user,
+												}).then(function () {
+													window.location.hash = '#!contacts';
+													window.location.reload();
+												});
+											}),
+										]);
+									})) : nothing,
+								]),
+							}),
 							promiseComponent(db.holibirthday.findOne({
 								user: user,
 							}).then(function (holibirthday) {
 								if (holibirthday)
 								{
 									var date = new Date(holibirthday.date);
-									return linkTo('#!holibirthday/' + holibirthday.user, text('Holiborn on ' + moment(date).format('MMMM Do') + ' (view certificate)').all([
-										fonts.ralewayThinBold,
-										$css('font-size', 20),
-									]));
+									return linkTo('#!holibirthday/' + holibirthday.user, image({
+										src: writeOnImage({
+											width: 308,
+											height: 200,
+										}, './content/certificate-01-thumbnail.png', [{
+											center: {
+												x: 154,
+												y: 88,
+											},
+											text: profile.firstName + ' ' + profile.lastName,
+											font: 'bold 14px Raleway Thin',
+										}, {
+											center: {
+												x: 154,
+												y: 152,
+											},
+											text: moment(date).format('MMMM Do'),
+											font: 'bold 14px Raleway Thin',
+										}].concat(profile.birthday ? [{
+											center: {
+												x: 46,
+												y: 171,
+											},
+											text: 'Old Birthday',
+											font: '6px BebasNeue',
+										}, {
+											center: {
+												x: 46,
+												y: 176,
+											},
+											text: moment(profile.birthday).format('MMMM Do'),
+											font: '6px BebasNeue',
+										}] : [])),
+										useNativeSize: true,
+									}));
 								}
 								return meP.then(function (me) {
 									if (me && me._id === user) {
-										return linkTo('#!myHolibirthday', text('(claim a holibirthday)').all([
+										return linkTo('#!myHolibirthday', alignTBM({
+											middle: text('(claim a holibirthday)'),
+										}).all([
 											fonts.ralewayThinBold,
 										]));
 									}
@@ -67,41 +143,6 @@ define([
 									}
 								});
 							})),
-							promiseComponent(pointsTotalP.then(function (pointsTotal) {
-								return text('Holibirthday Points: ' + pointsTotal).all([
-									fonts.ralewayThinBold,
-									$css('font-size', 20),
-								]);
-							})),
-							me ? promiseComponent(db.contactOtherUser.findOne({
-								user: me._id,
-								otherUser: user,
-							}).then(function (cou) {
-								if (cou) {
-									return nothing;
-								}
-								else if (me._id === user) {
-									return linkTo('#!contacts', text('My Contacts').all([
-										fonts.ralewayThinBold,
-										$css('font-size', 20),
-									]));
-								}
-								return text('Add Contact').all([
-									fonts.ralewayThinBold,
-									$css('font-size', 20),
-									link,
-									clickThis(function (ev, disable) {
-										disable();
-										db.contactOtherUser.insert({
-											user: me._id,
-											otherUser: user,
-										}).then(function () {
-											window.location.hash = '#!contacts';
-											window.location.reload();
-										});
-									}),
-								]);
-							})) : nothing,
 						]), profile.imageUrl || './content/man.png').all([
 							withMinWidth(300, true),
 						]),

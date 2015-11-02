@@ -1,7 +1,5 @@
-requirejs.config({
-	baseUrl: 'js/app',
-});
-
-require(['app'], function (app) {
-	rootComponent(app);
-});
+window.app = function () {
+	require(['app'], function (app) {
+		rootComponent(app);
+	});
+};

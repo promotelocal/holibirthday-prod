@@ -74,6 +74,16 @@ define([
 					menuOpenStream.push(false);
 				});
 				var rightButtons = headerRightButtons(me, admin, signInStream);
+				var buttons = sideBySide({
+					gutterSize: separatorSize,
+				}, rightButtons);
+				var bars = headerButton(fonts.faI('bars')).all([
+					link,
+					clickThis(function (ev) {
+						menuOpenStream.push(!menuOpenStream.lastValue());
+						ev.stopPropagation();
+					}),
+				]);
 				return dropdownPanel(dropdownPanel(border(colors.middleGray, {
 					bottom: 1,
 				}, alignLRM({
@@ -101,6 +111,7 @@ define([
 											i.$el.css('opacity', (s > h) ? 1 : 0);
 										});
 									},
+									$css('transition', 'opacity 0.5s'),
 									clickThis(function () {
 										$('body').animate({scrollTop: 0}, 300);
 									}),
@@ -113,17 +124,9 @@ define([
 							right: componentStream(windowWidth.map(function (width) {
 								if (width > 560) {
 									menuOpenStream.push(false);
-									return sideBySide({
-										gutterSize: separatorSize,
-									}, rightButtons);
+									return buttons;
 								}
-								return headerButton(fonts.faI('bars')).all([
-									link,
-									clickThis(function (ev) {
-										menuOpenStream.push(!menuOpenStream.lastValue());
-										ev.stopPropagation();
-									}),
-								]);
+								return bars;
 							})),
 						}),
 					])),

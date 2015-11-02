@@ -31,9 +31,55 @@ define([], function () {
 			});
 		},
 		resendConfirmEmail: function (email) {
-			return $.post('/auth/resendConfirmEmail', {
-				locationOrigin: window.location.origin,
-				email: email,
+			return $.ajax({
+				type: 'post',
+				url: '/auth/resendConfirmEmail',
+				data: JSON.stringify({
+					email: email,
+				}),
+				contentType: 'application/json',
+				
+			});
+		},
+		resetPasswordRequest: function (options) {
+			return $.ajax({
+				type: 'post',
+				url: '/auth/resetPasswordRequest',
+				data: JSON.stringify({
+					email: options.email,
+				}),
+				contentType: 'application/json',
+			});
+		},
+		resetPassword: function (options) {
+			return $.ajax({
+				type: 'post',
+				url: '/auth/resetPassword',
+				data: JSON.stringify({
+					passwordResetToken: options.token,
+					password: options.password,
+				}),
+				contentType: 'application/json',
+			});
+		},
+		setPassword: function (options) {
+			return $.ajax({
+				type: 'post',
+				url: '/auth/setPassword',
+				data: JSON.stringify({
+					password: options.password,
+				}),
+				contentType: 'application/json',
+			});
+		},
+		confirmEmail: function (token) {
+			return $.ajax({
+				type: 'post',
+				url: '/auth/confirmEmail',
+				data: JSON.stringify({
+					emailConfirmationToken: token,
+				}),
+				contentType: 'application/json',
 			});
 		},
 		grecaptchaSitekeyP: $.get('/grecaptcha/sitekey'),

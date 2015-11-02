@@ -33,7 +33,7 @@ define([
 						var profile = profiles.filter(function (p) {
 							return p.user === pt.user;
 						})[0];
-						return linkTo('#!user/' + profile.user, sideBySide({
+						return profile ? linkTo('#!user/' + profile.user, sideBySide({
 							gutterSize: separatorSize,
 						}, [
 							alignTBM({
@@ -51,7 +51,7 @@ define([
 									fonts.h2,
 								]),
 							}),
-						]));
+						])) : nothing;
 					})),
 				})),
 			]);

@@ -26,6 +26,16 @@ define([
 				return promiseComponent(loadAsync('registerView'));
 			}),
 		}, {
+			string: '#!confirmEmail/',
+			router: routeMatchRest(function (token) {
+				return promiseComponent(loadAsync('confirmEmailView', [token]));
+			}),
+		}, {
+			string: '#!resetPassword/',
+			router: routeMatchRest(function (token) {
+				return promiseComponent(loadAsync('resetPasswordView', [token]));
+			}),
+		}, {
 			string: '#!design/',
 			router: routeMatchRest(function (id) {
 				return promiseComponent(loadAsync('gafyDesignView', [id]));
