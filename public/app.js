@@ -1946,7 +1946,7 @@ define('header', [
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
 			
-			buttons.push(linkTo('#!gifts', headerButton(siteCopyItems.find('Header Gifts'))));
+			// buttons.push(linkTo('#!gifts', headerButton(siteCopyItems.find('Header Gifts'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
 			if (me) {
@@ -2002,26 +2002,30 @@ define('header', [
 							left: toggleComponent([
 								linkTo('#!', image({
 									src: '/content/man3.png',
-									minHeight: 0,
-									chooseWidth: 0,
+									minHeight: 44,
+									minWidth: 55.45,
 								})),
 								image({
 									src: '/content/man3.png',
-									minHeight: 0,
-									chooseWidth: 0,
+									minHeight: 44,
+									minWidth: 55.45,
 								}).all([
 									function (i, context) {
-										i.$el.css('opacity', '0');
 										i.$el.css('cursor', 'pointer');
-										i.$el.css('transition', 'opacity 0.5s');
 										Stream.combine([
 											windowScroll,
 											context.height,
-										], function (s, h) {
-											i.$el.css('opacity', (s > h) ? 1 : 0);
+											windowHash,
+										], function (s, h, hash) {
+											i.$el.css('opacity', ((hash === '' ||
+																   hash === '#' ||
+																   hash === '#!') &&
+																  s > 0) ? 1 : 0);
+											setTimeout(function () {
+												i.$el.css('transition', 'opacity 0.1s');
+											});
 										});
 									},
-									$css('transition', 'opacity 0.5s'),
 									clickThis(function () {
 										$('body').animate({scrollTop: 0}, 300);
 									}),
@@ -2184,7 +2188,9 @@ define('prettyForms', [
 				text(config.name).all([
 					fonts.ralewayThinBold,
 				]).all(config.labelAll || []),
-				forms.inputBox(config.stream, config.type, config.fieldName),
+				alignLRM({
+					left: forms.inputBox(config.stream, config.type, config.fieldName),
+				}),
 			]);
 		},
 		select: function (config) {
