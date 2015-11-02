@@ -11,7 +11,9 @@ define([
 				text(config.name).all([
 					fonts.ralewayThinBold,
 				]).all(config.labelAll || []),
-				forms.inputBox(config.stream, config.type, config.fieldName),
+				alignLRM({
+					left: forms.inputBox(config.stream, config.type, config.fieldName),
+				}),
 			]);
 		},
 		select: function (config) {
