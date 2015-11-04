@@ -29,19 +29,18 @@ define([
 		var emailResent = toggleHeight(emailResentS)(text('Resent!'));
 		
 		var incorrectEmailOrPasswordS = Stream.once(false);
-		var incorrectEmailOrPassword = text('Incorrect email or password');
-		// var incorrectEmailOrPassword = toggleHeight(incorrectEmailOrPasswordS)(text('Incorrect email or password (click to reset)').all([
-		// 	link,
-		// 	clickThis(function (ev, disable) {
-		// 		disable();
-		// 		auth.resetPasswordRequest({
-		// 			email: model.username.lastValue(),
-		// 		}).then(function () {
-		// 			incorrectEmailOrPasswordS.push(false);
-		// 			resetEmailSentS.push(true);
-		// 		});
-		// 	}),
-		// ]));
+		var incorrectEmailOrPassword = toggleHeight(incorrectEmailOrPasswordS)(text('Incorrect email or password (click to reset)').all([
+			link,
+			clickThis(function (ev, disable) {
+				disable();
+				auth.resetPasswordRequest({
+					email: model.username.lastValue(),
+				}).then(function () {
+					incorrectEmailOrPasswordS.push(false);
+					resetEmailSentS.push(true);
+				});
+			}),
+		]));
 
 		var resetEmailSentS = Stream.once(false);
 		var resetEmailSent = toggleHeight(resetEmailSentS)(text('Check your email!'));
@@ -66,12 +65,12 @@ define([
 					window.location.hash = '#!';
 					window.location.reload();
 				}, function (err) {
-					// if (err.responseText.indexOf('confirm') !== -1) {
-					// 	emailNotConfirmedS.push(true);
-					// }
-					// else {
+					if (err.responseText.indexOf('confirm') !== -1) {
+						emailNotConfirmedS.push(true);
+					}
+					else {
 						incorrectEmailOrPasswordS.push(true);
-					// }
+					}
 				});
 			}
 		});
