@@ -2851,7 +2851,6 @@ define('chooseNonHoliday', [], function () {
 		};
 
 		var matchesAnyHoliday = function (date) {
-
 			if (date.month === 10) {
 				if (date.dayTens >= 2) {
 					return true;
