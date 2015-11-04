@@ -18,8 +18,9 @@ define([
 				}),
 			}),
 			adjustMinSize({
-				mw: function (mh) {
-					return Math.max(300, mh);
+				mw: function (mw) {
+					console.log(mw);
+					return Math.max(300, mw);
 				},
 				mh: function (mh) {
 					return Math.max(240, mh);

@@ -5192,23 +5192,21 @@ define('storyRowP', [
 				n += 1;
 				paragraphs.push(paragraph($paragraph.html() || ""));
 			}
-			return a.all([
-				$prop('href', '#!story/' + story._id),
-				child(holibirthdayRow(stack({
-					gutterSize: separatorSize,
-				}, [
-					text(story.name).all([
-						fonts.ralewayThinBold,
-						$css('font-size', 40),
-					]),
-					stack({}, paragraphs),
-					linkTo('#!user/' + profile.user, text('by ' + profile.firstName + ' ' + profile.lastName).all([
-						fonts.ralewayThinBold,
-					])),
-					
-				]), story.imageUrl || './content/man.png')),
-				wireChildren(passThroughToFirst),
-			]);
+			return linkTo('#!story/' + story._id, holibirthdayRow(stack({
+				gutterSize: separatorSize,
+			}, [
+				text(story.name).all([
+					fonts.ralewayThinBold,
+					$css('font-size', 40),
+				]),
+				stack({}, paragraphs),
+				linkTo('#!user/' + profile.user, text('by ' + profile.firstName + ' ' + profile.lastName).all([
+					fonts.ralewayThinBold,
+				])),
+				
+			]).all([
+				withMinWidth(300, true),
+			]), story.imageUrl || './content/man.png'));
 		}));
 	};
 });
@@ -7289,8 +7287,9 @@ define('holibirthdayRow', [
 				}),
 			}),
 			adjustMinSize({
-				mw: function (mh) {
-					return Math.max(300, mh);
+				mw: function (mw) {
+					console.log(mw);
+					return Math.max(300, mw);
 				},
 				mh: function (mh) {
 					return Math.max(240, mh);
