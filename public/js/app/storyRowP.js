@@ -24,7 +24,7 @@ define([
 			return linkTo('#!story/' + story._id, holibirthdayRow(stack({
 				gutterSize: separatorSize,
 			}, [
-				text(story.name).all([
+				paragraph(story.name).all([
 					fonts.ralewayThinBold,
 					$css('font-size', 40),
 				]),
