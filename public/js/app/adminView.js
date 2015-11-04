@@ -800,36 +800,42 @@ define([
 							var birthday = moment(famousBirthday.birthday);
 							var month = birthday.month();
 							var day = birthday.date();
-							people[month] = people[month] || [];
+							people[month] = people[month] || [[]];
 							people[month][day] = people[month][day] || [];
 							people[month][day].push(famousBirthday);
 						});
+						var whichMonthS = Stream.once(months[0]);
 						return stack({
 							gutterSize: separatorSize,
-						}, people.map(function (daysInMonth, monthIndex) {
-							return stack({
-								gutterSize: separatorSize,
-							}, daysInMonth.map(function (famousBirthdays, dayIndex) {
-								return stack({}, [
-									text(months[monthIndex] + ' ' + dayIndex).all([
-										fonts.h2,
-									]),
-									stack({}, famousBirthdays.map(function (famousBirthday) {
-										return famousBirthdaySmall(famousBirthday).all([
-											link,
-											clickThis(function () {
-												editingFamousBirthdayIdS.push(famousBirthday._id);
-												tabS.push(2);
-											}),
-										]);
-									})),
-								]);
-							}).filter(function (a) {
-								return a;
-							}));
-						}).filter(function (a) {
-							return a;
-						}));
+						}, [
+							prettyForms.select({
+								name: 'Month',
+								options: months,
+								stream: whichMonthS,
+							}),
+							componentStream(whichMonthS.map(function (monthName) {
+								var monthIndex = months.indexOf(monthName);
+								var daysInMonth = people[monthIndex];
+								return stack({
+									gutterSize: separatorSize,
+								}, daysInMonth.map(function (famousBirthdays, dayIndex) {
+									return dayIndex === 0 ? nothing : stack({}, [
+										text(months[monthIndex] + ' ' + dayIndex).all([
+											fonts.h2,
+										]),
+										stack({}, famousBirthdays.map(function (famousBirthday) {
+											return famousBirthdaySmall(famousBirthday).all([
+												link,
+												clickThis(function () {
+													editingFamousBirthdayIdS.push(famousBirthday._id);
+													tabS.push(2);
+												}),
+											]);
+										})),
+									]);
+								}));
+							})),
+						]);
 					})),
 				])),
 			}, {
@@ -979,12 +985,12 @@ define([
 		tabs([{
 			tab: tab('Daily Theme'),
 			content: content(dailyThemesEditor),
-		}, {
-			tab: tab('Gafy Styles'),
-			content: content(stylesEditor),
-		}, {
-			tab: tab('Gafy Designs'),
-			content: content(designsEditor),
+		// }, {
+		// 	tab: tab('Gafy Styles'),
+		// 	content: content(stylesEditor),
+		// }, {
+		// 	tab: tab('Gafy Designs'),
+		// 	content: content(designsEditor),
 		}, {
 			tab: tab('Site Copy'),
 			content: content(copyEditor),

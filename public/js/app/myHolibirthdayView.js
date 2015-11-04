@@ -5,6 +5,7 @@ define([
 	'colors',
 	'confettiBackground',
 	'db',
+	'famousBirthdaysDisplay',
 	'fonts',
 	'holibirthdayRow',
 	'meP',
@@ -14,7 +15,7 @@ define([
 	'separatorSize',
 	'signInForm',
 	'submitButton',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -87,40 +88,6 @@ define([
 				];
 			}),
 		]);
-	};
-	
-	var famousBirthdaysDisplay = function (famousBirthdays) {
-		return famousBirthdays.length > 0 ? bodyColumn(stack({
-			gutterSize: separatorSize,
-		}, [
-			text('People with Nearby Birthdays').all([
-				fonts.h1,
-				fonts.ralewayThinBold,
-			]),
-			grid({
-				gutterSize: separatorSize,
-				handleSurplusWidth: evenSplitSurplusWidth,
-			}, famousBirthdays.map(function (fb) {
-				return stack({
-					gutterSize: separatorSize,
-				}, [
-					text(fb.name).all([
-						fonts.ralewayThinBold,
-						$css('text-align', 'center'),
-					]),
-					text(moment(fb.birthday).format('MMMM Do')).all([
-						fonts.ralewayThinBold,
-						$css('text-align', 'center'),
-					]),
-					alignLRM({
-						middle: image({
-							src: fb.imageUrl,
-							minWidth: 200,
-						}),
-					}),
-				]);
-			})),
-		])) : nothing;
 	};
 	
 	var birthdayMachine = function (dateStream) {

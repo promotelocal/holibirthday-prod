@@ -114,6 +114,7 @@
 		"routeToFirst": false,
 
 		"windowHash": false,
+		"windowHeight": false,
 		"windowScroll": false,
 		"windowWidth": false
 	}

@@ -7,6 +7,7 @@ define([
 	'db',
 	'fonts',
 	'holibirthdayRow',
+	'holibirthdayView',
 	'meP',
 	'months',
 	'profilesP',
@@ -17,8 +18,47 @@ define([
 	'storyRowP',
 	'submitButton',
 	'writeOnImage',
-], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
+], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
 	return function (user) {
+		var modalOnS = Stream.create();
+		$('body').on('click', function () {
+			modalOnS.push(false);
+		});
+		var asRoot = function (config) {
+			return function (c) {
+				return div.all([
+					child(c),
+					wireChildren(function (instance, context, i) {
+						i.minWidth.pushAll(instance.minWidth);
+						i.minHeight.pushAll(instance.minHeight);
+						return [{
+							top: Stream.combine([
+								context.top,
+								context.topAccum,
+							], function (top, topAccum) {
+								return config.top(top + topAccum);
+							}),
+							left: Stream.combine([
+								context.left,
+								context.leftAccum,
+							], function (left, leftAccum) {
+								return config.left(left + leftAccum);
+							}),
+							width: windowWidth,
+							height: windowHeight,
+						}];
+					}),
+				]);
+			};
+		};
+		var holibirthdayModal = asRoot({
+			top: function (top) {
+				return -top;
+			},
+			left: function (left) {
+				return -left;
+			},
+		})(holibirthdayView(user));
 		return promiseComponent(meP.then(function (me) {
 			return adminP.then(function (admin) {
 				return profilesP.then(function (profiles) {
@@ -226,7 +266,7 @@ define([
 					}));
 
 					var editButton = admin || (me && me._id === profile.user) ? alignLRM({
-						middle: linkTo('#!editProfile/' + me._id, submitButton(black, text('Edit Profile').all([
+						middle: linkTo('#!editProfile/' + user, submitButton(black, text('Edit Profile').all([
 							fonts.bebasNeue,
 						]))),
 					}) : nothing;
@@ -239,6 +279,7 @@ define([
 						storiesC,
 						pointsC,
 						editButton,
+						// holibirthdayModal,
 					]);
 				});
 			});

@@ -96,9 +96,9 @@ define([
 						return stack({
 							gutterSize: separatorSize,
 						}, [
-							confettiBackground(bodyColumn(holibirthdayRow(text('Edit Your Profile').all([
+							confettiBackground(bodyColumn(holibirthdayRow(text('Edit Profile').all([
 								fonts.h1,
-							])))),
+							]), profile.imageUrl))),
 							bodyColumn(stack({
 								gutterSize: separatorSize,
 							}, [

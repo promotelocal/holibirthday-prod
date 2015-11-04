@@ -79,7 +79,7 @@ define([
 					stream: Stream.create(),
 				}, function (file) {
 					db.uploadFile(file).then(function (filename) {
-						config.stream.push('/api/uploadFile/find?filename=' + encodeURIComponent(filename));
+						config.stream.push('/api/uploadFile/find/' + encodeURIComponent(filename));
 					});
 				}).all([
 					withMinWidth(300, true),

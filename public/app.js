@@ -5,6 +5,7 @@ define('myHolibirthdayView', [
 	'colors',
 	'confettiBackground',
 	'db',
+	'famousBirthdaysDisplay',
 	'fonts',
 	'holibirthdayRow',
 	'meP',
@@ -14,7 +15,7 @@ define('myHolibirthdayView', [
 	'separatorSize',
 	'signInForm',
 	'submitButton',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -87,40 +88,6 @@ define('myHolibirthdayView', [
 				];
 			}),
 		]);
-	};
-	
-	var famousBirthdaysDisplay = function (famousBirthdays) {
-		return famousBirthdays.length > 0 ? bodyColumn(stack({
-			gutterSize: separatorSize,
-		}, [
-			text('People with Nearby Birthdays').all([
-				fonts.h1,
-				fonts.ralewayThinBold,
-			]),
-			grid({
-				gutterSize: separatorSize,
-				handleSurplusWidth: evenSplitSurplusWidth,
-			}, famousBirthdays.map(function (fb) {
-				return stack({
-					gutterSize: separatorSize,
-				}, [
-					text(fb.name).all([
-						fonts.ralewayThinBold,
-						$css('text-align', 'center'),
-					]),
-					text(moment(fb.birthday).format('MMMM Do')).all([
-						fonts.ralewayThinBold,
-						$css('text-align', 'center'),
-					]),
-					alignLRM({
-						middle: image({
-							src: fb.imageUrl,
-							minWidth: 200,
-						}),
-					}),
-				]);
-			})),
-		])) : nothing;
 	};
 	
 	var birthdayMachine = function (dateStream) {
@@ -941,9 +908,9 @@ define('profileEditViewP', [
 						return stack({
 							gutterSize: separatorSize,
 						}, [
-							confettiBackground(bodyColumn(holibirthdayRow(text('Edit Your Profile').all([
+							confettiBackground(bodyColumn(holibirthdayRow(text('Edit Profile').all([
 								fonts.h1,
-							])))),
+							]), profile.imageUrl))),
 							bodyColumn(stack({
 								gutterSize: separatorSize,
 							}, [
@@ -2256,7 +2223,7 @@ define('prettyForms', [
 					stream: Stream.create(),
 				}, function (file) {
 					db.uploadFile(file).then(function (filename) {
-						config.stream.push('/api/uploadFile/find?filename=' + encodeURIComponent(filename));
+						config.stream.push('/api/uploadFile/find/' + encodeURIComponent(filename));
 					});
 				}).all([
 					withMinWidth(300, true),
@@ -4054,36 +4021,42 @@ define('adminView', [
 							var birthday = moment(famousBirthday.birthday);
 							var month = birthday.month();
 							var day = birthday.date();
-							people[month] = people[month] || [];
+							people[month] = people[month] || [[]];
 							people[month][day] = people[month][day] || [];
 							people[month][day].push(famousBirthday);
 						});
+						var whichMonthS = Stream.once(months[0]);
 						return stack({
 							gutterSize: separatorSize,
-						}, people.map(function (daysInMonth, monthIndex) {
-							return stack({
-								gutterSize: separatorSize,
-							}, daysInMonth.map(function (famousBirthdays, dayIndex) {
-								return stack({}, [
-									text(months[monthIndex] + ' ' + dayIndex).all([
-										fonts.h2,
-									]),
-									stack({}, famousBirthdays.map(function (famousBirthday) {
-										return famousBirthdaySmall(famousBirthday).all([
-											link,
-											clickThis(function () {
-												editingFamousBirthdayIdS.push(famousBirthday._id);
-												tabS.push(2);
-											}),
-										]);
-									})),
-								]);
-							}).filter(function (a) {
-								return a;
-							}));
-						}).filter(function (a) {
-							return a;
-						}));
+						}, [
+							prettyForms.select({
+								name: 'Month',
+								options: months,
+								stream: whichMonthS,
+							}),
+							componentStream(whichMonthS.map(function (monthName) {
+								var monthIndex = months.indexOf(monthName);
+								var daysInMonth = people[monthIndex];
+								return stack({
+									gutterSize: separatorSize,
+								}, daysInMonth.map(function (famousBirthdays, dayIndex) {
+									return dayIndex === 0 ? nothing : stack({}, [
+										text(months[monthIndex] + ' ' + dayIndex).all([
+											fonts.h2,
+										]),
+										stack({}, famousBirthdays.map(function (famousBirthday) {
+											return famousBirthdaySmall(famousBirthday).all([
+												link,
+												clickThis(function () {
+													editingFamousBirthdayIdS.push(famousBirthday._id);
+													tabS.push(2);
+												}),
+											]);
+										})),
+									]);
+								}));
+							})),
+						]);
 					})),
 				])),
 			}, {
@@ -4233,12 +4206,12 @@ define('adminView', [
 		tabs([{
 			tab: tab('Daily Theme'),
 			content: content(dailyThemesEditor),
-		}, {
-			tab: tab('Gafy Styles'),
-			content: content(stylesEditor),
-		}, {
-			tab: tab('Gafy Designs'),
-			content: content(designsEditor),
+		// }, {
+		// 	tab: tab('Gafy Styles'),
+		// 	content: content(stylesEditor),
+		// }, {
+		// 	tab: tab('Gafy Designs'),
+		// 	content: content(designsEditor),
 		}, {
 			tab: tab('Site Copy'),
 			content: content(copyEditor),
@@ -5180,9 +5153,10 @@ define('gafyColors', [], function () {
 });
 define('storyRowP', [
 	'fonts',
+	'holibirthdayRow',
 	'profilesP',
 	'separatorSize',
-], function (fonts, profilesP, separatorSize) {
+], function (fonts, holibirthdayRow, profilesP, separatorSize) {
 	return function (story) {
 		return promiseComponent(profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
@@ -5202,34 +5176,19 @@ define('storyRowP', [
 			}
 			return a.all([
 				$prop('href', '#!story/' + story._id),
-				child(grid({
-					handleSurplusWidth: giveToSecond,
+				child(holibirthdayRow(stack({
+					gutterSize: separatorSize,
 				}, [
-					alignTBM({
-						middle: image({
-							src: story.imageUrl || './content/man.png',
-							minWidth: 300,
-							chooseHeight: 0,
-						}),
-					}),
-					padding({
-						left: 30,
-						right: 30,
-					}, stack({
-						gutterSize: separatorSize,
-					}, [
-						text(story.name).all([
-							fonts.ralewayThinBold,
-							$css('font-size', 40),
-						]),
-						stack({}, paragraphs),
-						linkTo('#!user/' + profile.user, text('by ' + profile.firstName + ' ' + profile.lastName).all([
-							fonts.ralewayThinBold,
-						])),
-					])).all([
-						withMinWidth(300, true),
+					text(story.name).all([
+						fonts.ralewayThinBold,
+						$css('font-size', 40),
 					]),
-				])),
+					stack({}, paragraphs),
+					linkTo('#!user/' + profile.user, text('by ' + profile.firstName + ' ' + profile.lastName).all([
+						fonts.ralewayThinBold,
+					])),
+					
+				]), story.imageUrl || './content/man.png')),
 				wireChildren(passThroughToFirst),
 			]);
 		}));
@@ -5251,6 +5210,45 @@ define('daysByMonth', [], function () {
 		'December': 31,
 	};
 })
+define('famousBirthdaysDisplay', [
+	'bodyColumn',
+	'fonts',
+	'separatorSize',
+], function (bodyColumn, fonts, separatorSize) {
+	return function (famousBirthdays) {
+		return famousBirthdays.length > 0 ? bodyColumn(stack({
+			gutterSize: separatorSize,
+		}, [
+			text('People with Nearby Birthdays').all([
+				fonts.h1,
+				fonts.ralewayThinBold,
+			]),
+			grid({
+				gutterSize: separatorSize,
+				handleSurplusWidth: evenSplitSurplusWidth,
+			}, famousBirthdays.map(function (fb) {
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					text(fb.name).all([
+						fonts.ralewayThinBold,
+						$css('text-align', 'center'),
+					]),
+					text(moment(fb.birthday).format('MMMM Do')).all([
+						fonts.ralewayThinBold,
+						$css('text-align', 'center'),
+					]),
+					alignLRM({
+						middle: image({
+							src: fb.imageUrl,
+							minWidth: 200,
+						}),
+					}),
+				]);
+			})),
+		])) : nothing;
+	};
+});
 define('gafy', [], function () {
 	return {
 		colorsForDesignAndStyle: function (design, style) {
@@ -6194,6 +6192,7 @@ define('profileViewP', [
 	'db',
 	'fonts',
 	'holibirthdayRow',
+	'holibirthdayView',
 	'meP',
 	'months',
 	'profilesP',
@@ -6204,8 +6203,47 @@ define('profileViewP', [
 	'storyRowP',
 	'submitButton',
 	'writeOnImage',
-], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
+], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
 	return function (user) {
+		var modalOnS = Stream.create();
+		$('body').on('click', function () {
+			modalOnS.push(false);
+		});
+		var asRoot = function (config) {
+			return function (c) {
+				return div.all([
+					child(c),
+					wireChildren(function (instance, context, i) {
+						i.minWidth.pushAll(instance.minWidth);
+						i.minHeight.pushAll(instance.minHeight);
+						return [{
+							top: Stream.combine([
+								context.top,
+								context.topAccum,
+							], function (top, topAccum) {
+								return config.top(top + topAccum);
+							}),
+							left: Stream.combine([
+								context.left,
+								context.leftAccum,
+							], function (left, leftAccum) {
+								return config.left(left + leftAccum);
+							}),
+							width: windowWidth,
+							height: windowHeight,
+						}];
+					}),
+				]);
+			};
+		};
+		var holibirthdayModal = asRoot({
+			top: function (top) {
+				return -top;
+			},
+			left: function (left) {
+				return -left;
+			},
+		})(holibirthdayView(user));
 		return promiseComponent(meP.then(function (me) {
 			return adminP.then(function (admin) {
 				return profilesP.then(function (profiles) {
@@ -6413,7 +6451,7 @@ define('profileViewP', [
 					}));
 
 					var editButton = admin || (me && me._id === profile.user) ? alignLRM({
-						middle: linkTo('#!editProfile/' + me._id, submitButton(black, text('Edit Profile').all([
+						middle: linkTo('#!editProfile/' + user, submitButton(black, text('Edit Profile').all([
 							fonts.bebasNeue,
 						]))),
 					}) : nothing;
@@ -6426,6 +6464,7 @@ define('profileViewP', [
 						storiesC,
 						pointsC,
 						editButton,
+						holibirthdayModal,
 					]);
 				});
 			});
