@@ -4773,6 +4773,7 @@ define('profileViewP', [
 			function (instance) {
 				modalOnS.map(function (on) {
 					instance.$el.css('z-index', on ? 1000 : -1);
+					instance.$el.css('display', on ? '' : 'none');
 				});
 			},
 		]));
@@ -4848,7 +4849,7 @@ define('profileViewP', [
 							promiseComponent(db.holibirthday.findOne({
 								user: user,
 							}).then(function (holibirthday) {
-								if (holibirthday)
+								if (profile.holibirther && holibirthday)
 								{
 									var date = new Date(holibirthday.date);
 									return image({
@@ -7434,7 +7435,7 @@ define('myHolibirthdayView', [
 					left: 20,
 					right: 20,
 				}, alignLRM({
-					middle: text(option).all([
+					middle: text(option + '').all([
 						fonts.bebasNeue,
 						$css('font-size', 40),
 					]),
@@ -7481,10 +7482,10 @@ define('myHolibirthdayView', [
 				
 				chooseLargest(is.map(function (i) {
 					return i.minHeight;
-				})).test().pushAll(instance.minHeight);
+				})).pushAll(instance.minHeight);
 				chooseLargest(is.map(function (i) {
 					return i.minWidth;
-				})).test().pushAll(instance.minWidth);
+				})).pushAll(instance.minWidth);
 				return [
 					is.map(function () {
 						return {
@@ -7616,7 +7617,6 @@ define('myHolibirthdayView', [
 	};
 
 	return promiseComponent(db.famousBirthday.find({}).then(function (famousBirthdays) {
-		var withinDays = 15;
 		var famousBirthdaysForDate = function (date) {
 			if (!date) {
 				return [];
@@ -7628,30 +7628,22 @@ define('myHolibirthdayView', [
 		};
 		
 		return meP.then(function (me) {
-			if (!me) {
-				return stack({}, [
-					bodyColumn(text('You must sign in to claim a holibirthday').all([
-						fonts.h1,
-					])),
-					signInForm(),
-				]);
-			}
-			return profileP.then(function (profile) {
-				var holibirthday = {
-					user: Stream.once(me._id),
-					date: Stream.once(null),
-				};
+			if (me) {
+				return profileP.then(function (profile) {
+					var holibirthday = {
+						user: Stream.once(me._id),
+						date: Stream.once(null),
+					};
 
-				var lastHolibirthday;
-				Stream.combineObject(holibirthday).onValue(function (v) {
-					lastHolibirthday = v;
-				});
-				var playTheMachine = Stream.once(false);
-				holibirthday.date.map(function () {
-					return false;
-				}).pushAll(playTheMachine);
-				
-				if (me) {
+					var lastHolibirthday;
+					Stream.combineObject(holibirthday).onValue(function (v) {
+						lastHolibirthday = v;
+					});
+					var playTheMachine = Stream.once(false);
+					holibirthday.date.map(function () {
+						return false;
+					}).pushAll(playTheMachine);
+					
 					var machine = function (oldHolibirthday) {
 						return stack({
 							gutterSize: separatorSize,
@@ -7672,20 +7664,26 @@ define('myHolibirthdayView', [
 									link,
 									clickThis(function () {
 										if (lastHolibirthday) {
-											if (oldHolibirthday) {
-												db.holibirthday.update({
-													user: me._id,
-												}, lastHolibirthday).then(function () {
-													window.location.hash = '#!user/' + me._id + '/certificate';
-													window.location.reload();
-												});
-											}
-											else {
-												db.holibirthday.insert(lastHolibirthday).then(function () {
-													window.location.hash = '#!user/' + me._id + '/certificate';
-													window.location.reload();
-												});
-											}
+											db.profile.update({
+												user: me._id,
+											}, {
+												holibirther: true,
+											}).then(function () {
+												if (oldHolibirthday) {
+													db.holibirthday.update({
+														user: me._id,
+													}, lastHolibirthday).then(function () {
+														window.location.hash = '#!user/' + me._id + '/certificate';
+														window.location.reload();
+													});
+												}
+												else {
+													db.holibirthday.insert(lastHolibirthday).then(function () {
+														window.location.hash = '#!user/' + me._id + '/certificate';
+														window.location.reload();
+													});
+												}
+											});
 										}
 										else {
 											playTheMachine.push(true);
@@ -7698,7 +7696,7 @@ define('myHolibirthdayView', [
 					return db.holibirthday.findOne({
 						user: me._id,
 					}).then(function (oldHolibirthday) {
-						if (profile.holibirther && oldHolibirthday) {
+						if (profile.holibirthday && oldHolibirthday) {
 							var oldHolibirthdate = new Date(oldHolibirthday.date);
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
@@ -7739,19 +7737,17 @@ define('myHolibirthdayView', [
 							]);
 						}
 					});
-				}
-				return bodyColumn(stack({
-					gutterSize: separatorSize,
-				}, [
-					nothing,
-					paragraph('You must sign in to claim a holibirthday').all([
-						$css('font-size', '30px'),
-						fonts.bebasNeue,
-					]),
-
-					signInForm(),
-				]));
-			});
+				});
+			}
+			return bodyColumn(stack({
+				gutterSize: separatorSize,
+			}, [
+				nothing,
+				paragraph('You must sign in to claim a holibirthday').all([
+					fonts.h1,
+				]),
+				signInForm(),
+			]));
 		});
 	}));
 });

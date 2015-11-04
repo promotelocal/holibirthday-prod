@@ -82,6 +82,7 @@ define([
 			function (instance) {
 				modalOnS.map(function (on) {
 					instance.$el.css('z-index', on ? 1000 : -1);
+					instance.$el.css('display', on ? '' : 'none');
 				});
 			},
 		]));
@@ -157,7 +158,7 @@ define([
 							promiseComponent(db.holibirthday.findOne({
 								user: user,
 							}).then(function (holibirthday) {
-								if (holibirthday)
+								if (profile.holibirther && holibirthday)
 								{
 									var date = new Date(holibirthday.date);
 									return image({
