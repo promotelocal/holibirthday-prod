@@ -215,10 +215,8 @@ define([
 				return [];
 			}
 			return famousBirthdays.filter(function (fb) {
-				fb.birthday.setYear(date.getFullYear());
-				var daysApart = Math.abs(date.getTime() - fb.birthday.getTime()) / 1000 / 60 / 60 / 24;
-				daysApart = Math.min(daysApart, 365 - daysApart);
-				return daysApart < withinDays;
+				return fb.birthday.getMonth() === date.getMonth() &&
+					fb.birthday.getDate() === date.getDate();
 			});
 		};
 		

@@ -215,10 +215,8 @@ define('myHolibirthdayView', [
 				return [];
 			}
 			return famousBirthdays.filter(function (fb) {
-				fb.birthday.setYear(date.getFullYear());
-				var daysApart = Math.abs(date.getTime() - fb.birthday.getTime()) / 1000 / 60 / 60 / 24;
-				daysApart = Math.min(daysApart, 365 - daysApart);
-				return daysApart < withinDays;
+				return fb.birthday.getMonth() === date.getMonth() &&
+					fb.birthday.getDate() === date.getDate();
 			});
 		};
 		
@@ -5215,7 +5213,7 @@ define('famousBirthdaysDisplay', [
 		return famousBirthdays.length > 0 ? bodyColumn(stack({
 			gutterSize: separatorSize,
 		}, [
-			text('People with Nearby Birthdays').all([
+			text('People with the Same Birthday').all([
 				fonts.h1,
 				fonts.ralewayThinBold,
 			]),
@@ -5227,10 +5225,6 @@ define('famousBirthdaysDisplay', [
 					gutterSize: separatorSize,
 				}, [
 					text(fb.name).all([
-						fonts.ralewayThinBold,
-						$css('text-align', 'center'),
-					]),
-					text(moment(fb.birthday).format('MMMM Do')).all([
 						fonts.ralewayThinBold,
 						$css('text-align', 'center'),
 					]),
@@ -6201,7 +6195,7 @@ define('profileViewP', [
 	'writeOnImage',
 ], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
 	return function (user) {
-		var modalOnS = Stream.create();
+		var modalOnS = Stream.once(false);
 		$('body').on('click', function () {
 			modalOnS.push(false);
 		});
@@ -6239,7 +6233,14 @@ define('profileViewP', [
 			left: function (left) {
 				return -left;
 			},
-		})(holibirthdayView(user));
+		})(holibirthdayView(user).all([
+			$css('transition', 'opacity 0.5s'),
+			function (instance) {
+				modalOnS.map(function (on) {
+					instance.$el.css('z-index', on ? 1000 : -1);
+				});
+			},
+		]));
 		return promiseComponent(meP.then(function (me) {
 			return adminP.then(function (admin) {
 				return profilesP.then(function (profiles) {

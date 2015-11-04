@@ -7,7 +7,7 @@ define([
 		return famousBirthdays.length > 0 ? bodyColumn(stack({
 			gutterSize: separatorSize,
 		}, [
-			text('People with Nearby Birthdays').all([
+			text('People with the Same Birthday').all([
 				fonts.h1,
 				fonts.ralewayThinBold,
 			]),
@@ -19,10 +19,6 @@ define([
 					gutterSize: separatorSize,
 				}, [
 					text(fb.name).all([
-						fonts.ralewayThinBold,
-						$css('text-align', 'center'),
-					]),
-					text(moment(fb.birthday).format('MMMM Do')).all([
 						fonts.ralewayThinBold,
 						$css('text-align', 'center'),
 					]),

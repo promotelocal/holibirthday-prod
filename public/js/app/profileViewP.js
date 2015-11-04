@@ -20,7 +20,7 @@ define([
 	'writeOnImage',
 ], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
 	return function (user) {
-		var modalOnS = Stream.create();
+		var modalOnS = Stream.once(false);
 		$('body').on('click', function () {
 			modalOnS.push(false);
 		});
@@ -58,7 +58,14 @@ define([
 			left: function (left) {
 				return -left;
 			},
-		})(holibirthdayView(user));
+		})(holibirthdayView(user).all([
+			$css('transition', 'opacity 0.5s'),
+			function (instance) {
+				modalOnS.map(function (on) {
+					instance.$el.css('z-index', on ? 1000 : -1);
+				});
+			},
+		]));
 		return promiseComponent(meP.then(function (me) {
 			return adminP.then(function (admin) {
 				return profilesP.then(function (profiles) {
