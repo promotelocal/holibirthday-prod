@@ -223,7 +223,7 @@ define([
 		return meP.then(function (me) {
 			if (!me) {
 				return stack({}, [
-					bodyColumn(text('You must sign in to choose a holibirthday').all([
+					bodyColumn(text('You must sign in to claim a holibirthday').all([
 						fonts.h1,
 					])),
 					signInForm(),
