@@ -2139,6 +2139,7 @@ define('leaderboardsView', [
 				bodyColumn(alignLRM({
 					middle: stack({
 						gutterSize: separatorSize,
+						collapseGutters: true,
 					}, pts.sort(function (pt1, pt2) {
 						return pt2.amount - pt1.amount;
 					}).map(function (pt) {
