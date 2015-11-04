@@ -2120,10 +2120,6 @@ define('holibirthdayView', [
 				return stack({
 					gutterSize: separatorSize,
 				}, [
-					confettiBackground(bodyColumn(linkTo('#!user/' + profile.user, holibirthdayRow(text(holibirthdayTitle).all([
-						fonts.ralewayThinBold,
-						fonts.h1,
-					]), profile.imageUrl)))),
 					holibirthday ?
 						componentStream(srcS.map(function (src) {
 							return bodyColumn(linkTo(src, image({
@@ -6464,7 +6460,7 @@ define('profileViewP', [
 						storiesC,
 						pointsC,
 						editButton,
-						holibirthdayModal,
+						// holibirthdayModal,
 					]);
 				});
 			});
