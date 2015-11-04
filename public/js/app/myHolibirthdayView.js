@@ -269,13 +269,13 @@ define([
 												db.holibirthday.update({
 													user: me._id,
 												}, lastHolibirthday).then(function () {
-													window.location.hash = '#!holibirthday/' + me._id;
+													window.location.hash = '#!user/' + me._id + '/certificate';
 													window.location.reload();
 												});
 											}
 											else {
 												db.holibirthday.insert(lastHolibirthday).then(function () {
-													window.location.hash = '#!holibirthday/' + me._id;
+													window.location.hash = '#!user/' + me._id + '/certificate';
 													window.location.reload();
 												});
 											}
@@ -297,7 +297,7 @@ define([
 							return stack({
 								gutterSize: separatorSize * 2,
 							}, [
-								linkTo('#!holibirthday/' + me._id, confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
+								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
 									text('Your Holibirthday Is').all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
