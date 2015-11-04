@@ -22,6 +22,10 @@ define([
 			return meP.then(function (me) {
 				var holibirthday = results[0];
 				var profile = results[1];
+				if (!holibirthday) {
+					return nothing;
+				}
+				
 				var holibirthdayTitle = profile.firstName + ' ' + profile.lastName + '\'s Holibirthday';
 
 				var srcS = Stream.create();
