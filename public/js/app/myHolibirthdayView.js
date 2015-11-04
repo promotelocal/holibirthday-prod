@@ -252,7 +252,7 @@ define([
 								])),
 							}),
 							alignLRM({
-								middle: submitButton(black, text(oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
+								middle: submitButton(black, text(profile.holibirthday && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
 									link,
 									clickThis(function () {
 										if (lastHolibirthday) {
@@ -321,7 +321,7 @@ define([
 									$css('font-size', 40),
 								])))),
 								bodyColumn(alignLRM({
-									middle: machine(),
+									middle: machine(holibirthday),
 								})),
 								componentStream(holibirthday.date.map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
