@@ -26,9 +26,13 @@ define([
 		$('body').on('click', function () {
 			modalOnS.push(false);
 		});
+		var first = false;
 		modalOnS.map(function (on) {
-			ignoreHashChange = true;
-			window.location.hash = '#!user/' + user + (on ? '/certificate' : '');
+			if (first) {
+				ignoreHashChange = true;
+				window.location.hash = '#!user/' + user + (on ? '/certificate' : '');
+			}
+			first = true;
 		});
 		var asRoot = function (config) {
 			return function (c) {
