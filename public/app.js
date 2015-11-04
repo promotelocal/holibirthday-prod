@@ -333,6 +333,7 @@ define('myHolibirthdayView', [
 						$css('font-size', '30px'),
 						fonts.bebasNeue,
 					]),
+
 					signInForm(),
 				]));
 			});
@@ -2047,6 +2048,7 @@ define('months', [], function () {
 });
 define('holibirthdayView', [
 	'bodyColumn',
+	'colors',
 	'confettiBackground',
 	'db',
 	'fonts',
@@ -2055,8 +2057,7 @@ define('holibirthdayView', [
 	'separatorSize',
 	'socialMedia',
 	'socialMediaButton',
-	'writeOnImage',
-], function (bodyColumn, confettiBackground, db, fonts, holibirthdayRow, meP, separatorSize, socialMedia, socialMediaButton, writeOnImage) {
+], function (bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, meP, separatorSize, socialMedia, socialMediaButton) {
 	return function (user) {
 		return promiseComponent(Q.all([
 			db.holibirthday.findOne({
@@ -2071,61 +2072,84 @@ define('holibirthdayView', [
 				var profile = results[1];
 				var holibirthdayTitle = profile.firstName + ' ' + profile.lastName + '\'s Holibirthday';
 
+				var srcS = Stream.create();
+				var canvas = document.createElement('canvas');
+				var $canvas = $(canvas);
+				$canvas.appendTo($('body'))
+					.prop('width', 1080)
+					.prop('height', 702);
+
+				var ctx = canvas.getContext('2d');
+
+				var drawCenteredText = function (p, text, font) {
+					ctx.font = font;
+					var width = ctx.measureText(text).width;
+					ctx.fillText(text, p.x - width / 2, p.y);
+				};
+				
+				var img = new Image();
+				img.onload = function() {
+					ctx.drawImage(img, 0, 0);
+					drawCenteredText({
+						x: 540,
+						y: 310,
+					}, profile.firstName + ' ' + profile.lastName, 'bold 30px Raleway Thin');
+					drawCenteredText({
+						x: 540,
+						y: 540,
+					}, moment(holibirthday.date).format('MMMM Do'), 'bold 30px Raleway Thin');
+					if (profile.birthday) {
+						drawCenteredText({
+							x: 160,
+							y: 595,
+						}, 'Old Birthday', '20px BebasNeue');
+						drawCenteredText({
+							x: 160,
+							y: 615,
+						}, moment(profile.birthday).format('MMMM Do'), '20px BebasNeue');
+					}
+					setTimeout(function () {
+						srcS.push(canvas.toDataURL());
+						$canvas.remove();
+					});
+				};
+				img.src = './content/certificate-01.png';
+				
 				var holibirthdaySocialMediaButton = socialMediaButton(function (verb) {
 					return verb + (me && me._id === profile.user ? ' your certificate' : ' this certificate');
 				});
 
-				var shareButtons = bodyColumn(sideBySide({
-					gutterSize: separatorSize,
-				}, [
-					holibirthdaySocialMediaButton(socialMedia.facebook),
-					holibirthdaySocialMediaButton(socialMedia.twitter),
-				]));
+				var shareButtons = bodyColumn(alignLRM({
+					middle: sideBySide({
+						gutterSize: separatorSize,
+					}, [
+						holibirthdaySocialMediaButton(socialMedia.facebook),
+						holibirthdaySocialMediaButton(socialMedia.twitter),
+					].map(function (b) {
+						return b.all([
+							withBackgroundColor(colors.pageBackgroundColor),
+							clickThis(function (ev) {
+								ev.stopPropagation();
+							}),
+						]);
+					})),
+				}));
 
-				var srcS = writeOnImage({
-					width: 1080,
-					height: 702,
-				}, './content/certificate-01.png', [{
-					center: {
-						x: 540,
-						y: 310,
-					},
-					text: profile.firstName + ' ' + profile.lastName,
-					font: 'bold 42px Raleway Thin',
-				}, {
-					center: {
-						x: 540,
-						y: 540,
-					},
-					text: moment(holibirthday.date).format('MMMM Do'),
-					font: 'bold 42px Raleway Thin',
-				}].concat(profile.birthday ? [{
-					center: {
-						x: 160,
-						y: 595,
-					},
-					text: 'Old Birthday',
-					font: '20px BebasNeue',
-				}, {
-					center: {
-						x: 160,
-						y: 615,
-					},
-					text: moment(profile.birthday).format('MMMM Do'),
-					font: '20px BebasNeue',
-				}] : []));
 
-				return stack({
+				return stack2({
 					gutterSize: separatorSize,
+					handleSurplusHeight: giveHeightToNth(0),
 				}, [
 					holibirthday ?
 						componentStream(srcS.map(function (src) {
-							return bodyColumn(linkTo(src, image({
+							return bodyColumn(keepAspectRatio(linkTo(src, image({
 								src: src,
-								minWidth: 0,
-								chooseHeight: true,
-							})));
-						})):
+								useNativeSize: true,
+							}))));
+						})).all([
+							withMinWidth(0, true),
+							withMinHeight(0, true),
+						]):
 						bodyColumn(text(profile.firstName + ' ' + profile.lastName + ' does not have a holibirthday!').all([
 							fonts.ralewayThinBold,
 							fonts.h1,
@@ -6194,24 +6218,30 @@ define('profileViewP', [
 	'submitButton',
 	'writeOnImage',
 ], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
-	return function (user) {
-		var modalOnS = Stream.once(false);
+	return function (route) {
+		var index = route.indexOf('/');
+		var user = (index === -1) ? route : route.substring(0, index);
+		var modalOnS = Stream.once(index !== -1);
 		$('body').on('click', function () {
 			modalOnS.push(false);
+		});
+		modalOnS.map(function (on) {
+			ignoreHashChange = true;
+			window.location.hash = '#!user/' + user + (on ? '/certificate' : '');
 		});
 		var asRoot = function (config) {
 			return function (c) {
 				return div.all([
 					child(c),
-					wireChildren(function (instance, context, i) {
-						i.minWidth.pushAll(instance.minWidth);
-						i.minHeight.pushAll(instance.minHeight);
+					wireChildren(function (instance, context) {
+						instance.minWidth.push(0);
+						instance.minHeight.push(0);
 						return [{
 							top: Stream.combine([
 								context.top,
-								context.topAccum,
-							], function (top, topAccum) {
-								return config.top(top + topAccum);
+								context.scroll,
+							], function (top, scroll) {
+								return config.top(top - scroll);
 							}),
 							left: Stream.combine([
 								context.left,
@@ -6233,7 +6263,16 @@ define('profileViewP', [
 			left: function (left) {
 				return -left;
 			},
-		})(holibirthdayView(user).all([
+		})(overlays([
+			nothing.all([
+				withBackgroundColor(color({
+					a: 0.5,
+				})),
+			]),
+			padding({
+				all: separatorSize,
+			}, holibirthdayView(user)),
+		]).all([
 			$css('transition', 'opacity 0.5s'),
 			function (instance) {
 				modalOnS.map(function (on) {
@@ -6256,7 +6295,7 @@ define('profileViewP', [
 						}, 0);
 					});
 					var redBar = confettiBackground(bodyColumn(stack({}, [
-						holibirthdayRow(sideBySide({
+						holibirthdayRow(grid({
 							gutterSize: separatorSize,
 							useFullWidth: true,
 						}, [
@@ -6316,7 +6355,7 @@ define('profileViewP', [
 								if (holibirthday)
 								{
 									var date = new Date(holibirthday.date);
-									return linkTo('#!holibirthday/' + holibirthday.user, image({
+									return image({
 										src: writeOnImage({
 											width: 308,
 											height: 200,
@@ -6350,7 +6389,13 @@ define('profileViewP', [
 											font: '6px BebasNeue',
 										}] : [])),
 										useNativeSize: true,
-									}));
+									}).all([
+										link,
+										clickThis(function (ev) {
+											modalOnS.push(true);
+											ev.stopPropagation();
+										}),
+									]);
 								}
 								return meP.then(function (me) {
 									if (me && me._id === user) {
@@ -6365,9 +6410,7 @@ define('profileViewP', [
 									}
 								});
 							})),
-						]), profile.imageUrl || './content/man.png').all([
-							withMinWidth(300, true),
-						]),
+						]), profile.imageUrl || './content/man.png'),
 					])));
 					var storiesC = promiseComponent(storiesP.then(function (stories) {
 						var profileStories = stories.filter(function (story) {
@@ -6461,7 +6504,7 @@ define('profileViewP', [
 						storiesC,
 						pointsC,
 						editButton,
-						// holibirthdayModal,
+						holibirthdayModal,
 					]);
 				});
 			});
@@ -7229,6 +7272,11 @@ define('giftDetailView', [
 define('holibirthdayRow', [
 	'separatorSize',
 ], function (separatorSize) {
+	var mwOver1000 = function (i) {
+		return i.minWidth.map(function (mw) {
+			console.log(mw);
+		});
+	};
 	return function (content, src) {
 		return grid({
 			handleSurplusWidth: giveToNth(1),
@@ -7240,15 +7288,18 @@ define('holibirthdayRow', [
 					chooseHeight: true,
 				}),
 			}),
-			adjustMinHeight(function (mh) {
-				return Math.max(240, mh);
+			adjustMinSize({
+				mw: function (mh) {
+					return Math.max(300, mh);
+				},
+				mh: function (mh) {
+					return Math.max(240, mh);
+				},
 			})(padding({
 				all: separatorSize,
 			}, alignTBM({
 				middle: content,
-			}))).all([
-				withMinWidth(300, true),
-			]),
+			}))),
 		]);
 	};
 });
@@ -7519,8 +7570,9 @@ define('siteCopyItem', [], function () {
 })
 define('pageRoutes', [
 	'meP',
+	'profileViewP',
 	'storiesP',
-], function (meP, storiesP) {
+], function (meP, profileViewP, storiesP) {
 	var loadAsync = function (thing, args) {
 		var d = Q.defer();
 		require([thing], function (thing) {
@@ -7634,7 +7686,7 @@ define('pageRoutes', [
 		}, {
 			string: '#!user/',
 			router: routeMatchRest(function (id) {
-				return promiseComponent(loadAsync('profileViewP', [id]));
+				return profileViewP(id);
 			}),
 		}, {
 			string: '#!editProfile/',

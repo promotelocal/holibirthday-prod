@@ -333,6 +333,7 @@ define([
 						$css('font-size', '30px'),
 						fonts.bebasNeue,
 					]),
+
 					signInForm(),
 				]));
 			});

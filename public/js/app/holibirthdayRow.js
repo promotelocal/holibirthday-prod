@@ -1,6 +1,11 @@
 define([
 	'separatorSize',
 ], function (separatorSize) {
+	var mwOver1000 = function (i) {
+		return i.minWidth.map(function (mw) {
+			console.log(mw);
+		});
+	};
 	return function (content, src) {
 		return grid({
 			handleSurplusWidth: giveToNth(1),
@@ -12,15 +17,18 @@ define([
 					chooseHeight: true,
 				}),
 			}),
-			adjustMinHeight(function (mh) {
-				return Math.max(240, mh);
+			adjustMinSize({
+				mw: function (mh) {
+					return Math.max(300, mh);
+				},
+				mh: function (mh) {
+					return Math.max(240, mh);
+				},
 			})(padding({
 				all: separatorSize,
 			}, alignTBM({
 				middle: content,
-			}))).all([
-				withMinWidth(300, true),
-			]),
+			}))),
 		]);
 	};
 });

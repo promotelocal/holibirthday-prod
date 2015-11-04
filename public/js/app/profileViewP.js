@@ -19,24 +19,30 @@ define([
 	'submitButton',
 	'writeOnImage',
 ], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
-	return function (user) {
-		var modalOnS = Stream.once(false);
+	return function (route) {
+		var index = route.indexOf('/');
+		var user = (index === -1) ? route : route.substring(0, index);
+		var modalOnS = Stream.once(index !== -1);
 		$('body').on('click', function () {
 			modalOnS.push(false);
+		});
+		modalOnS.map(function (on) {
+			ignoreHashChange = true;
+			window.location.hash = '#!user/' + user + (on ? '/certificate' : '');
 		});
 		var asRoot = function (config) {
 			return function (c) {
 				return div.all([
 					child(c),
-					wireChildren(function (instance, context, i) {
-						i.minWidth.pushAll(instance.minWidth);
-						i.minHeight.pushAll(instance.minHeight);
+					wireChildren(function (instance, context) {
+						instance.minWidth.push(0);
+						instance.minHeight.push(0);
 						return [{
 							top: Stream.combine([
 								context.top,
-								context.topAccum,
-							], function (top, topAccum) {
-								return config.top(top + topAccum);
+								context.scroll,
+							], function (top, scroll) {
+								return config.top(top - scroll);
 							}),
 							left: Stream.combine([
 								context.left,
@@ -58,7 +64,16 @@ define([
 			left: function (left) {
 				return -left;
 			},
-		})(holibirthdayView(user).all([
+		})(overlays([
+			nothing.all([
+				withBackgroundColor(color({
+					a: 0.5,
+				})),
+			]),
+			padding({
+				all: separatorSize,
+			}, holibirthdayView(user)),
+		]).all([
 			$css('transition', 'opacity 0.5s'),
 			function (instance) {
 				modalOnS.map(function (on) {
@@ -81,7 +96,7 @@ define([
 						}, 0);
 					});
 					var redBar = confettiBackground(bodyColumn(stack({}, [
-						holibirthdayRow(sideBySide({
+						holibirthdayRow(grid({
 							gutterSize: separatorSize,
 							useFullWidth: true,
 						}, [
@@ -141,7 +156,7 @@ define([
 								if (holibirthday)
 								{
 									var date = new Date(holibirthday.date);
-									return linkTo('#!holibirthday/' + holibirthday.user, image({
+									return image({
 										src: writeOnImage({
 											width: 308,
 											height: 200,
@@ -175,7 +190,13 @@ define([
 											font: '6px BebasNeue',
 										}] : [])),
 										useNativeSize: true,
-									}));
+									}).all([
+										link,
+										clickThis(function (ev) {
+											modalOnS.push(true);
+											ev.stopPropagation();
+										}),
+									]);
 								}
 								return meP.then(function (me) {
 									if (me && me._id === user) {
@@ -190,9 +211,7 @@ define([
 									}
 								});
 							})),
-						]), profile.imageUrl || './content/man.png').all([
-							withMinWidth(300, true),
-						]),
+						]), profile.imageUrl || './content/man.png'),
 					])));
 					var storiesC = promiseComponent(storiesP.then(function (stories) {
 						var profileStories = stories.filter(function (story) {
@@ -286,7 +305,7 @@ define([
 						storiesC,
 						pointsC,
 						editButton,
-						// holibirthdayModal,
+						holibirthdayModal,
 					]);
 				});
 			});

@@ -1,7 +1,8 @@
 define([
 	'meP',
+	'profileViewP',
 	'storiesP',
-], function (meP, storiesP) {
+], function (meP, profileViewP, storiesP) {
 	var loadAsync = function (thing, args) {
 		var d = Q.defer();
 		require([thing], function (thing) {
@@ -115,7 +116,7 @@ define([
 		}, {
 			string: '#!user/',
 			router: routeMatchRest(function (id) {
-				return promiseComponent(loadAsync('profileViewP', [id]));
+				return profileViewP(id);
 			}),
 		}, {
 			string: '#!editProfile/',
