@@ -15,7 +15,7 @@ define([], function () {
 		};
 		return {
 			facebook: {
-				icon: '<i class="fa fa-facebook"></i>',
+				icon: '<i\tclass="fa\tfa-facebook"></i>',
 				color: color({
 					r: 59,
 					g: 89,
@@ -40,7 +40,7 @@ define([], function () {
 				},
 			},
 			twitter: {
-				icon: '<i class="fa fa-twitter"></i>',
+				icon: '<i\tclass="fa\tfa-twitter"></i>',
 				color: color({
 					r: 0,
 					g: 172,

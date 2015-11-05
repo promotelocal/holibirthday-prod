@@ -1534,12 +1534,11 @@ define('fonts', [], function () {
 				i.updateDimensions();
 			});
 		},
-
 		fa: function (fontAwesomeIcon) {
-			return text('<i class="fa fa-' + fontAwesomeIcon + '"></i>');
+			return text('<i\tclass="fa\tfa-' + fontAwesomeIcon + '"></i>');
 		},
 		faI: function (fontAwesomeIcon) {
-			return '<i class="fa fa-' + fontAwesomeIcon + '"></i>';
+			return '<i\tclass="fa\tfa-' + fontAwesomeIcon + '"></i>';
 		},
 	};
 });	
@@ -1693,11 +1692,6 @@ define('donateView', [
 define('holibirthdayRow', [
 	'separatorSize',
 ], function (separatorSize) {
-	var mwOver1000 = function (i) {
-		return i.minWidth.map(function (mw) {
-			console.log(mw);
-		});
-	};
 	return function (content, src) {
 		return grid({
 			handleSurplusWidth: giveToNth(1),
@@ -1711,7 +1705,6 @@ define('holibirthdayRow', [
 			}),
 			adjustMinSize({
 				mw: function (mw) {
-					console.log(mw);
 					return Math.max(300, mw);
 				},
 				mh: function (mh) {
@@ -2196,7 +2189,7 @@ define('socialMedia', [], function () {
 		};
 		return {
 			facebook: {
-				icon: '<i class="fa fa-facebook"></i>',
+				icon: '<i\tclass="fa\tfa-facebook"></i>',
 				color: color({
 					r: 59,
 					g: 89,
@@ -2221,7 +2214,7 @@ define('socialMedia', [], function () {
 				},
 			},
 			twitter: {
-				icon: '<i class="fa fa-twitter"></i>',
+				icon: '<i\tclass="fa\tfa-twitter"></i>',
 				color: color({
 					r: 0,
 					g: 172,
