@@ -26,8 +26,6 @@ define([
 					return nothing;
 				}
 				
-				var holibirthdayTitle = profile.firstName + ' ' + profile.lastName + '\'s Holibirthday';
-
 				var srcS = Stream.create();
 				var canvas = document.createElement('canvas');
 				var $canvas = $(canvas);
@@ -53,7 +51,7 @@ define([
 					drawCenteredText({
 						x: 540,
 						y: 540,
-					}, moment(holibirthday.date).format('MMMM Do'), 'bold 30px Raleway Thin');
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 30px Raleway Thin');
 					if (profile.birthday) {
 						drawCenteredText({
 							x: 160,
@@ -62,7 +60,7 @@ define([
 						drawCenteredText({
 							x: 160,
 							y: 615,
-						}, moment(profile.birthday).format('MMMM Do'), '20px BebasNeue');
+						}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
 					}
 					setTimeout(function () {
 						srcS.push(canvas.toDataURL());

@@ -68,8 +68,6 @@ define('holibirthdayView', [
 					return nothing;
 				}
 				
-				var holibirthdayTitle = profile.firstName + ' ' + profile.lastName + '\'s Holibirthday';
-
 				var srcS = Stream.create();
 				var canvas = document.createElement('canvas');
 				var $canvas = $(canvas);
@@ -95,7 +93,7 @@ define('holibirthdayView', [
 					drawCenteredText({
 						x: 540,
 						y: 540,
-					}, moment(holibirthday.date).format('MMMM Do'), 'bold 30px Raleway Thin');
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 30px Raleway Thin');
 					if (profile.birthday) {
 						drawCenteredText({
 							x: 160,
@@ -104,7 +102,7 @@ define('holibirthdayView', [
 						drawCenteredText({
 							x: 160,
 							y: 615,
-						}, moment(profile.birthday).format('MMMM Do'), '20px BebasNeue');
+						}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
 					}
 					setTimeout(function () {
 						srcS.push(canvas.toDataURL());
@@ -808,11 +806,11 @@ define('contactsView', [
 											linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
 												fonts.ralewayThinBold,
 											])),
-											text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).format('MMMM Do') : '&nbsp;').all([
+											text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 												fonts.ralewayThinBold,
 												$css('text-align', 'center'),
 											]),
-											text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).format('MMMM Do') : '&nbsp;').all([
+											text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
 												fonts.ralewayThinBold,
 												$css('text-align', 'center'),
 											]),
@@ -855,7 +853,7 @@ define('contactsView', [
 											text(cc.name).all([
 												fonts.ralewayThinBold,
 											]),
-											text(cc.birthday ? 'Born on<br>' + moment(cc.birthday).format('MMMM Do') : '&nbsp;').all([
+											text(cc.birthday ? 'Born on<br>' + moment(cc.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 												fonts.ralewayThinBold,
 												$css('text-align', 'center'),
 											]),
@@ -976,11 +974,11 @@ define('contactsView', [
 													linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
 														fonts.ralewayThinBold,
 													])),
-													text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).format('MMMM Do') : '&nbsp;').all([
+													text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 														fonts.ralewayThinBold,
 														$css('text-align', 'center'),
 													]),
-													text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).format('MMMM Do') : '&nbsp;').all([
+													text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
 														fonts.ralewayThinBold,
 														$css('text-align', 'center'),
 													]),
@@ -2484,7 +2482,7 @@ define('forms', [
 						var newVal;
 						if (type === 'date') {
 							if (v) {
-								newVal = moment(v).format('YYYY-MM-DD');
+								newVal = moment(v).utc().format('YYYY-MM-DD');
 							}
 						}
 						else if (type === 'checkbox') {
@@ -4336,7 +4334,7 @@ define('adminView', [
 											mustFillFields.push(1);
 											return;
 										}
-										famousBirthday.birthday = moment(moment(famousBirthday.birthday).format('YYYY-MM-DD')).format();
+										famousBirthday.birthday = moment(moment(famousBirthday.birthday).utc().format('YYYY-MM-DD')).format();
 										db.famousBirthday.insert(famousBirthday).then(function (famousBirthday) {
 											famousBirthdaysS.push(famousBirthdaysS.lastValue().concat([famousBirthday]));
 											tabS.push(0);
@@ -4394,7 +4392,7 @@ define('adminView', [
 													mustFillFields.push(1);
 													return;
 												}
-												famousBirthday.birthday = moment(moment(famousBirthday.birthday).format('YYYY-MM-DD')).format();
+												famousBirthday.birthday = moment(moment(famousBirthday.birthday).utc().format('YYYY-MM-DD')).format();
 												db.famousBirthday.update({
 													_id: famousBirthday._id
 												}, famousBirthday).then(function () {
@@ -4809,7 +4807,7 @@ define('profileViewP', [
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
-									profile.birthday ? text('Born on ' + moment(profile.birthday).format('MMMM Do')).all([
+									profile.birthday ? text('Born on ' + moment(profile.birthday).utc().format('MMMM Do')).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 20),
 									]) : nothing,
@@ -4872,7 +4870,7 @@ define('profileViewP', [
 												x: 154,
 												y: 152,
 											},
-											text: moment(date).format('MMMM Do'),
+											text: moment(date).utc().format('MMMM Do'),
 											font: 'bold 14px Raleway Thin',
 										}].concat(profile.birthday ? [{
 											center: {
@@ -4886,7 +4884,7 @@ define('profileViewP', [
 												x: 46,
 												y: 176,
 											},
-											text: moment(profile.birthday).format('MMMM Do'),
+											text: moment(profile.birthday).utc().format('MMMM Do'),
 											font: '6px BebasNeue',
 										}] : [])),
 										useNativeSize: true,
@@ -7711,7 +7709,7 @@ define('myHolibirthdayView', [
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
-									text(moment(oldHolibirthdate).format('MMMM Do')).all([
+									text(moment(oldHolibirthdate).utc().format('MMMM Do')).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 20),
 									]),

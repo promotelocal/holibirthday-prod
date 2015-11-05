@@ -114,7 +114,7 @@ define([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
-									profile.birthday ? text('Born on ' + moment(profile.birthday).format('MMMM Do')).all([
+									profile.birthday ? text('Born on ' + moment(profile.birthday).utc().format('MMMM Do')).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 20),
 									]) : nothing,
@@ -177,7 +177,7 @@ define([
 												x: 154,
 												y: 152,
 											},
-											text: moment(date).format('MMMM Do'),
+											text: moment(date).utc().format('MMMM Do'),
 											font: 'bold 14px Raleway Thin',
 										}].concat(profile.birthday ? [{
 											center: {
@@ -191,7 +191,7 @@ define([
 												x: 46,
 												y: 176,
 											},
-											text: moment(profile.birthday).format('MMMM Do'),
+											text: moment(profile.birthday).utc().format('MMMM Do'),
 											font: '6px BebasNeue',
 										}] : [])),
 										useNativeSize: true,

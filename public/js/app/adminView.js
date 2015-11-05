@@ -870,7 +870,7 @@ define([
 											mustFillFields.push(1);
 											return;
 										}
-										famousBirthday.birthday = moment(moment(famousBirthday.birthday).format('YYYY-MM-DD')).format();
+										famousBirthday.birthday = moment(moment(famousBirthday.birthday).utc().format('YYYY-MM-DD')).format();
 										db.famousBirthday.insert(famousBirthday).then(function (famousBirthday) {
 											famousBirthdaysS.push(famousBirthdaysS.lastValue().concat([famousBirthday]));
 											tabS.push(0);
@@ -928,7 +928,7 @@ define([
 													mustFillFields.push(1);
 													return;
 												}
-												famousBirthday.birthday = moment(moment(famousBirthday.birthday).format('YYYY-MM-DD')).format();
+												famousBirthday.birthday = moment(moment(famousBirthday.birthday).utc().format('YYYY-MM-DD')).format();
 												db.famousBirthday.update({
 													_id: famousBirthday._id
 												}, famousBirthday).then(function () {

@@ -92,11 +92,11 @@ define([
 											linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
 												fonts.ralewayThinBold,
 											])),
-											text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).format('MMMM Do') : '&nbsp;').all([
+											text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 												fonts.ralewayThinBold,
 												$css('text-align', 'center'),
 											]),
-											text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).format('MMMM Do') : '&nbsp;').all([
+											text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
 												fonts.ralewayThinBold,
 												$css('text-align', 'center'),
 											]),
@@ -139,7 +139,7 @@ define([
 											text(cc.name).all([
 												fonts.ralewayThinBold,
 											]),
-											text(cc.birthday ? 'Born on<br>' + moment(cc.birthday).format('MMMM Do') : '&nbsp;').all([
+											text(cc.birthday ? 'Born on<br>' + moment(cc.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 												fonts.ralewayThinBold,
 												$css('text-align', 'center'),
 											]),
@@ -260,11 +260,11 @@ define([
 													linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
 														fonts.ralewayThinBold,
 													])),
-													text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).format('MMMM Do') : '&nbsp;').all([
+													text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 														fonts.ralewayThinBold,
 														$css('text-align', 'center'),
 													]),
-													text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).format('MMMM Do') : '&nbsp;').all([
+													text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
 														fonts.ralewayThinBold,
 														$css('text-align', 'center'),
 													]),

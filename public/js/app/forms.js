@@ -37,7 +37,7 @@ define([
 						var newVal;
 						if (type === 'date') {
 							if (v) {
-								newVal = moment(v).format('YYYY-MM-DD');
+								newVal = moment(v).utc().format('YYYY-MM-DD');
 							}
 						}
 						else if (type === 'checkbox') {

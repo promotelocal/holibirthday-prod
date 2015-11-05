@@ -299,7 +299,7 @@ define([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
-									text(moment(oldHolibirthdate).format('MMMM Do')).all([
+									text(moment(oldHolibirthdate).utc().format('MMMM Do')).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 20),
 									]),

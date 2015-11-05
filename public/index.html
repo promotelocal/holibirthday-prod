@@ -66,10 +66,11 @@
 		 FB.init({
 			 appId  : (-1 === location.host.indexOf('www.holibirthday.com')) ?
 				 ((-1 === location.host.indexOf('glacial-earth-6398.herokuapp.com')) ?
-				   //'869960279756948' : // 71.whatever, test
-				   '343310219088626' : // 71.whatever, test
-				   '869960279756948') : // glacial earth, test2
-				   '888285114590433', // production, Holibirthday
+				   ((-1 === location.host.indexOf('localhost')) ?
+					 '343310219088626' : // 71.whatever, test
+					 '911384872281155') : // localhost
+					 '869960279756948') : // glacial earth, test2
+					 '888285114590433', // production, Holibirthday
 			 xfbml  : true  // parse XFBML
 		 });
         </script>
