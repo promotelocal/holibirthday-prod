@@ -1599,7 +1599,13 @@ define('separatorSize', [], function () {
 define('fonts', [], function () {
 	return {
 		ralewayThin: $css('font-family', 'Raleway Thin'),
-		bebasNeue: $css('font-family', 'BebasNeue'),
+		bebasNeue: function (i) {
+			i.$el.css('font-family', 'BebasNeue');
+			i.$el.css('font-size', '20px');
+			setTimeout(function () {
+				i.updateDimensions();
+			});
+		},
 		celebrationTime: $css('font-family', 'CelebrationTime'),
 		
 		ralewayThinBold: function (i) {
@@ -1887,8 +1893,9 @@ define('header', [
 	'meP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'siteCopyItemsP',
-], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, siteCopyItemsP) {
+], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 		var holibirthdayButton = function (config) {
 			config.all = config.all || [];
@@ -1946,7 +1953,6 @@ define('header', [
 
 		return meP.then(function (me) {
 			return adminP.then(function (admin) {
-				var signInStream = Stream.once(false);
 				var menuOpenStream = Stream.once(false);
 				$('body').on('click', function () {
 					signInStream.push(false);
@@ -1968,42 +1974,44 @@ define('header', [
 				}, alignLRM({
 					middle: bodyColumn(stack({}, [
 						alignLRM({
-							left: toggleComponent([
-								linkTo('#!', image({
-									src: '/content/man3.png',
-									minHeight: 44,
-									minWidth: 55.45,
-								})),
-								image({
-									src: '/content/man3.png',
-									minHeight: 44,
-									minWidth: 55.45,
-								}).all([
-									function (i, context) {
-										i.$el.css('cursor', 'pointer');
-										Stream.combine([
-											windowScroll,
-											context.height,
-											windowHash,
-										], function (s, h, hash) {
-											i.$el.css('opacity', ((hash === '' ||
-																   hash === '#' ||
-																   hash === '#!') &&
-																  s > 0) ? 1 : 0);
-											setTimeout(function () {
-												i.$el.css('transition', 'opacity 0.1s');
+							left: alignTBM({
+								middle: toggleComponent([
+									linkTo('#!', image({
+										src: '/content/man3.png',
+										minHeight: 44,
+										minWidth: 55.45,
+									})),
+									image({
+										src: '/content/man3.png',
+										minHeight: 44,
+										minWidth: 55.45,
+									}).all([
+										function (i, context) {
+											i.$el.css('cursor', 'pointer');
+											Stream.combine([
+												windowScroll,
+												context.height,
+												windowHash,
+											], function (s, h, hash) {
+												i.$el.css('opacity', ((hash === '' ||
+																	   hash === '#' ||
+																	   hash === '#!') &&
+																	  s > 0) ? 1 : 0);
+												setTimeout(function () {
+													i.$el.css('transition', 'opacity 0.1s');
+												});
 											});
-										});
-									},
-									clickThis(function () {
-										$('body').animate({scrollTop: 0}, 300);
-									}),
-								]),
-							], windowHash.map(function (h) {
-								return (h === '' ||
-										h === '#' ||
-										h === '#!') ? 1 : 0;
-							})),
+										},
+										clickThis(function () {
+											$('body').animate({scrollTop: 0}, 300);
+										}),
+									]),
+								], windowHash.map(function (h) {
+									return (h === '' ||
+											h === '#' ||
+											h === '#!') ? 1 : 0;
+								})),
+							}),
 							right: componentStream(windowWidth.map(function (width) {
 								if (width > 560) {
 									menuOpenStream.push(false);
@@ -2098,11 +2106,11 @@ define('holibirthdayView', [
 					drawCenteredText({
 						x: 540,
 						y: 310,
-					}, profile.firstName + ' ' + profile.lastName, 'bold 30px Raleway Thin');
+					}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
 					drawCenteredText({
 						x: 540,
 						y: 540,
-					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 30px Raleway Thin');
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
 					if (profile.birthday) {
 						drawCenteredText({
 							x: 160,
@@ -4334,15 +4342,21 @@ define('storyDetailViewP', [
 	'prettyForms',
 	'profilesP',
 	'separatorSize',
+	'signInStream',
 	'socialMedia',
 	'socialMediaButton',
 	'submitButton',
-], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, socialMedia, socialMediaButton, submitButton) {
+], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, signInStream, socialMedia, socialMediaButton, submitButton) {
 	var storyCommentViewP = function (story) {
 		return promiseComponent(meP.then(function (me) {
 			if (!me) {
 				return text('Sign in to comment').all([
 					fonts.bebasNeue,
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
 				]);
 			}
 			
@@ -4640,10 +4654,10 @@ define('homeViewP', [
 			}), bar.horizontal(1, colors.middleGray))));
 
 			return stack({
-				gutterSize: separatorSize,
+				gutterSize: separatorSize * 2,
 			}, [
 				stack({
-					gutterSize: separatorSize,
+					gutterSize: separatorSize * 2,
 				}, [
 					banner,
 					tagline,
@@ -6606,34 +6620,26 @@ define('storyEditViewP', [
 	'prettyForms',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'siteCopyItemsP',
-], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, siteCopyItemsP) {
+], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return function (story) {
 		return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 			var storyStreams = Stream.splitObject(story);
 			var storyStream = Stream.combineObject(storyStreams);
 
 			var paragraphSeparator = text('&nbsp;');
-			var postingGuidelines = stack({}, [
-				text('When posting a story, make sure to pick a title that will engage the reader. Titles where you evoke emotion are always a strong choice (example: "This Story About _______ Will Make You Laugh").'),
-				paragraphSeparator,
-				text('To enlarge an image, click the image and drag one of the corners. Provide credit for all images, listing the original source beneath each image. For example, below the image, list in smaller font "Credit: (insert web address)."'),
-				paragraphSeparator,
-				text('If the inspiration for the story came from somewhere other than yourself, list the name of the source in the \'Credit\' eld and place its website address in the \'Link\' eld. If this is your own original story, list your name in the \'Credit\' eld and place the link to your Holibirthday prole in the \'Link\' eld.'),
-				paragraphSeparator,
-				text('PLEASE DO NOT POST SPAM, PORNOGRAPHIC MATERIALS, OR CONTENT FROM 3RD PARTIES THAT DOES NOT BELONG TO YOU. IF YOU WOULD LIKE TO SHARE AN ARTICLE FROM AN EXTERNAL SITE, PLEASE \'POST A STORY LINK.\''),
-			]);
 
 			var instructions = bodyColumn(padding(20, stack({
 				gutterSize: separatorSize,
 			}, [
 				text(siteCopyItems.find('Edit Story Title')).all([
-					$css('font-size', '60px'),
 					fonts.bebasNeue,
+					$css('font-size', '60px'),
 				]),
 				text(siteCopyItems.find('Edit Story Smaller Title')).all([
-					$css('font-size', '30px'),
 					fonts.ralewayThinBold,
+					$css('font-size', '30px'),
 				]),
 				paragraph(siteCopyItems.find('Edit Story Instructions').split('\n').join('<br>')).all([
 					fonts.ralewayThinBold,
@@ -6749,11 +6755,19 @@ define('storyEditViewP', [
 				return bodyColumn(stack({
 					gutterSize: separatorSize,
 				}, [
-					paragraph('You must sign in to post a story').all([
-						$css('font-size', '30px'),
+					text(siteCopyItems.find('Edit Story Title')).all([
 						fonts.bebasNeue,
+						$css('font-size', '60px'),
 					]),
-					signInForm(),
+					paragraph('You must sign in to post a story').all([
+						fonts.bebasNeue,
+						$css('font-size', '30px'),
+						link,
+						clickThis(function (ev) {
+							signInStream.push(true);
+							ev.stopPropagation();
+						}),
+					]),
 				]));
 			});
 		}));
@@ -6774,6 +6788,9 @@ define('defaultFormFor', [
 	});
 
 	return defaultFormFor;
+});
+define('signInStream', [], function () {
+	return Stream.once(false);
 });
 define('dailyTheme', [
 	'colors',
