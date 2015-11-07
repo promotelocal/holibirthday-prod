@@ -8,8 +8,9 @@ define([
 	'meP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'siteCopyItemsP',
-], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, siteCopyItemsP) {
+], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 		var holibirthdayButton = function (config) {
 			config.all = config.all || [];
@@ -67,7 +68,6 @@ define([
 
 		return meP.then(function (me) {
 			return adminP.then(function (admin) {
-				var signInStream = Stream.once(false);
 				var menuOpenStream = Stream.once(false);
 				$('body').on('click', function () {
 					signInStream.push(false);
@@ -89,42 +89,44 @@ define([
 				}, alignLRM({
 					middle: bodyColumn(stack({}, [
 						alignLRM({
-							left: toggleComponent([
-								linkTo('#!', image({
-									src: '/content/man3.png',
-									minHeight: 44,
-									minWidth: 55.45,
-								})),
-								image({
-									src: '/content/man3.png',
-									minHeight: 44,
-									minWidth: 55.45,
-								}).all([
-									function (i, context) {
-										i.$el.css('cursor', 'pointer');
-										Stream.combine([
-											windowScroll,
-											context.height,
-											windowHash,
-										], function (s, h, hash) {
-											i.$el.css('opacity', ((hash === '' ||
-																   hash === '#' ||
-																   hash === '#!') &&
-																  s > 0) ? 1 : 0);
-											setTimeout(function () {
-												i.$el.css('transition', 'opacity 0.1s');
+							left: alignTBM({
+								middle: toggleComponent([
+									linkTo('#!', image({
+										src: '/content/man3.png',
+										minHeight: 44,
+										minWidth: 55.45,
+									})),
+									image({
+										src: '/content/man3.png',
+										minHeight: 44,
+										minWidth: 55.45,
+									}).all([
+										function (i, context) {
+											i.$el.css('cursor', 'pointer');
+											Stream.combine([
+												windowScroll,
+												context.height,
+												windowHash,
+											], function (s, h, hash) {
+												i.$el.css('opacity', ((hash === '' ||
+																	   hash === '#' ||
+																	   hash === '#!') &&
+																	  s > 0) ? 1 : 0);
+												setTimeout(function () {
+													i.$el.css('transition', 'opacity 0.1s');
+												});
 											});
-										});
-									},
-									clickThis(function () {
-										$('body').animate({scrollTop: 0}, 300);
-									}),
-								]),
-							], windowHash.map(function (h) {
-								return (h === '' ||
-										h === '#' ||
-										h === '#!') ? 1 : 0;
-							})),
+										},
+										clickThis(function () {
+											$('body').animate({scrollTop: 0}, 300);
+										}),
+									]),
+								], windowHash.map(function (h) {
+									return (h === '' ||
+											h === '#' ||
+											h === '#!') ? 1 : 0;
+								})),
+							}),
 							right: componentStream(windowWidth.map(function (width) {
 								if (width > 560) {
 									menuOpenStream.push(false);
