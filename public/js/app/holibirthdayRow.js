@@ -1,11 +1,6 @@
 define([
 	'separatorSize',
 ], function (separatorSize) {
-	var mwOver1000 = function (i) {
-		return i.minWidth.map(function (mw) {
-			console.log(mw);
-		});
-	};
 	return function (content, src) {
 		return grid({
 			handleSurplusWidth: giveToNth(1),
@@ -19,7 +14,6 @@ define([
 			}),
 			adjustMinSize({
 				mw: function (mw) {
-					console.log(mw);
 					return Math.max(300, mw);
 				},
 				mh: function (mh) {
