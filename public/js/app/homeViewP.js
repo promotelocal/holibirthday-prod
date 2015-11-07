@@ -79,10 +79,10 @@ define([
 			}), bar.horizontal(1, colors.middleGray))));
 
 			return stack({
-				gutterSize: separatorSize,
+				gutterSize: separatorSize * 2,
 			}, [
 				stack({
-					gutterSize: separatorSize,
+					gutterSize: separatorSize * 2,
 				}, [
 					banner,
 					tagline,
