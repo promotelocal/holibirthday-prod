@@ -2,7 +2,14 @@ define([
 	'separatorSize',
 ], function (separatorSize) {
 	return function (content, src) {
-		return padding({
+		return adjustMinSize({
+			mw: function (mw) {
+				return Math.max(300, mw);
+			},
+			mh: function (mh) {
+				return Math.max(240, mh);
+			},
+		})(padding({
 			all: separatorSize,
 		}, grid({
 			handleSurplusWidth: giveToNth(1),
@@ -18,16 +25,9 @@ define([
 					}),
 				}),
 			}),
-			adjustMinSize({
-				mw: function (mw) {
-					return Math.max(300, mw);
-				},
-				mh: function (mh) {
-					return Math.max(240, mh);
-				},
-			})(alignTBM({
+			alignTBM({
 				middle: content,
-			})),
-		]));
+			}),
+		])));
 	};
 });
