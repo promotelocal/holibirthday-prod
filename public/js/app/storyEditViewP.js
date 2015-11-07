@@ -7,34 +7,26 @@ define([
 	'prettyForms',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'siteCopyItemsP',
-], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, siteCopyItemsP) {
+], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return function (story) {
 		return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 			var storyStreams = Stream.splitObject(story);
 			var storyStream = Stream.combineObject(storyStreams);
 
 			var paragraphSeparator = text('&nbsp;');
-			var postingGuidelines = stack({}, [
-				text('When posting a story, make sure to pick a title that will engage the reader. Titles where you evoke emotion are always a strong choice (example: "This Story About _______ Will Make You Laugh").'),
-				paragraphSeparator,
-				text('To enlarge an image, click the image and drag one of the corners. Provide credit for all images, listing the original source beneath each image. For example, below the image, list in smaller font "Credit: (insert web address)."'),
-				paragraphSeparator,
-				text('If the inspiration for the story came from somewhere other than yourself, list the name of the source in the \'Credit\' eld and place its website address in the \'Link\' eld. If this is your own original story, list your name in the \'Credit\' eld and place the link to your Holibirthday prole in the \'Link\' eld.'),
-				paragraphSeparator,
-				text('PLEASE DO NOT POST SPAM, PORNOGRAPHIC MATERIALS, OR CONTENT FROM 3RD PARTIES THAT DOES NOT BELONG TO YOU. IF YOU WOULD LIKE TO SHARE AN ARTICLE FROM AN EXTERNAL SITE, PLEASE \'POST A STORY LINK.\''),
-			]);
 
 			var instructions = bodyColumn(padding(20, stack({
 				gutterSize: separatorSize,
 			}, [
 				text(siteCopyItems.find('Edit Story Title')).all([
-					$css('font-size', '60px'),
 					fonts.bebasNeue,
+					$css('font-size', '60px'),
 				]),
 				text(siteCopyItems.find('Edit Story Smaller Title')).all([
-					$css('font-size', '30px'),
 					fonts.ralewayThinBold,
+					$css('font-size', '30px'),
 				]),
 				paragraph(siteCopyItems.find('Edit Story Instructions').split('\n').join('<br>')).all([
 					fonts.ralewayThinBold,
@@ -150,11 +142,19 @@ define([
 				return bodyColumn(stack({
 					gutterSize: separatorSize,
 				}, [
-					paragraph('You must sign in to post a story').all([
-						$css('font-size', '30px'),
+					text(siteCopyItems.find('Edit Story Title')).all([
 						fonts.bebasNeue,
+						$css('font-size', '60px'),
 					]),
-					signInForm(),
+					paragraph('You must sign in to post a story').all([
+						fonts.bebasNeue,
+						$css('font-size', '30px'),
+						link,
+						clickThis(function (ev) {
+							signInStream.push(true);
+							ev.stopPropagation();
+						}),
+					]),
 				]));
 			});
 		}));

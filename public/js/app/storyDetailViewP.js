@@ -11,15 +11,21 @@ define([
 	'prettyForms',
 	'profilesP',
 	'separatorSize',
+	'signInStream',
 	'socialMedia',
 	'socialMediaButton',
 	'submitButton',
-], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, socialMedia, socialMediaButton, submitButton) {
+], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, signInStream, socialMedia, socialMediaButton, submitButton) {
 	var storyCommentViewP = function (story) {
 		return promiseComponent(meP.then(function (me) {
 			if (!me) {
 				return text('Sign in to comment').all([
 					fonts.bebasNeue,
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
 				]);
 			}
 			
