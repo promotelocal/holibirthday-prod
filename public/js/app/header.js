@@ -26,6 +26,7 @@ define([
 				padding: 10,
 				all: [
 					fonts.celebrationTime,
+					$css('font-weight', 'bold'),
 					$css('font-size', '20px'),
 				],
 			})(text);
