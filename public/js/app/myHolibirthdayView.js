@@ -14,8 +14,9 @@ define([
 	'profileP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'submitButton',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, submitButton) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -292,7 +293,7 @@ define([
 							var oldHolibirthdate = new Date(oldHolibirthday.date);
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
-								gutterSize: separatorSize * 2,
+								gutterSize: separatorSize,
 							}, [
 								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
 									text('Your Holibirthday Is').all([
@@ -307,7 +308,7 @@ define([
 								bodyColumn(alignLRM({
 									middle: machine(holibirthday),
 								})),
-								componentStream(holibirthday.date.map(function (date) {
+								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
 								})),
 							]);
@@ -323,7 +324,7 @@ define([
 								bodyColumn(alignLRM({
 									middle: machine(holibirthday),
 								})),
-								componentStream(holibirthday.date.map(function (date) {
+								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
 								})),
 							]);
@@ -331,15 +332,22 @@ define([
 					});
 				});
 			}
-			return bodyColumn(stack({
+			return stack({
 				gutterSize: separatorSize,
 			}, [
-				nothing,
-				paragraph('You must sign in to claim a holibirthday').all([
+				confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
+					fonts.ralewayThinBold,
+					$css('font-size', 40),
+				])))),
+				bodyColumn(paragraph('You must sign in to claim a holibirthday').all([
 					fonts.h1,
-				]),
-				signInForm(),
-			]));
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
+				])),
+			]);
 		});
 	}));
 });
