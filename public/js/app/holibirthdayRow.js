@@ -4,12 +4,15 @@ define([
 	return function (content, src) {
 		return grid({
 			handleSurplusWidth: giveToNth(1),
+			bottomToTop: true,
 		}, [
 			alignTBM({
-				middle: image({
-					src: src || './content/man.png',
-					minWidth: 300,
-					chooseHeight: true,
+				middle: alignLRM({
+					middle: image({
+						src: src || './content/man.png',
+						minWidth: 300,
+						chooseHeight: true,
+					}),
 				}),
 			}),
 			adjustMinSize({

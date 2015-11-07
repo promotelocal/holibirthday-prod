@@ -110,7 +110,7 @@ define([
 									gutterSize: separatorSize / 2,
 									collapseGutters: true,
 								}, [
-									text(profile.firstName + ' ' + profile.lastName).all([
+									paragraph(profile.firstName + ' ' + profile.lastName).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),

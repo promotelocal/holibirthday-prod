@@ -6313,7 +6313,7 @@ define('profileViewP', [
 									gutterSize: separatorSize / 2,
 									collapseGutters: true,
 								}, [
-									text(profile.firstName + ' ' + profile.lastName).all([
+									paragraph(profile.firstName + ' ' + profile.lastName).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
@@ -7284,12 +7284,15 @@ define('holibirthdayRow', [
 	return function (content, src) {
 		return grid({
 			handleSurplusWidth: giveToNth(1),
+			bottomToTop: true,
 		}, [
 			alignTBM({
-				middle: image({
-					src: src || './content/man.png',
-					minWidth: 300,
-					chooseHeight: true,
+				middle: alignLRM({
+					middle: image({
+						src: src || './content/man.png',
+						minWidth: 300,
+						chooseHeight: true,
+					}),
 				}),
 			}),
 			adjustMinSize({
