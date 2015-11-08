@@ -44,10 +44,10 @@ define([], function () {
 		},
 
 		fa: function (fontAwesomeIcon) {
-			return text('<i class="fa fa-' + fontAwesomeIcon + '"></i>');
+			return text('<i\tclass="fa\tfa-' + fontAwesomeIcon + '"></i>');
 		},
 		faI: function (fontAwesomeIcon) {
-			return '<i class="fa fa-' + fontAwesomeIcon + '"></i>';
+			return '<i\tclass="fa\tfa-' + fontAwesomeIcon + '"></i>';
 		},
 	};
 });	
