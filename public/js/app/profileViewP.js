@@ -104,7 +104,7 @@ define([
 						holibirthdayRow(grid({
 							gutterSize: separatorSize,
 							useFullWidth: true,
-							handleSurplusWidth: evenSplitSurplusWidth,
+							handleSurplusWidth: giveToFirst,
 						}, [
 							alignTBM({
 								middle: stack({
@@ -156,69 +156,67 @@ define([
 									})) : nothing,
 								]),
 							}),
-							alignLRM({
-								middle: promiseComponent(db.holibirthday.findOne({
-									user: user,
-								}).then(function (holibirthday) {
-									if (profile.holibirther && holibirthday)
-									{
-										var date = new Date(holibirthday.date);
-										return image({
-											src: writeOnImage({
-												width: 308,
-												height: 200,
-											}, './content/certificate-01-thumbnail.png', [{
-												center: {
-													x: 154,
-													y: 88,
-												},
-												text: profile.firstName + ' ' + profile.lastName,
-												font: 'bold 14px Raleway Thin',
-											}, {
-												center: {
-													x: 154,
-													y: 152,
-												},
-												text: moment(date).utc().format('MMMM Do'),
-												font: 'bold 14px Raleway Thin',
-											}].concat(profile.birthday ? [{
-												center: {
-													x: 46,
-													y: 171,
-												},
-												text: 'Old Birthday',
-												font: '6px BebasNeue',
-											}, {
-												center: {
-													x: 46,
-													y: 176,
-												},
-												text: moment(profile.birthday).utc().format('MMMM Do'),
-												font: '6px BebasNeue',
-											}] : [])),
-											useNativeSize: true,
+							keepAspectRatio(promiseComponent(db.holibirthday.findOne({
+								user: user,
+							}).then(function (holibirthday) {
+								if (profile.holibirther && holibirthday)
+								{
+									var date = new Date(holibirthday.date);
+									return image({
+										src: writeOnImage({
+											width: 308,
+											height: 200,
+										}, './content/certificate-01-thumbnail.png', [{
+											center: {
+												x: 154,
+												y: 88,
+											},
+											text: profile.firstName + ' ' + profile.lastName,
+											font: 'bold 14px Raleway Thin',
+										}, {
+											center: {
+												x: 154,
+												y: 152,
+											},
+											text: moment(date).utc().format('MMMM Do'),
+											font: 'bold 14px Raleway Thin',
+										}].concat(profile.birthday ? [{
+											center: {
+												x: 46,
+												y: 171,
+											},
+											text: 'Old Birthday',
+											font: '6px BebasNeue',
+										}, {
+											center: {
+												x: 46,
+												y: 176,
+											},
+											text: moment(profile.birthday).utc().format('MMMM Do'),
+											font: '6px BebasNeue',
+										}] : [])),
+										useNativeSize: true,
+									}).all([
+										link,
+										clickThis(function (ev) {
+											modalOnS.push(true);
+											ev.stopPropagation();
+										}),
+									]);
+								}
+								return meP.then(function (me) {
+									if (me && me._id === user) {
+										return linkTo('#!myHolibirthday', alignTBM({
+											middle: text('(claim a holibirthday)'),
 										}).all([
-											link,
-											clickThis(function (ev) {
-												modalOnS.push(true);
-												ev.stopPropagation();
-											}),
-										]);
+											fonts.ralewayThinBold,
+										]));
 									}
-									return meP.then(function (me) {
-										if (me && me._id === user) {
-											return linkTo('#!myHolibirthday', alignTBM({
-												middle: text('(claim a holibirthday)'),
-											}).all([
-												fonts.ralewayThinBold,
-											]));
-										}
-										else {
-											return nothing;
-										}
-									});
-								})),
-							}),
+									else {
+										return nothing;
+									}
+								});
+							}))),
 						]), profile.imageUrl || './content/man.png'),
 					])));
 					var storiesC = promiseComponent(storiesP.then(function (stories) {

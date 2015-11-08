@@ -19,7 +19,7 @@ define([
 				confettiBackground(bodyColumn(holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text('Holibirthday Leaderboards').all([
+					paragraph('Holibirthday Leaderboards').all([
 						fonts.h1,
 						fonts.ralewayThinBold,
 					]),
@@ -38,7 +38,7 @@ define([
 							gutterSize: separatorSize,
 						}, [
 							alignTBM({
-								middle: text(pt.amount).all([
+								middle: text('' + pt.amount).all([
 									withFontColor(colors.darkGreen),
 									fonts.ralewayThinBold,
 									fonts.h2,

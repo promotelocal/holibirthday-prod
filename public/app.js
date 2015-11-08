@@ -16,7 +16,8 @@ define('myHolibirthdayView', [
 	'signInForm',
 	'signInStream',
 	'submitButton',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, submitButton) {
+	'writeOnImage',
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, submitButton, writeOnImage) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -253,30 +254,76 @@ define('myHolibirthdayView', [
 								])),
 							}),
 							alignLRM({
-								middle: submitButton(black, text(profile.holibirthday && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
+								middle: submitButton(black, text(profile.holibirther && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday').all([
+									fonts.bebasNeue,
+								])).all([
 									link,
 									clickThis(function () {
 										if (lastHolibirthday) {
-											db.profile.update({
-												user: me._id,
-											}, {
-												holibirther: true,
-											}).then(function () {
-												if (oldHolibirthday) {
-													db.holibirthday.update({
-														user: me._id,
-													}, lastHolibirthday).then(function () {
-														window.location.hash = '#!user/' + me._id + '/certificate';
-														window.location.reload();
-													});
+											var canvas = document.createElement('canvas');
+											var $canvas = $(canvas);
+											$canvas.appendTo($('body'))
+												.prop('width', 1080)
+												.prop('height', 702);
+
+											var ctx = canvas.getContext('2d');
+
+											var drawCenteredText = function (p, text, font) {
+												ctx.font = font;
+												var width = ctx.measureText(text).width;
+												ctx.fillText(text, p.x - width / 2, p.y);
+											};
+											
+											var img = new Image();
+											img.onload = function() {
+												ctx.drawImage(img, 0, 0);
+												drawCenteredText({
+													x: 540,
+													y: 310,
+												}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
+												drawCenteredText({
+													x: 540,
+													y: 540,
+												}, moment(lastHolibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
+												if (profile.birthday) {
+													drawCenteredText({
+														x: 160,
+														y: 595,
+													}, 'Old Birthday', '20px BebasNeue');
+													drawCenteredText({
+														x: 160,
+														y: 615,
+													}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
 												}
-												else {
-													db.holibirthday.insert(lastHolibirthday).then(function () {
-														window.location.hash = '#!user/' + me._id + '/certificate';
-														window.location.reload();
+												setTimeout(function () {
+													var blob = window.dataURLtoBlob(canvas.toDataURL());
+													db.uploadFile(blob, 'certificate.png').then(function (filename) {
+														lastHolibirthday.imageUrl = '/api/uploadFile/find/' + filename;
+														db.profile.update({
+															user: me._id,
+														}, {
+															holibirther: true,
+														}).then(function () {
+															if (oldHolibirthday) {
+																db.holibirthday.update({
+																	user: me._id,
+																}, lastHolibirthday).then(function () {
+																	window.location.hash = '#!user/' + me._id + '/certificate';
+																	window.location.reload();
+																});
+															}
+															else {
+																db.holibirthday.insert(lastHolibirthday).then(function () {
+																	window.location.hash = '#!user/' + me._id + '/certificate';
+																	window.location.reload();
+																});
+															}
+														});
 													});
-												}
-											});
+													$canvas.remove();
+												});
+											};
+											img.src = './content/certificate-01.png';
 										}
 										else {
 											playTheMachine.push(true);
@@ -289,7 +336,7 @@ define('myHolibirthdayView', [
 					return db.holibirthday.findOne({
 						user: me._id,
 					}).then(function (oldHolibirthday) {
-						if (profile.holibirthday && oldHolibirthday) {
+						if (profile.holibirther && oldHolibirthday) {
 							var oldHolibirthdate = new Date(oldHolibirthday.date);
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
@@ -961,7 +1008,9 @@ define('profileEditViewP', [
 								fields.knowAHolibirther,
 								passwordEditor,
 								alignLRM({
-									middle: submitButton(black, text('Submit')).all([
+									middle: submitButton(black, text('Submit').all([
+										fonts.bebasNeue,
+									])).all([
 										link,
 										clickThis(function () {
 											var p = profileS.lastValue();
@@ -1300,9 +1349,14 @@ define('db', [], function () {
 			};
 		});
 
-		db.uploadFile = function (file) {
+		db.uploadFile = function (file, fileName) {
 			var data = new FormData();
-			data.append('file', file);
+			if (fileName) {
+				data.append('file', file, fileName);
+			}
+			else {
+				data.append('file', file);
+			}
 			
 			return $.ajax({
 				url: '/api/uploadFile/insert',
@@ -4703,7 +4757,7 @@ define('leaderboardsView', [
 				confettiBackground(bodyColumn(holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text('Holibirthday Leaderboards').all([
+					paragraph('Holibirthday Leaderboards').all([
 						fonts.h1,
 						fonts.ralewayThinBold,
 					]),
@@ -4722,7 +4776,7 @@ define('leaderboardsView', [
 							gutterSize: separatorSize,
 						}, [
 							alignTBM({
-								middle: text(pt.amount).all([
+								middle: text('' + pt.amount).all([
 									withFontColor(colors.darkGreen),
 									fonts.ralewayThinBold,
 									fonts.h2,
@@ -6328,7 +6382,7 @@ define('profileViewP', [
 						holibirthdayRow(grid({
 							gutterSize: separatorSize,
 							useFullWidth: true,
-							handleSurplusWidth: evenSplitSurplusWidth,
+							handleSurplusWidth: giveToFirst,
 						}, [
 							alignTBM({
 								middle: stack({
@@ -6380,69 +6434,67 @@ define('profileViewP', [
 									})) : nothing,
 								]),
 							}),
-							alignLRM({
-								middle: promiseComponent(db.holibirthday.findOne({
-									user: user,
-								}).then(function (holibirthday) {
-									if (profile.holibirther && holibirthday)
-									{
-										var date = new Date(holibirthday.date);
-										return image({
-											src: writeOnImage({
-												width: 308,
-												height: 200,
-											}, './content/certificate-01-thumbnail.png', [{
-												center: {
-													x: 154,
-													y: 88,
-												},
-												text: profile.firstName + ' ' + profile.lastName,
-												font: 'bold 14px Raleway Thin',
-											}, {
-												center: {
-													x: 154,
-													y: 152,
-												},
-												text: moment(date).utc().format('MMMM Do'),
-												font: 'bold 14px Raleway Thin',
-											}].concat(profile.birthday ? [{
-												center: {
-													x: 46,
-													y: 171,
-												},
-												text: 'Old Birthday',
-												font: '6px BebasNeue',
-											}, {
-												center: {
-													x: 46,
-													y: 176,
-												},
-												text: moment(profile.birthday).utc().format('MMMM Do'),
-												font: '6px BebasNeue',
-											}] : [])),
-											useNativeSize: true,
+							keepAspectRatio(promiseComponent(db.holibirthday.findOne({
+								user: user,
+							}).then(function (holibirthday) {
+								if (profile.holibirther && holibirthday)
+								{
+									var date = new Date(holibirthday.date);
+									return image({
+										src: writeOnImage({
+											width: 308,
+											height: 200,
+										}, './content/certificate-01-thumbnail.png', [{
+											center: {
+												x: 154,
+												y: 88,
+											},
+											text: profile.firstName + ' ' + profile.lastName,
+											font: 'bold 14px Raleway Thin',
+										}, {
+											center: {
+												x: 154,
+												y: 152,
+											},
+											text: moment(date).utc().format('MMMM Do'),
+											font: 'bold 14px Raleway Thin',
+										}].concat(profile.birthday ? [{
+											center: {
+												x: 46,
+												y: 171,
+											},
+											text: 'Old Birthday',
+											font: '6px BebasNeue',
+										}, {
+											center: {
+												x: 46,
+												y: 176,
+											},
+											text: moment(profile.birthday).utc().format('MMMM Do'),
+											font: '6px BebasNeue',
+										}] : [])),
+										useNativeSize: true,
+									}).all([
+										link,
+										clickThis(function (ev) {
+											modalOnS.push(true);
+											ev.stopPropagation();
+										}),
+									]);
+								}
+								return meP.then(function (me) {
+									if (me && me._id === user) {
+										return linkTo('#!myHolibirthday', alignTBM({
+											middle: text('(claim a holibirthday)'),
 										}).all([
-											link,
-											clickThis(function (ev) {
-												modalOnS.push(true);
-												ev.stopPropagation();
-											}),
-										]);
+											fonts.ralewayThinBold,
+										]));
 									}
-									return meP.then(function (me) {
-										if (me && me._id === user) {
-											return linkTo('#!myHolibirthday', alignTBM({
-												middle: text('(claim a holibirthday)'),
-											}).all([
-												fonts.ralewayThinBold,
-											]));
-										}
-										else {
-											return nothing;
-										}
-									});
-								})),
-							}),
+									else {
+										return nothing;
+									}
+								});
+							}))),
 						]), profile.imageUrl || './content/man.png'),
 					])));
 					var storiesC = promiseComponent(storiesP.then(function (stories) {
