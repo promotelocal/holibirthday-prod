@@ -47,11 +47,11 @@ define([
 					drawCenteredText({
 						x: 540,
 						y: 310,
-					}, profile.firstName + ' ' + profile.lastName, 'bold 30px Raleway Thin');
+					}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
 					drawCenteredText({
 						x: 540,
 						y: 540,
-					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 30px Raleway Thin');
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
 					if (profile.birthday) {
 						drawCenteredText({
 							x: 160,

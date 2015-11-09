@@ -116,16 +116,16 @@ define([
 			]),
 		]);
 		
-		var narrowForm = stack({}, [
+		var narrowForm = stack({
+			gutterSize: separatorSize,
+			collapseGutters: true,
+		}, [
 			alignLRM({
 				middle: stack({}, [loginWithFacebook()]),
 			}),
-			padding({
-				top: 10,
-				bottom: 10,
-			}, alignLRM({
+			alignLRM({
 				middle: or,
-			})),
+			}),
 			alignLRM({
 				middle: sideBySide({
 					gutterSize: separatorSize,
@@ -142,11 +142,7 @@ define([
 			alignLRM({
 				middle: submit,
 			}),
-		].map(function (c) {
-			return padding({
-				top: 10,
-			}, c);
-		}));
+		]);
 
 		var widthS = Stream.never();
 		

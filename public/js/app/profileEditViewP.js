@@ -139,7 +139,9 @@ define([
 								fields.knowAHolibirther,
 								passwordEditor,
 								alignLRM({
-									middle: submitButton(black, text('Submit')).all([
+									middle: submitButton(black, text('Submit').all([
+										fonts.bebasNeue,
+									])).all([
 										link,
 										clickThis(function () {
 											var p = profileS.lastValue();

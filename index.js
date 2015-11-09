@@ -22,6 +22,7 @@ var setupAuth = require('./lib/setupAuth');
 var setupDb = require('./lib/setupDb');
 var setupEmails = require('./lib/setupEmails');
 var setupGrecaptcha = require('./lib/setupGrecaptcha');
+var setupMailchimp = require('./lib/setupMailchimp');
 var setupMisc = require('./lib/setupMisc');
 var setupRoutes = require('./lib/setupRoutes');
 var setupStripe = require('./lib/setupStripe');
@@ -56,6 +57,7 @@ setupDb(config, schema, function (dbWith) {
 	setupApi(app, config, dbWith);
 	setupEmails(app, config, dbWith);
 	setupGrecaptcha(app, config, dbWith);
+	setupMailchimp(app, config, dbWith);
 	setupMisc(app, config, dbWith);
 	setupRoutes(app, config, dbWith);
 	setupStripe(app, config, dbWith);

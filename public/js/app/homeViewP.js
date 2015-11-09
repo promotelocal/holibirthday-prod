@@ -11,19 +11,25 @@ define([
 	'storiesP',
 	'storyRowP',
 ], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, db, fonts, separatorSize, siteCopyItemsP, storiesP, storyRowP) {
-	var bannerButton = function (label, disabled) {
-		var darken = desaturate(disabled ? 0.8 : 0);
-		return border(darken(colors.holibirthdayDarkRed), {
+	var bannerButton = function (label, fa) {
+		return border(colors.holibirthdayDarkRed, {
 			top: 5,
 			radius: 5,
 		}, padding(10, alignTBM({
-			middle: paragraph(label, 150).all([
-				fonts.bebasNeue,
-				$css('text-align', 'center'),
-				withFontColor(white),
+			middle: stack({}, [
+				paragraph(label, 150).all([
+					fonts.bebasNeue,
+					$css('text-align', 'center'),
+					withFontColor(white),
+				]),
+				fonts.fa(fa).all([
+					$css('text-align', 'center'),
+					$css('font-size', '60px'),
+					withFontColor(white),
+				]),
 			]),
 		})).all([
-			withBackgroundColor(darken(colors.holibirthdayRed)),
+			withBackgroundColor(colors.holibirthdayRed),
 		]));
 	};
 
@@ -54,13 +60,13 @@ define([
 				gutterSize: separatorSize,
 			}, [
 				alignLRM({
-					middle: linkTo('#!editStory', bannerButton(siteCopyItems.find('Home Share Your Story'))),
+					middle: linkTo('#!editStory', bannerButton(siteCopyItems.find('Home Share Your Story'), 'bullhorn')),
 				}),
 				alignLRM({
-					middle: linkTo('#!myHolibirthday', bannerButton(siteCopyItems.find('Home Claim Your Holibirthday'))),
+					middle: linkTo('#!myHolibirthday', bannerButton(siteCopyItems.find('Home Claim Your Holibirthday'), 'gift')),
 				}),
 				alignLRM({
-					middle: linkTo('#!contacts', bannerButton(siteCopyItems.find('Home Find Friends'))),
+					middle: linkTo('#!contacts', bannerButton(siteCopyItems.find('Home Find Friends'), 'users')),
 				}),
 			]));
 
@@ -79,10 +85,10 @@ define([
 			}), bar.horizontal(1, colors.middleGray))));
 
 			return stack({
-				gutterSize: separatorSize,
+				gutterSize: separatorSize * 2,
 			}, [
 				stack({
-					gutterSize: separatorSize,
+					gutterSize: separatorSize * 2,
 				}, [
 					banner,
 					tagline,

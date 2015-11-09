@@ -85,9 +85,14 @@ define([], function () {
 			};
 		});
 
-		db.uploadFile = function (file) {
+		db.uploadFile = function (file, fileName) {
 			var data = new FormData();
-			data.append('file', file);
+			if (fileName) {
+				data.append('file', file, fileName);
+			}
+			else {
+				data.append('file', file);
+			}
 			
 			return $.ajax({
 				url: '/api/uploadFile/insert',

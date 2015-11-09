@@ -89,11 +89,11 @@ define('holibirthdayView', [
 					drawCenteredText({
 						x: 540,
 						y: 310,
-					}, profile.firstName + ' ' + profile.lastName, 'bold 30px Raleway Thin');
+					}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
 					drawCenteredText({
 						x: 540,
 						y: 540,
-					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 30px Raleway Thin');
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
 					if (profile.birthday) {
 						drawCenteredText({
 							x: 160,
@@ -290,19 +290,25 @@ define('homeViewP', [
 	'storiesP',
 	'storyRowP',
 ], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, db, fonts, separatorSize, siteCopyItemsP, storiesP, storyRowP) {
-	var bannerButton = function (label, disabled) {
-		var darken = desaturate(disabled ? 0.8 : 0);
-		return border(darken(colors.holibirthdayDarkRed), {
+	var bannerButton = function (label, fa) {
+		return border(colors.holibirthdayDarkRed, {
 			top: 5,
 			radius: 5,
 		}, padding(10, alignTBM({
-			middle: paragraph(label, 150).all([
-				fonts.bebasNeue,
-				$css('text-align', 'center'),
-				withFontColor(white),
+			middle: stack({}, [
+				paragraph(label, 150).all([
+					fonts.bebasNeue,
+					$css('text-align', 'center'),
+					withFontColor(white),
+				]),
+				fonts.fa(fa).all([
+					$css('text-align', 'center'),
+					$css('font-size', '60px'),
+					withFontColor(white),
+				]),
 			]),
 		})).all([
-			withBackgroundColor(darken(colors.holibirthdayRed)),
+			withBackgroundColor(colors.holibirthdayRed),
 		]));
 	};
 
@@ -333,13 +339,13 @@ define('homeViewP', [
 				gutterSize: separatorSize,
 			}, [
 				alignLRM({
-					middle: linkTo('#!editStory', bannerButton(siteCopyItems.find('Home Share Your Story'))),
+					middle: linkTo('#!editStory', bannerButton(siteCopyItems.find('Home Share Your Story'), 'bullhorn')),
 				}),
 				alignLRM({
-					middle: linkTo('#!myHolibirthday', bannerButton(siteCopyItems.find('Home Claim Your Holibirthday'))),
+					middle: linkTo('#!myHolibirthday', bannerButton(siteCopyItems.find('Home Claim Your Holibirthday'), 'gift')),
 				}),
 				alignLRM({
-					middle: linkTo('#!contacts', bannerButton(siteCopyItems.find('Home Find Friends'))),
+					middle: linkTo('#!contacts', bannerButton(siteCopyItems.find('Home Find Friends'), 'users')),
 				}),
 			]));
 
@@ -358,10 +364,10 @@ define('homeViewP', [
 			}), bar.horizontal(1, colors.middleGray))));
 
 			return stack({
-				gutterSize: separatorSize,
+				gutterSize: separatorSize * 2,
 			}, [
 				stack({
-					gutterSize: separatorSize,
+					gutterSize: separatorSize * 2,
 				}, [
 					banner,
 					tagline,
@@ -1278,7 +1284,9 @@ define('profileEditViewP', [
 								fields.knowAHolibirther,
 								passwordEditor,
 								alignLRM({
-									middle: submitButton(black, text('Submit')).all([
+									middle: submitButton(black, text('Submit').all([
+										fonts.bebasNeue,
+									])).all([
 										link,
 										clickThis(function () {
 											var p = profileS.lastValue();
@@ -1499,7 +1507,13 @@ define('prettyForms', [
 define('fonts', [], function () {
 	return {
 		ralewayThin: $css('font-family', 'Raleway Thin'),
-		bebasNeue: $css('font-family', 'BebasNeue'),
+		bebasNeue: function (i) {
+			i.$el.css('font-family', 'BebasNeue');
+			i.$el.css('font-size', '20px');
+			setTimeout(function () {
+				i.updateDimensions();
+			});
+		},
 		celebrationTime: $css('font-family', 'CelebrationTime'),
 		
 		ralewayThinBold: function (i) {
@@ -1693,29 +1707,33 @@ define('holibirthdayRow', [
 	'separatorSize',
 ], function (separatorSize) {
 	return function (content, src) {
-		return grid({
+		return adjustMinSize({
+			mw: function (mw) {
+				return Math.max(300, mw);
+			},
+			mh: function (mh) {
+				return Math.max(240, mh);
+			},
+		})(padding({
+			all: separatorSize,
+		}, grid({
 			handleSurplusWidth: giveToNth(1),
+			bottomToTop: true,
+			gutterSize: separatorSize,
 		}, [
 			alignTBM({
-				middle: image({
-					src: src || './content/man.png',
-					minWidth: 300,
-					chooseHeight: true,
+				middle: alignLRM({
+					middle: image({
+						src: src || './content/man.png',
+						minWidth: 300,
+						chooseHeight: true,
+					}),
 				}),
 			}),
-			adjustMinSize({
-				mw: function (mw) {
-					return Math.max(300, mw);
-				},
-				mh: function (mh) {
-					return Math.max(240, mh);
-				},
-			})(padding({
-				all: separatorSize,
-			}, alignTBM({
+			alignTBM({
 				middle: content,
-			}))),
-		]);
+			}),
+		])));
 	};
 });
 define('gafyColorsForDesignAndStyle', [], function () {
@@ -1842,9 +1860,14 @@ define('db', [], function () {
 			};
 		});
 
-		db.uploadFile = function (file) {
+		db.uploadFile = function (file, fileName) {
 			var data = new FormData();
-			data.append('file', file);
+			if (fileName) {
+				data.append('file', file, fileName);
+			}
+			else {
+				data.append('file', file);
+			}
 			
 			return $.ajax({
 				url: '/api/uploadFile/insert',
@@ -2126,7 +2149,7 @@ define('leaderboardsView', [
 				confettiBackground(bodyColumn(holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text('Holibirthday Leaderboards').all([
+					paragraph('Holibirthday Leaderboards').all([
 						fonts.h1,
 						fonts.ralewayThinBold,
 					]),
@@ -2145,7 +2168,7 @@ define('leaderboardsView', [
 							gutterSize: separatorSize,
 						}, [
 							alignTBM({
-								middle: text(pt.amount).all([
+								middle: text('' + pt.amount).all([
 									withFontColor(colors.darkGreen),
 									fonts.ralewayThinBold,
 									fonts.h2,
@@ -2199,6 +2222,7 @@ define('socialMedia', [], function () {
 				shareVerb: 'share',
 				shareThisPage: function () {
 					return FB.ui({
+						display: 'popup',
 						method: 'share',
 						href: location.href,
 					});
@@ -2671,34 +2695,26 @@ define('storyEditViewP', [
 	'prettyForms',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'siteCopyItemsP',
-], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, siteCopyItemsP) {
+], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return function (story) {
 		return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 			var storyStreams = Stream.splitObject(story);
 			var storyStream = Stream.combineObject(storyStreams);
 
 			var paragraphSeparator = text('&nbsp;');
-			var postingGuidelines = stack({}, [
-				text('When posting a story, make sure to pick a title that will engage the reader. Titles where you evoke emotion are always a strong choice (example: "This Story About _______ Will Make You Laugh").'),
-				paragraphSeparator,
-				text('To enlarge an image, click the image and drag one of the corners. Provide credit for all images, listing the original source beneath each image. For example, below the image, list in smaller font "Credit: (insert web address)."'),
-				paragraphSeparator,
-				text('If the inspiration for the story came from somewhere other than yourself, list the name of the source in the \'Credit\' eld and place its website address in the \'Link\' eld. If this is your own original story, list your name in the \'Credit\' eld and place the link to your Holibirthday prole in the \'Link\' eld.'),
-				paragraphSeparator,
-				text('PLEASE DO NOT POST SPAM, PORNOGRAPHIC MATERIALS, OR CONTENT FROM 3RD PARTIES THAT DOES NOT BELONG TO YOU. IF YOU WOULD LIKE TO SHARE AN ARTICLE FROM AN EXTERNAL SITE, PLEASE \'POST A STORY LINK.\''),
-			]);
 
 			var instructions = bodyColumn(padding(20, stack({
 				gutterSize: separatorSize,
 			}, [
 				text(siteCopyItems.find('Edit Story Title')).all([
-					$css('font-size', '60px'),
 					fonts.bebasNeue,
+					$css('font-size', '60px'),
 				]),
 				text(siteCopyItems.find('Edit Story Smaller Title')).all([
-					$css('font-size', '30px'),
 					fonts.ralewayThinBold,
+					$css('font-size', '30px'),
 				]),
 				paragraph(siteCopyItems.find('Edit Story Instructions').split('\n').join('<br>')).all([
 					fonts.ralewayThinBold,
@@ -2814,11 +2830,19 @@ define('storyEditViewP', [
 				return bodyColumn(stack({
 					gutterSize: separatorSize,
 				}, [
-					paragraph('You must sign in to post a story').all([
-						$css('font-size', '30px'),
+					text(siteCopyItems.find('Edit Story Title')).all([
 						fonts.bebasNeue,
+						$css('font-size', '60px'),
 					]),
-					signInForm(),
+					paragraph('You must sign in to post a story').all([
+						fonts.bebasNeue,
+						$css('font-size', '30px'),
+						link,
+						clickThis(function (ev) {
+							signInStream.push(true);
+							ev.stopPropagation();
+						}),
+					]),
 				]));
 			});
 		}));
@@ -3403,16 +3427,16 @@ define('signInForm', [
 			]),
 		]);
 		
-		var narrowForm = stack({}, [
+		var narrowForm = stack({
+			gutterSize: separatorSize,
+			collapseGutters: true,
+		}, [
 			alignLRM({
 				middle: stack({}, [loginWithFacebook()]),
 			}),
-			padding({
-				top: 10,
-				bottom: 10,
-			}, alignLRM({
+			alignLRM({
 				middle: or,
-			})),
+			}),
 			alignLRM({
 				middle: sideBySide({
 					gutterSize: separatorSize,
@@ -3429,11 +3453,7 @@ define('signInForm', [
 			alignLRM({
 				middle: submit,
 			}),
-		].map(function (c) {
-			return padding({
-				top: 10,
-			}, c);
-		}));
+		]);
 
 		var widthS = Stream.never();
 		
@@ -4538,8 +4558,9 @@ define('header', [
 	'meP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'siteCopyItemsP',
-], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, siteCopyItemsP) {
+], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 		var holibirthdayButton = function (config) {
 			config.all = config.all || [];
@@ -4555,6 +4576,7 @@ define('header', [
 				padding: 10,
 				all: [
 					fonts.celebrationTime,
+					$css('font-weight', 'bold'),
 					$css('font-size', '20px'),
 				],
 			})(text);
@@ -4597,7 +4619,6 @@ define('header', [
 
 		return meP.then(function (me) {
 			return adminP.then(function (admin) {
-				var signInStream = Stream.once(false);
 				var menuOpenStream = Stream.once(false);
 				$('body').on('click', function () {
 					signInStream.push(false);
@@ -4619,42 +4640,44 @@ define('header', [
 				}, alignLRM({
 					middle: bodyColumn(stack({}, [
 						alignLRM({
-							left: toggleComponent([
-								linkTo('#!', image({
-									src: '/content/man3.png',
-									minHeight: 44,
-									minWidth: 55.45,
-								})),
-								image({
-									src: '/content/man3.png',
-									minHeight: 44,
-									minWidth: 55.45,
-								}).all([
-									function (i, context) {
-										i.$el.css('cursor', 'pointer');
-										Stream.combine([
-											windowScroll,
-											context.height,
-											windowHash,
-										], function (s, h, hash) {
-											i.$el.css('opacity', ((hash === '' ||
-																   hash === '#' ||
-																   hash === '#!') &&
-																  s > 0) ? 1 : 0);
-											setTimeout(function () {
-												i.$el.css('transition', 'opacity 0.1s');
+							left: alignTBM({
+								middle: toggleComponent([
+									linkTo('#!', image({
+										src: '/content/man3.png',
+										minHeight: 44,
+										minWidth: 55.45,
+									})),
+									image({
+										src: '/content/man3.png',
+										minHeight: 44,
+										minWidth: 55.45,
+									}).all([
+										function (i, context) {
+											i.$el.css('cursor', 'pointer');
+											Stream.combine([
+												windowScroll,
+												context.height,
+												windowHash,
+											], function (s, h, hash) {
+												i.$el.css('opacity', ((hash === '' ||
+																	   hash === '#' ||
+																	   hash === '#!') &&
+																	  s > 0) ? 1 : 0);
+												setTimeout(function () {
+													i.$el.css('transition', 'opacity 0.1s');
+												});
 											});
-										});
-									},
-									clickThis(function () {
-										$('body').animate({scrollTop: 0}, 300);
-									}),
-								]),
-							], windowHash.map(function (h) {
-								return (h === '' ||
-										h === '#' ||
-										h === '#!') ? 1 : 0;
-							})),
+										},
+										clickThis(function () {
+											$('body').animate({scrollTop: 0}, 300);
+										}),
+									]),
+								], windowHash.map(function (h) {
+									return (h === '' ||
+											h === '#' ||
+											h === '#!') ? 1 : 0;
+								})),
+							}),
 							right: componentStream(windowWidth.map(function (width) {
 								if (width > 560) {
 									menuOpenStream.push(false);
@@ -4790,13 +4813,14 @@ define('profileViewP', [
 						holibirthdayRow(grid({
 							gutterSize: separatorSize,
 							useFullWidth: true,
+							handleSurplusWidth: giveToFirst,
 						}, [
 							alignTBM({
 								middle: stack({
 									gutterSize: separatorSize / 2,
 									collapseGutters: true,
 								}, [
-									text(profile.firstName + ' ' + profile.lastName).all([
+									paragraph(profile.firstName + ' ' + profile.lastName).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
@@ -4841,7 +4865,7 @@ define('profileViewP', [
 									})) : nothing,
 								]),
 							}),
-							promiseComponent(db.holibirthday.findOne({
+							keepAspectRatio(promiseComponent(db.holibirthday.findOne({
 								user: user,
 							}).then(function (holibirthday) {
 								if (profile.holibirther && holibirthday)
@@ -4901,7 +4925,7 @@ define('profileViewP', [
 										return nothing;
 									}
 								});
-							})),
+							}))),
 						]), profile.imageUrl || './content/man.png'),
 					])));
 					var storiesC = promiseComponent(storiesP.then(function (stories) {
@@ -5371,7 +5395,9 @@ define('contactUsView', [
 		})),
 		bodyColumn(componentStream(state.map(text))),
 		bodyColumn(alignLRM({
-			left: submitButton(black, text('Submit')).all([
+			left: submitButton(black, text('Submit').all([
+				fonts.bebasNeue,
+			])).all([
 				link,
 				clickThis(function (ev, disable) {
 					var enable = disable();
@@ -6835,15 +6861,21 @@ define('storyDetailViewP', [
 	'prettyForms',
 	'profilesP',
 	'separatorSize',
+	'signInStream',
 	'socialMedia',
 	'socialMediaButton',
 	'submitButton',
-], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, socialMedia, socialMediaButton, submitButton) {
+], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, signInStream, socialMedia, socialMediaButton, submitButton) {
 	var storyCommentViewP = function (story) {
 		return promiseComponent(meP.then(function (me) {
 			if (!me) {
 				return text('Sign in to comment').all([
 					fonts.bebasNeue,
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
 				]);
 			}
 			
@@ -7038,6 +7070,9 @@ define('storyDetailViewP', [
 			});
 		}));
 	};
+});
+define('signInStream', [], function () {
+	return Stream.once(false);
 });
 define('submitButton', [], function () {
 	return function (color, c) {
@@ -7417,8 +7452,10 @@ define('myHolibirthdayView', [
 	'profileP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'submitButton',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
+	'writeOnImage',
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, submitButton, writeOnImage) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -7655,30 +7692,76 @@ define('myHolibirthdayView', [
 								])),
 							}),
 							alignLRM({
-								middle: submitButton(black, text(profile.holibirthday && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
+								middle: submitButton(black, text(profile.holibirther && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday').all([
+									fonts.bebasNeue,
+								])).all([
 									link,
 									clickThis(function () {
 										if (lastHolibirthday) {
-											db.profile.update({
-												user: me._id,
-											}, {
-												holibirther: true,
-											}).then(function () {
-												if (oldHolibirthday) {
-													db.holibirthday.update({
-														user: me._id,
-													}, lastHolibirthday).then(function () {
-														window.location.hash = '#!user/' + me._id + '/certificate';
-														window.location.reload();
-													});
+											var canvas = document.createElement('canvas');
+											var $canvas = $(canvas);
+											$canvas.appendTo($('body'))
+												.prop('width', 1080)
+												.prop('height', 702);
+
+											var ctx = canvas.getContext('2d');
+
+											var drawCenteredText = function (p, text, font) {
+												ctx.font = font;
+												var width = ctx.measureText(text).width;
+												ctx.fillText(text, p.x - width / 2, p.y);
+											};
+											
+											var img = new Image();
+											img.onload = function() {
+												ctx.drawImage(img, 0, 0);
+												drawCenteredText({
+													x: 540,
+													y: 310,
+												}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
+												drawCenteredText({
+													x: 540,
+													y: 540,
+												}, moment(lastHolibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
+												if (profile.birthday) {
+													drawCenteredText({
+														x: 160,
+														y: 595,
+													}, 'Old Birthday', '20px BebasNeue');
+													drawCenteredText({
+														x: 160,
+														y: 615,
+													}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
 												}
-												else {
-													db.holibirthday.insert(lastHolibirthday).then(function () {
-														window.location.hash = '#!user/' + me._id + '/certificate';
-														window.location.reload();
+												setTimeout(function () {
+													var blob = window.dataURLtoBlob(canvas.toDataURL());
+													db.uploadFile(blob, 'certificate.png').then(function (filename) {
+														lastHolibirthday.imageUrl = '/api/uploadFile/find/' + filename;
+														db.profile.update({
+															user: me._id,
+														}, {
+															holibirther: true,
+														}).then(function () {
+															if (oldHolibirthday) {
+																db.holibirthday.update({
+																	user: me._id,
+																}, lastHolibirthday).then(function () {
+																	window.location.hash = '#!user/' + me._id + '/certificate';
+																	window.location.reload();
+																});
+															}
+															else {
+																db.holibirthday.insert(lastHolibirthday).then(function () {
+																	window.location.hash = '#!user/' + me._id + '/certificate';
+																	window.location.reload();
+																});
+															}
+														});
 													});
-												}
-											});
+													$canvas.remove();
+												});
+											};
+											img.src = './content/certificate-01.png';
 										}
 										else {
 											playTheMachine.push(true);
@@ -7691,11 +7774,11 @@ define('myHolibirthdayView', [
 					return db.holibirthday.findOne({
 						user: me._id,
 					}).then(function (oldHolibirthday) {
-						if (profile.holibirthday && oldHolibirthday) {
+						if (profile.holibirther && oldHolibirthday) {
 							var oldHolibirthdate = new Date(oldHolibirthday.date);
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
-								gutterSize: separatorSize * 2,
+								gutterSize: separatorSize,
 							}, [
 								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
 									text('Your Holibirthday Is').all([
@@ -7710,7 +7793,7 @@ define('myHolibirthdayView', [
 								bodyColumn(alignLRM({
 									middle: machine(holibirthday),
 								})),
-								componentStream(holibirthday.date.map(function (date) {
+								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
 								})),
 							]);
@@ -7726,7 +7809,7 @@ define('myHolibirthdayView', [
 								bodyColumn(alignLRM({
 									middle: machine(holibirthday),
 								})),
-								componentStream(holibirthday.date.map(function (date) {
+								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
 								})),
 							]);
@@ -7734,15 +7817,22 @@ define('myHolibirthdayView', [
 					});
 				});
 			}
-			return bodyColumn(stack({
+			return stack({
 				gutterSize: separatorSize,
 			}, [
-				nothing,
-				paragraph('You must sign in to claim a holibirthday').all([
+				confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
+					fonts.ralewayThinBold,
+					$css('font-size', 40),
+				])))),
+				bodyColumn(paragraph('You must sign in to claim a holibirthday').all([
 					fonts.h1,
-				]),
-				signInForm(),
-			]));
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
+				])),
+			]);
 		});
 	}));
 });

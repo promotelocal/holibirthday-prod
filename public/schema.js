@@ -203,6 +203,9 @@
 			}, {
 				name: 'createDate',
 				type: type.date,
+			}, {
+				name: 'imageUrl',
+				type: type.string,
 			}],
 			mayFind: always,
 			mayInsert: ifOwner('user'),

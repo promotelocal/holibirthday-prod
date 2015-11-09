@@ -104,13 +104,14 @@ define([
 						holibirthdayRow(grid({
 							gutterSize: separatorSize,
 							useFullWidth: true,
+							handleSurplusWidth: giveToFirst,
 						}, [
 							alignTBM({
 								middle: stack({
 									gutterSize: separatorSize / 2,
 									collapseGutters: true,
 								}, [
-									text(profile.firstName + ' ' + profile.lastName).all([
+									paragraph(profile.firstName + ' ' + profile.lastName).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
 									]),
@@ -155,7 +156,7 @@ define([
 									})) : nothing,
 								]),
 							}),
-							promiseComponent(db.holibirthday.findOne({
+							keepAspectRatio(promiseComponent(db.holibirthday.findOne({
 								user: user,
 							}).then(function (holibirthday) {
 								if (profile.holibirther && holibirthday)
@@ -215,7 +216,7 @@ define([
 										return nothing;
 									}
 								});
-							})),
+							}))),
 						]), profile.imageUrl || './content/man.png'),
 					])));
 					var storiesC = promiseComponent(storiesP.then(function (stories) {

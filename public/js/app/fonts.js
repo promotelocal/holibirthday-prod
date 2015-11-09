@@ -1,7 +1,13 @@
 define([], function () {
 	return {
 		ralewayThin: $css('font-family', 'Raleway Thin'),
-		bebasNeue: $css('font-family', 'BebasNeue'),
+		bebasNeue: function (i) {
+			i.$el.css('font-family', 'BebasNeue');
+			i.$el.css('font-size', '20px');
+			setTimeout(function () {
+				i.updateDimensions();
+			});
+		},
 		celebrationTime: $css('font-family', 'CelebrationTime'),
 		
 		ralewayThinBold: function (i) {

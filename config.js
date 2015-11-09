@@ -7,7 +7,7 @@ module.exports = {
 		// host: "holibirthday:ka,.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
 		
 		// prod
-		host: "holibirthday:asokha,38g451234865f[,.@ds041613.mongolab.com:41613/holibirthday",
+		host: "holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday",
 		
 		name: "holibirthday",
 	},
@@ -28,6 +28,9 @@ module.exports = {
 	buffer: {
 		clientId: '54f589d3d8c8289438b23a39',
 		accessToken: '1/93c0f4cf53fab76bbc7e6b5ef5417817',
+	},
+	mailchimp: {
+		key: '7c0e6b6ffd68f9168c569845ec5ba92d-us12',
 	},
 	adminEmail: 'holibirthday@gmail.com',
 };

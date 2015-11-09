@@ -14,8 +14,10 @@ define([
 	'profileP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'submitButton',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, submitButton) {
+	'writeOnImage',
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, submitButton, writeOnImage) {
 	var slotMachine = function (config) {
 		// config.options: array of options
 		// config.stream: stream of results to show
@@ -252,30 +254,76 @@ define([
 								])),
 							}),
 							alignLRM({
-								middle: submitButton(black, text(profile.holibirthday && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday')).all([
+								middle: submitButton(black, text(profile.holibirther && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday').all([
+									fonts.bebasNeue,
+								])).all([
 									link,
 									clickThis(function () {
 										if (lastHolibirthday) {
-											db.profile.update({
-												user: me._id,
-											}, {
-												holibirther: true,
-											}).then(function () {
-												if (oldHolibirthday) {
-													db.holibirthday.update({
-														user: me._id,
-													}, lastHolibirthday).then(function () {
-														window.location.hash = '#!user/' + me._id + '/certificate';
-														window.location.reload();
-													});
+											var canvas = document.createElement('canvas');
+											var $canvas = $(canvas);
+											$canvas.appendTo($('body'))
+												.prop('width', 1080)
+												.prop('height', 702);
+
+											var ctx = canvas.getContext('2d');
+
+											var drawCenteredText = function (p, text, font) {
+												ctx.font = font;
+												var width = ctx.measureText(text).width;
+												ctx.fillText(text, p.x - width / 2, p.y);
+											};
+											
+											var img = new Image();
+											img.onload = function() {
+												ctx.drawImage(img, 0, 0);
+												drawCenteredText({
+													x: 540,
+													y: 310,
+												}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
+												drawCenteredText({
+													x: 540,
+													y: 540,
+												}, moment(lastHolibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
+												if (profile.birthday) {
+													drawCenteredText({
+														x: 160,
+														y: 595,
+													}, 'Old Birthday', '20px BebasNeue');
+													drawCenteredText({
+														x: 160,
+														y: 615,
+													}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
 												}
-												else {
-													db.holibirthday.insert(lastHolibirthday).then(function () {
-														window.location.hash = '#!user/' + me._id + '/certificate';
-														window.location.reload();
+												setTimeout(function () {
+													var blob = window.dataURLtoBlob(canvas.toDataURL());
+													db.uploadFile(blob, 'certificate.png').then(function (filename) {
+														lastHolibirthday.imageUrl = '/api/uploadFile/find/' + filename;
+														db.profile.update({
+															user: me._id,
+														}, {
+															holibirther: true,
+														}).then(function () {
+															if (oldHolibirthday) {
+																db.holibirthday.update({
+																	user: me._id,
+																}, lastHolibirthday).then(function () {
+																	window.location.hash = '#!user/' + me._id + '/certificate';
+																	window.location.reload();
+																});
+															}
+															else {
+																db.holibirthday.insert(lastHolibirthday).then(function () {
+																	window.location.hash = '#!user/' + me._id + '/certificate';
+																	window.location.reload();
+																});
+															}
+														});
 													});
-												}
-											});
+													$canvas.remove();
+												});
+											};
+											img.src = './content/certificate-01.png';
 										}
 										else {
 											playTheMachine.push(true);
@@ -288,11 +336,11 @@ define([
 					return db.holibirthday.findOne({
 						user: me._id,
 					}).then(function (oldHolibirthday) {
-						if (profile.holibirthday && oldHolibirthday) {
+						if (profile.holibirther && oldHolibirthday) {
 							var oldHolibirthdate = new Date(oldHolibirthday.date);
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
-								gutterSize: separatorSize * 2,
+								gutterSize: separatorSize,
 							}, [
 								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
 									text('Your Holibirthday Is').all([
@@ -307,7 +355,7 @@ define([
 								bodyColumn(alignLRM({
 									middle: machine(holibirthday),
 								})),
-								componentStream(holibirthday.date.map(function (date) {
+								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
 								})),
 							]);
@@ -323,7 +371,7 @@ define([
 								bodyColumn(alignLRM({
 									middle: machine(holibirthday),
 								})),
-								componentStream(holibirthday.date.map(function (date) {
+								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
 								})),
 							]);
@@ -331,15 +379,22 @@ define([
 					});
 				});
 			}
-			return bodyColumn(stack({
+			return stack({
 				gutterSize: separatorSize,
 			}, [
-				nothing,
-				paragraph('You must sign in to claim a holibirthday').all([
+				confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
+					fonts.ralewayThinBold,
+					$css('font-size', 40),
+				])))),
+				bodyColumn(paragraph('You must sign in to claim a holibirthday').all([
 					fonts.h1,
-				]),
-				signInForm(),
-			]));
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
+				])),
+			]);
 		});
 	}));
 });

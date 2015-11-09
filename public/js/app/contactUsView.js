@@ -34,7 +34,9 @@ define([
 		})),
 		bodyColumn(componentStream(state.map(text))),
 		bodyColumn(alignLRM({
-			left: submitButton(black, text('Submit')).all([
+			left: submitButton(black, text('Submit').all([
+				fonts.bebasNeue,
+			])).all([
 				link,
 				clickThis(function (ev, disable) {
 					var enable = disable();

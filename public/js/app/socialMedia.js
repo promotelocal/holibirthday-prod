@@ -25,6 +25,7 @@ define([], function () {
 				shareVerb: 'share',
 				shareThisPage: function () {
 					return FB.ui({
+						display: 'popup',
 						method: 'share',
 						href: location.href,
 					});
