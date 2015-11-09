@@ -1,7 +1,8 @@
 define([
+	'colors',
 	'fonts',
 	'separatorSize',
-], function (fonts, separatorSize) {
+], function (colors, fonts, separatorSize) {
 	var footerLinks = [{
 		name: 'Contact Holibirthday',
 		link: '#!contactUs',
@@ -18,5 +19,7 @@ define([
 		middle: sideBySide({
 			gutterSize: separatorSize,
 		}, footerLinks),
-	});
+	}).all([
+		withBackgroundColor(colors.pageBackgroundColor),
+	]);
 });

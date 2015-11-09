@@ -4,13 +4,14 @@ define([
 	'bar',
 	'bodyColumn',
 	'colors',
+	'domain',
 	'fonts',
 	'meP',
 	'separatorSize',
 	'signInForm',
 	'signInStream',
 	'siteCopyItemsP',
-], function (adminP, auth, bar, bodyColumn, colors, fonts, meP, separatorSize, signInForm, signInStream, siteCopyItemsP) {
+], function (adminP, auth, bar, bodyColumn, colors, domain, fonts, meP, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 		var holibirthdayButton = function (config) {
 			config.all = config.all || [];
@@ -38,7 +39,7 @@ define([
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
 			
-			// buttons.push(linkTo('#!gifts', headerButton(siteCopyItems.find('Header Gifts'))));
+			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
 			if (me) {
@@ -92,13 +93,13 @@ define([
 						alignLRM({
 							left: alignTBM({
 								middle: toggleComponent([
-									linkTo('#!', image({
-										src: '/content/man3.png',
+									linkTo(domain + '/#!', image({
+										src: 'https://www.holibirthday.com/content/man3.png',
 										minHeight: 44,
 										minWidth: 55.45,
 									})),
 									image({
-										src: '/content/man3.png',
+										src: 'https://www.holibirthday.com/content/man3.png',
 										minHeight: 44,
 										minWidth: 55.45,
 									}).all([
@@ -123,6 +124,9 @@ define([
 										}),
 									]),
 								], windowHash.map(function (h) {
+									if (-1 !== window.location.origin.indexOf('gift')) {
+										return 0;
+									}
 									return (h === '' ||
 											h === '#' ||
 											h === '#!') ? 1 : 0;

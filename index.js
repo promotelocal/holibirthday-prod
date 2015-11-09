@@ -48,6 +48,12 @@ app.use(function (req, res, next) {
 	return next();
 });
 
+app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "http://holibirthdaygift.com");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	next();
+});
+
 app.use(bodyParser.json());
 app.use(require('prerender-node').set('prerenderServiceUrl', 'https://young-temple-4312.herokuapp.com/'));
 

@@ -1,8 +1,11 @@
-define([], function () {
+define([
+	'domain',
+], function (domain) {
 	return (function () {
 		var meD = Q.defer();
-		
-		$.get('/auth/me').then(function (me) {
+
+		console.log(domain);
+		$.get(domain + '/auth/me').then(function (me) {
 			meD.resolve(me);
 		}, function () {
 			meD.resolve();

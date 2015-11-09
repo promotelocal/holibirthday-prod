@@ -1,9 +1,11 @@
-define([], function () {
+define([
+	'domain',
+], function (domain) {
 	return {
 		signIn: function (creds) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/login',
+				url: domain + '/auth/login',
 				data: JSON.stringify(creds),
 				contentType: 'application/json',
 			});
@@ -14,7 +16,7 @@ define([], function () {
 		loginWithFacebook: function (authResponse) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/facebook',
+				url: domain + '/auth/facebook',
 				data: JSON.stringify({
 					username: authResponse.accessToken,
 					password: authResponse.accessToken,
@@ -25,7 +27,7 @@ define([], function () {
 		register: function (body) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/register',
+				url: domain + '/auth/register',
 				data: JSON.stringify(body),
 				contentType: 'application/json',
 			});
@@ -33,7 +35,7 @@ define([], function () {
 		resendConfirmEmail: function (email) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/resendConfirmEmail',
+				url: domain + '/auth/resendConfirmEmail',
 				data: JSON.stringify({
 					email: email,
 				}),
@@ -44,7 +46,7 @@ define([], function () {
 		resetPasswordRequest: function (options) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/resetPasswordRequest',
+				url: domain + '/auth/resetPasswordRequest',
 				data: JSON.stringify({
 					email: options.email,
 				}),
@@ -54,7 +56,7 @@ define([], function () {
 		resetPassword: function (options) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/resetPassword',
+				url: domain + '/auth/resetPassword',
 				data: JSON.stringify({
 					passwordResetToken: options.token,
 					password: options.password,
@@ -65,7 +67,7 @@ define([], function () {
 		setPassword: function (options) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/setPassword',
+				url: domain + '/auth/setPassword',
 				data: JSON.stringify({
 					password: options.password,
 				}),
@@ -75,14 +77,14 @@ define([], function () {
 		confirmEmail: function (token) {
 			return $.ajax({
 				type: 'post',
-				url: '/auth/confirmEmail',
+				url: domain + '/auth/confirmEmail',
 				data: JSON.stringify({
 					emailConfirmationToken: token,
 				}),
 				contentType: 'application/json',
 			});
 		},
-		grecaptchaSitekeyP: $.get('/grecaptcha/sitekey'),
+		grecaptchaSitekeyP: $.get(domain + '/grecaptcha/sitekey'),
 		grecaptchaP: (function () {
 			var d = Q.defer();
 
@@ -97,9 +99,14 @@ define([], function () {
 			awaitGrecaptcha();
 			return d.promise;
 		})(),
-		StripeP: $.get('/stripe/publishableKey').then(function (key) {
-			Stripe.setPublishableKey(key);
-			return Stripe;
+		StripeP: $.get(domain + '/stripe/publishableKey').then(function (key) {
+			if (window.Stripe) {
+				window.Stripe.setPublishableKey(key);
+				return window.Stripe;
+			}
+			else {
+				console.log('Stripe not loaded');
+			}
 		}),
 	};
 });

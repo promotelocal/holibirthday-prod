@@ -1,6 +1,7 @@
 define([
+	'domain',
 	'separatorSize',
-], function (separatorSize) {
+], function (domain, separatorSize) {
 	return function (content, src) {
 		return adjustMinSize({
 			mw: function (mw) {
@@ -19,7 +20,7 @@ define([
 			alignTBM({
 				middle: alignLRM({
 					middle: image({
-						src: src || './content/man.png',
+						src: src || domain + '/content/man.png',
 						minWidth: 300,
 						chooseHeight: true,
 					}),

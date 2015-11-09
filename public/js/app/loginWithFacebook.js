@@ -19,7 +19,9 @@ define([
 				child(submitButton(socialMedia.facebook.color, sideBySide({
 					gutterSize: separatorSize,
 				}, [
-					text(socialMedia.facebook.icon),
+					text(socialMedia.facebook.icon).all([
+						$css('font-size', '20px'),
+					]),
 					text('sign in with Facebook').all([
 						fonts.bebasNeue,
 					]),

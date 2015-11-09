@@ -1,10 +1,11 @@
 define([
 	'colors',
-], function (colors) {
+	'domain',
+], function (colors, domain) {
 	return function (c) {
 		return withBackground(alignLRM({
 			right: image({
-				src: '/content/confetti.png',
+				src: domain + '/content/confetti.png',
 				chooseWidth: 1,
 			}),
 		}).all([

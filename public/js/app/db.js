@@ -1,9 +1,11 @@
-define([], function () {
+define([
+	'domain',
+], function (domain) {
 	return (function () {
 		var db = {};
 		
 		schema.map(function (table) {
-			var uri = '/api/' + table.name + '/';
+			var uri = domain + '/api/' + table.name + '/';
 			var convertFields = function (doc) {
 				table.fields.map(function (field) {
 					if (doc[field.name]) {
