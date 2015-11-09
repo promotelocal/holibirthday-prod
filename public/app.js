@@ -7676,7 +7676,7 @@ define('myHolibirthdayView', [
 						return false;
 					}).pushAll(playTheMachine);
 					
-					var machine = function (oldHolibirthday) {
+					var machine = function (oldHolibirthday, update) {
 						return stack({
 							gutterSize: separatorSize,
 						}, [
@@ -7692,7 +7692,7 @@ define('myHolibirthdayView', [
 								])),
 							}),
 							alignLRM({
-								middle: submitButton(black, text(profile.holibirther && oldHolibirthday ? 'Change Holibirthday' : 'Claim Birthday').all([
+								middle: submitButton(black, text(profile.holibirther && update ? 'Change Holibirthday' : 'Claim Birthday').all([
 									fonts.bebasNeue,
 								])).all([
 									link,
@@ -7742,7 +7742,7 @@ define('myHolibirthdayView', [
 														}, {
 															holibirther: true,
 														}).then(function () {
-															if (oldHolibirthday) {
+															if (update) {
 																db.holibirthday.update({
 																	user: me._id,
 																}, lastHolibirthday).then(function () {
@@ -7791,7 +7791,7 @@ define('myHolibirthdayView', [
 									]),
 								]))))),
 								bodyColumn(alignLRM({
-									middle: machine(holibirthday),
+									middle: machine(holibirthday, true),
 								})),
 								componentStream(holibirthday.date.delay(2500).map(function (date) {
 									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
