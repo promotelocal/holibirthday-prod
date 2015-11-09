@@ -207,7 +207,9 @@ define([
 								return meP.then(function (me) {
 									if (me && me._id === user) {
 										return linkTo('#!myHolibirthday', alignTBM({
-											middle: text('(claim a holibirthday)'),
+											middle: submitButton(white, text('claim a holibirthday').all([
+												fonts.bebasNeue,
+											])),
 										}).all([
 											fonts.ralewayThinBold,
 										]));

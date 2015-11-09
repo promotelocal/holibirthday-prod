@@ -1173,13 +1173,13 @@ define('profileEditViewP', [
 			});
 			
 			var password = prettyForms.input({
-				name: 'Password',
+				name: 'New Password',
 				fieldName: 'password',
 				stream: passwordS,
 				type: 'password',
 			});
 			var confirmPassword = prettyForms.input({
-				name: 'Password Again',
+				name: 'New Password Again',
 				fieldName: 'confirmPassword',
 				stream: confirmPasswordS,
 				type: 'password',
@@ -1188,6 +1188,10 @@ define('profileEditViewP', [
 			return f(stack({
 				gutterSize: separatorSize,
 			}, [
+				nothing,
+				text('Change your Password:').all([
+					fonts.bebasNeue,
+				]),
 				password,
 				confirmPassword,
 				toggleHeight(passwordsDoNotMatch)(paragraph('Passwords must match')),
@@ -4916,7 +4920,9 @@ define('profileViewP', [
 								return meP.then(function (me) {
 									if (me && me._id === user) {
 										return linkTo('#!myHolibirthday', alignTBM({
-											middle: text('(claim a holibirthday)'),
+											middle: submitButton(white, text('claim a holibirthday').all([
+												fonts.bebasNeue,
+											])),
 										}).all([
 											fonts.ralewayThinBold,
 										]));
