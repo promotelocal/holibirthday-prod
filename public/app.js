@@ -3708,6 +3708,7 @@ define('adminView', [
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
+				copyItemEditor('Header Browse'),
 				copyItemEditor('Header Gifts'),
 				copyItemEditor('Header Causes'),
 				copyItemEditor('Header My Profile'),
