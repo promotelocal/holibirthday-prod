@@ -2030,6 +2030,7 @@ define('header', [
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
 			
+			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
