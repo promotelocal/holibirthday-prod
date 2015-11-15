@@ -177,7 +177,7 @@ define('myHolibirthdayView', [
 							],
 							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date && date.getMonth(),
+									index: date && date.getUTCMonth(),
 								};
 							}),
 						}),
@@ -187,7 +187,7 @@ define('myHolibirthdayView', [
 							],
 							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date && Math.floor(date.getDate() / 10),
+									index: date && Math.floor(date.getUTCDate() / 10),
 								};
 							}),
 						}),
@@ -197,7 +197,7 @@ define('myHolibirthdayView', [
 							],
 							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date && date.getDate() % 10,
+									index: date && date.getUTCDate() % 10,
 								};
 							}),
 						}),
@@ -216,8 +216,8 @@ define('myHolibirthdayView', [
 				return [];
 			}
 			return famousBirthdays.filter(function (fb) {
-				return fb.birthday.getMonth() === date.getMonth() &&
-					fb.birthday.getDate() === date.getDate();
+				return fb.birthday.getUTCMonth() === date.getUTCMonth() &&
+					fb.birthday.getUTCDate() === date.getUTCDate();
 			});
 		};
 		
@@ -337,7 +337,7 @@ define('myHolibirthdayView', [
 						user: me._id,
 					}).then(function (oldHolibirthday) {
 						if (profile.holibirther && oldHolibirthday) {
-							var oldHolibirthdate = new Date(oldHolibirthday.date);
+							var oldHolibirthdate = oldHolibirthday.date;
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
 								gutterSize: separatorSize,
@@ -432,12 +432,12 @@ define('auth', [
 				contentType: 'application/json',
 			});
 		},
-		resendConfirmEmail: function (email) {
+		resendConfirmEmail: function (options) {
 			return $.ajax({
 				type: 'post',
 				url: domain + '/auth/resendConfirmEmail',
 				data: JSON.stringify({
-					email: email,
+					email: options.email,
 				}),
 				contentType: 'application/json',
 				
@@ -514,17 +514,17 @@ define('forms', [
 	'ckeditorP',
 ], function (ckeditorP) {
 	return {
-		inputBox: function (stream, type, name, all) {
+		inputBox: function (stream, type, name, all, noBorder) {
 			type = type || 'text';
 			return border(color({
 				r: 169,
 				b: 169,
 				g: 169,
 			}), {
-				all: type === 'text' ||
-					type === 'password' ||
-					type === 'date' ||
-					type === 'number' ? 1 : 0,
+				all: (!noBorder && (type === 'text' ||
+									type === 'password' ||
+									type === 'date' ||
+									type === 'number')) ? 1 : 0,
 			}, input.all((all || []).concat([
 				$prop('name', name),
 				$prop('type', type),
@@ -561,7 +561,7 @@ define('forms', [
 							newVal = v;
 						}
 						
-						if (newVal && $el.val() !== newVal) {
+						if ($el.val() !== newVal) {
 							$el.val(newVal);
 						}
 					});
@@ -1311,7 +1311,7 @@ define('db', [
 				findOne: function (query) {
 					var result = Q.defer();
 					
-					mapResponse($.ajax({
+					$.ajax({
 						type: 'post',
 						url: uri + 'find',
 						data: JSON.stringify(query),
@@ -1321,9 +1321,9 @@ define('db', [
 							result.resolve(null);
 						}
 						result.resolve(docs[0]);
-					}));
+					});
 					
-					return result.promise;
+					return mapResponse(result.promise);
 				},
 				find: function (query) {
 					return mapResponse($.ajax({
@@ -1351,6 +1351,14 @@ define('db', [
 						}),
 						contentType: 'application/json',
 					}));
+				},
+				insertOrUpdate: function (doc) {
+					if (doc._id) {
+						return db[table.name].update({
+							_id: doc._id,
+						}, doc);
+					}
+					return db[table.name].insert(doc);
 				},
 				remove: function (query) {
 					return mapResponse($.ajax({
@@ -1627,7 +1635,9 @@ define('socialMediaButton', [
 			}, padding(10, sideBySide({
 				gutterSize: separatorSize,
 			},[
-				text(sm.icon),
+				text(sm.icon).all([
+					$css('font-size', '20px'),
+				]),
 				text(textFunc(sm.shareVerb)).all([
 					fonts.bebasNeue,
 				]),
@@ -2348,15 +2358,11 @@ define('prettyForms', [
 			return grid({
 				gutterSize: separatorSize,
 			}, [
-				prettyForms.fileUpload({
+				prettyForms.input({
 					name: config.name,
 					accept: config.accept,
 					labelAll: config.labelAll,
-					stream: Stream.create(),
-				}, function (file) {
-					db.uploadFile(file).then(function (filename) {
-						config.stream.push('/api/uploadFile/find/' + encodeURIComponent(filename));
-					});
+					stream: config.stream,
 				}).all([
 					withMinWidth(300, true),
 				]),
@@ -2396,13 +2402,16 @@ define('prettyForms', [
 					forms.inputBox(Stream.create(), 'radio', config.fieldName).all([
 						$prop('value', option.value),
 						function (instance) {
-							config.stream.onValue(function (value) {
-								if (value === option.value) {
-									instance.$el.click();
-								}
-								else {
-									instance.$el.find('input').prop('checked', false);
-								}
+							setTimeout(function () {
+								config.stream.onValue(function (value) {
+									if (value === option.value) {
+										instance.$el.find('input').prop('checked', true);
+									}
+									else {
+										instance.$el.find('input').prop('checked', false);
+									}
+								});
+								
 							});
 						},
 						clickThis(function () {
@@ -2473,28 +2482,21 @@ define('registerView', [
 		});
 
 		var registeredViewIndex = Stream.once(0);
-		var submit = prettyForms.submit(black, 'Submit', function () {
+		var submit = prettyForms.submit(black, 'Submit', function (enable) {
 			auth.grecaptchaP.then(function (grecaptcha) {
 				var grecaptchaResponse = grecaptcha.getResponse();
 				if (latestModel === undefined || grecaptchaResponse === '') {
 					fillOutAllFields.push(true);
+					enable();
 				}
 				else if (latestModel.password !== latestModel.confirmPassword) {
 					passwordsDoNotMatch.push(true);
+					enable();
 				}
 				else {
 					latestModel.captchaResponse = grecaptchaResponse;
 					auth.register(latestModel).then(function () {
 						registeredViewIndex.push(1);
-						setTimeout(function () {
-							auth.signIn({
-								username: model.email.lastValue(),
-								password: model.password.lastValue(),
-							}).then(function () {
-								window.location.hash = model.holibirther.lastValue() ? '#!myHolibirthday' : '#!';
-								window.location.reload();
-							});
-						}, 3000);
 					});
 				}
 			});
@@ -2676,8 +2678,8 @@ define('chooseNonHoliday', [], function () {
 		var createDate = function () {
 			var randomDate = new Date(new Date().getTime() * Math.random());
 			
-			var month = randomDate.getMonth();
-			var date = randomDate.getDate();
+			var month = randomDate.getUTCMonth();
+			var date = randomDate.getUTCDate();
 			var dateTens = parseInt((date / 10) + '');
 			var dateOnes = date % 10;
 			return {
@@ -2796,6 +2798,63 @@ define('chooseNonHoliday', [], function () {
 		}
 		return date.date;
 	};
+});
+define('storyPaginate', [
+	'bar',
+	'colors',
+	'fonts',
+	'separatorSize',
+], function (bar, colors, fonts, separatorSize) {
+	var paginate = function (f) {
+		return function (config, cs) {
+			var pages = [];
+			for (var i = 0; i < cs.length; i += config.perPage) {
+				pages.push(cs.slice(i, i + config.perPage));
+			}
+			if (pages.length === 0) {
+				pages.push([]);
+			}
+			return f(pages, config.pageS);
+		};
+	};
+
+	return paginate(function (pages, iS) {
+		var once = false;
+		return componentStream(iS.map(function (i) {
+			var pageSelector = alignLRM({
+				middle: sideBySide({
+					gutterSize: separatorSize,
+				}, pages.map(function (_, pageIndex) {
+					var str = '' + (pageIndex + 1);
+					return (i === pageIndex) ? text(str) : text(str).all([
+						withFontColor(colors.linkBlue),
+						$css('text-decoration', 'underline'),
+						link,
+						clickThis(function () {
+							iS.push(pageIndex);
+						}),
+					]);
+				})),
+			});
+			return stack({
+				gutterSize: separatorSize,
+			}, [
+				pageSelector,
+				stack({
+					gutterSize: separatorSize,
+				}, intersperse(pages[i], bar.horizontal(1, colors.middleGray))),
+				pageSelector,
+			]).all([
+				function (index, context) {
+					if (once) {
+						var top = -50 + context.topAccum.lastValue() + context.top.lastValue();
+						$('body').animate({scrollTop: top}, 300);
+					}
+					once = true;
+				},
+			]);
+		}));
+	});
 });
 define('areYouSure', [
 	'fonts',
@@ -3024,12 +3083,29 @@ define('contactsView', [
 	'meP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'socialMedia',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, fonts, holibirthdayRow, meP, separatorSize, signInForm, socialMedia, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, fonts, holibirthdayRow, meP, separatorSize, signInForm, signInStream, socialMedia, submitButton) {
 	return promiseComponent(meP.then(function (me) {
 		if (!me) {
-			return signInForm();
+			return stack({
+				gutterSize: separatorSize,
+			}, [
+				confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
+					fonts.ralewayThinBold,
+					fonts.h1,
+				])))),
+				bodyColumn(paragraph('You must sign in to add contacts').all([
+					fonts.bebasNeue,
+					$css('font-size', '30px'),
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
+				])),
+			]);
 		}
 		var now = new Date();
 		
@@ -3039,8 +3115,8 @@ define('contactsView', [
 				return max;
 			}
 			var nowThatMonth = new Date(now);
-			nowThatMonth.setMonth(date.getMonth());
-			nowThatMonth.setDate(date.getDate());
+			nowThatMonth.setUTCMonth(date.getUTCMonth());
+			nowThatMonth.setUTCDate(date.getUTCDate());
 			
 			var howLong = nowThatMonth.getTime() - now.getTime();
 			if (howLong < 0) {
@@ -3222,7 +3298,7 @@ define('contactsView', [
 												newContactFields.email,
 												alignTBM({
 													middle: submitButton(black, text('Add Contact').all([
-														fonts.ralewayThinBold,
+														fonts.bebasNeue,
 													])).all([
 														link,
 														clickThis(function (ev, disable) {
@@ -3287,7 +3363,7 @@ define('contactsView', [
 													]),
 													alignTBM({
 														middle: submitButton(black, text('Add Contact').all([
-															fonts.ralewayThinBold,
+															fonts.bebasNeue,
 														])).all([
 															link,
 															clickThis(function () {
@@ -3307,22 +3383,30 @@ define('contactsView', [
 												];
 											})),
 										}),
-										alignLRM({
-											middle: submitButton(socialMedia.facebook.color, text(me.facebookId ? 'Invite More Facebook Friends' : 'Invite Facebook Friends').all([
-												fonts.ralewayThinBold,
-												withFontColor(socialMedia.facebook.color),
-											])).all([
-												link,
-												clickThis(function () {
-													FB.ui({
-														method: 'send',
-														link: location.origin,
-													});
-												}),
-											]),
-										})
 									]));
 								})),
+								alignLRM({
+									middle: submitButton(socialMedia.facebook.color, sideBySide({
+										gutterSize: separatorSize,
+									}, [
+										text(socialMedia.facebook.icon).all([
+											$css('font-size', '20px'),
+										]),
+										text(me.facebookId ? 'Invite More Facebook Friends' : 'Invite Facebook Friends').all([
+											fonts.bebasNeue,
+										]),
+									])).all([
+										withFontColor(socialMedia.facebook.color),
+										link,
+										clickThis(function () {
+											FB.ui({
+												display: 'popup',
+												method: 'send',
+												link: location.origin,
+											});
+										}),
+									]),
+								}),
 							]);
 						}));
 					}));
@@ -3392,6 +3476,7 @@ define('adminView', [
 	'defaultFormFor',
 	'fonts',
 	'formLayouts',
+	'forms',
 	'gafyDesignSmall',
 	'gafyStyleSmall',
 	'months',
@@ -3399,14 +3484,14 @@ define('adminView', [
 	'separatorSize',
 	'storiesP',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
 			bottom: 10,
 			left: 10,
 			right: 10,
-		}, text(name).all([
+		}, paragraph(name, 0).all([
 			fonts.h3,
 		]));
 		
@@ -3525,350 +3610,7 @@ define('adminView', [
 		});
 	}));
 
-	var designsEditor = promiseComponent(db.gafyDesign.find({}).then(function (designs) {
-		var designsS = Stream.once(designs);
-
-		var designFormLayout = formLayouts.stack({
-			formBuilder: defaultFormFor.gafyDesign,
-			stackConfig: {
-				gutterSize: separatorSize,
-			},
-			fields: [
-				'designDescription',
-				'designNumber',
-				'printLocation',
-				'imageUrl',
-				'month',
-				'styles',
-				'colors',
-			],
-		});
-
-		var designsTabS = Stream.once(0);
-		var editingDesignIdS = Stream.once(designs.length > 0 ? designs[0]._id : null);
-		var editingDesignS = Stream.combine([
-			designsS,
-			editingDesignIdS,
-		], function (designs, _id) {
-			return designs.filter(function (design) {
-				return design._id === _id;
-			})[0] || {};
-		});
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			text('GAFY Designs').all([
-				fonts.h1,
-			]),
-			tabs([{
-				tab: tab('Designs List'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Designs List').all([
-						fonts.h2,
-					]),
-					componentStream(designsS.map(function (designs) {
-						return grid({
-							gutterSize: separatorSize,
-							handleSurplusWidth: superSurplusWidth,
-						}, designs.map(function (design) {
-							return gafyDesignSmall(design).all([
-								link,
-								clickThis(function () {
-									editingDesignIdS.push(design._id);
-									designsTabS.push(2);
-								}),
-							]);
-						}));
-					})),
-				])),
-			}, {
-				tab: tab('Add Design'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Add Design').all([
-						fonts.h2,
-					]),
-					designFormLayout({
-						designNumber: undefined,
-						designDescription: undefined,
-						printLocation: undefined,
-						imageUrl: './content/man.png',
-						styles: [],
-						colors: [],
-					}, function (gafyDesignS) {
-						var mustFillFields = Stream.once(0);
-						gafyDesignS.onValue(function () {
-							mustFillFields.push(0);	
-						});
-						
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-							alignLRM({
-								left: submitButton(black, text('Add Design')).all([
-									link,
-									clickThis(function () {
-										var gafyDesign = gafyDesignS.lastValue();
-										if (!gafyDesign) {
-											mustFillFields.push(1);
-											return;
-										}
-										db.gafyDesign.insert(gafyDesign).then(function (design) {
-											designsS.push(designsS.lastValue().concat([design]));
-											designsTabS.push(0);
-										});
-									}),
-								]),
-							}),
-						]);
-					}),
-				])),
-			}, {
-				tab: tab('Edit Design'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					componentStream(designsS.map(function (designs) {
-						return prettyForms.select({
-							name: 'Editing Design',
-							options: designs.map(function (design) {
-								return {
-									name: design.designDescription + ' - ' + design.designNumber,
-									value: design._id,
-								};
-							}),
-							stream: editingDesignIdS,
-						}).all([
-							changeThis(function (ev) {
-								editingDesignIdS.push($(ev.target).val());
-							}),
-						]);
-					})),
-					text('Edit Design').all([
-						fonts.h2,
-					]),
-					componentStream(editingDesignS.map(function (design) {
-						design.styles = design.styles || [];
-						design.colors = design.colors || [];
-						return designFormLayout(design, function (gafyDesignS) {
-							var mustFillFields = Stream.once(0);
-							gafyDesignS.onValue(function () {
-								mustFillFields.push(0);	
-							});
-							
-							return stack({
-								gutterSize: separatorSize,
-							}, [
-								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-								alignLRM({
-									left: submitButton(black, text('Edit Design')).all([
-										link,
-										clickThis(function () {
-											var gafyDesign = gafyDesignS.lastValue();
-											if (!gafyDesign) {
-												mustFillFields.push(1);
-												return;
-											}
-											db.gafyDesign.update({
-												_id: gafyDesign._id
-											}, gafyDesign).then(function () {
-												var designs = designsS.lastValue().slice(0);
-												for (var i = 0; i < designs.length; i++) {
-													if (designs[i]._id === gafyDesign._id) {
-														designs[i] = gafyDesign;
-													}
-												}
-												designsS.push(designs);
-												designsTabS.push(0);
-											});
-										}),
-									]),
-								}),
-							]);
-						});
-					})),
-				])),
-			}], designsTabS),
-		]);
-	}));
-
-	var stylesEditor = promiseComponent(db.gafyStyle.find({}).then(function (gafyStyles) {
-		gafyStyles.map(function (gafyStyle) {
-			gafyStyle.price /= 100;
-		});
-		var stylesS = Stream.once(gafyStyles);
-
-		var styleFormLayout = formLayouts.stack({
-			formBuilder: defaultFormFor.gafyStyle,
-			stackConfig: {
-				gutterSize: separatorSize,
-			},
-			fields: [
-				'styleDescription',
-				'styleNumber',
-				'sizes',
-				'colors',
-				'imageUrl',
-				'sizesImageUrl',
-				'price',
-			],
-		});
-
-		var styleTabS = Stream.once(0);
-		var editingStyleIdS = Stream.once(gafyStyles.length > 0 ? gafyStyles[0]._id : null);
-		var editingStyleS = Stream.combine([
-			stylesS,
-			editingStyleIdS,
-		], function (designs, _id) {
-			return designs.filter(function (design) {
-				return design._id === _id;
-			})[0] || {};
-		});
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			text('GAFY Styles').all([
-				fonts.h1,
-			]),
-			tabs([{
-				tab: tab('Styles List'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Styles List').all([
-						fonts.h2,
-					]),
-					componentStream(stylesS.map(function (styles) {
-						return grid({
-							gutterSize: separatorSize,
-							handleSurplusWidth: superSurplusWidth,
-						}, styles.map(function (style) {
-							return gafyStyleSmall(style).all([
-								link,
-								clickThis(function () {
-									editingStyleIdS.push(style._id);
-									styleTabS.push(2);
-								}),
-							]);
-						}));
-					})),
-				])),
-			}, {
-				tab: tab('Add Style'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Add Style').all([
-						fonts.h2,
-					]),
-					styleFormLayout({
-						styleNumber: undefined,
-						styleDescription: undefined,
-						sizes: [],
-						colors: [],
-						imageUrl: './content/man.png',
-						price: 0,
-					}, function (gafyStylesS) {
-						var mustFillFields = Stream.once(0);
-						gafyStylesS.onValue(function () {
-							mustFillFields.push(0);	
-						});
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-							alignLRM({
-								left: submitButton(black, text('Add Style')).all([
-									link,
-									clickThis(function () {
-										var gafyStyle = gafyStylesS.lastValue();
-										gafyStyle.price = Math.round(gafyStyle.price * 100);
-										if (!gafyStyle) {
-											mustFillFields.push(1);
-											return;
-										}
-										db.gafyStyle.insert(gafyStyle).then(function (style) {
-											stylesS.push(stylesS.lastValue().concat([style]));
-											styleTabS.push(0);
-										});
-									}),
-								]),
-							}),
-						]);
-					}),
-				])),
-			}, {
-				tab: tab('Edit Style'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					componentStream(stylesS.map(function (styles) {
-						return prettyForms.select({
-							name: 'Editing Style',
-							options: styles.map(function (style) {
-								return {
-									name: style.styleDescription + ' - ' + style.styleNumber,
-									value: style._id,
-								};
-							}),
-							stream: editingStyleIdS,
-						}).all([
-							changeThis(function (ev) {
-								editingStyleIdS.push($(ev.target).val());
-							}),
-						]);
-					})),
-					text('Edit Style').all([
-						fonts.h2,
-					]),
-					componentStream(editingStyleS.map(function (style) {
-						return styleFormLayout(style, function (gafyStyleS) {
-							var mustFillFields = Stream.once(0);
-							gafyStyleS.onValue(function () {
-								mustFillFields.push(0);	
-							});
-							
-							return stack({
-								gutterSize: separatorSize,
-							}, [
-								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-								alignLRM({
-									left: submitButton(black, text('Edit Style')).all([
-										link,
-										clickThis(function () {
-											var gafyStyle = gafyStyleS.lastValue();
-											gafyStyle.price = Math.round(gafyStyle.price * 100);
-											if (!gafyStyle) {
-												mustFillFields.push(1);
-												return;
-											}
-											db.gafyStyle.update({
-												_id: gafyStyle._id
-											}, gafyStyle).then(function () {
-												var styles = stylesS.lastValue().slice(0);
-												for (var i = 0; i < styles.length; i++) {
-													if (styles[i]._id === gafyStyle._id) {
-														styles[i] = gafyStyle;
-													}
-												}
-												stylesS.push(styles);
-												styleTabS.push(0);
-											});
-										}),
-									]),
-								}),
-							]);
-						});
-					})),
-				])),
-			}], styleTabS),
-		]);
-	}));
-
+	
 	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
 		var copyItemEditor = function (uniqueName, formElement) {
 			var item = siteCopyItems.filter(function (item) {
@@ -3895,7 +3637,9 @@ define('adminView', [
 					left: sideBySide({
 						gutterSize: separatorSize,
 					}, [
-						submitButton(black, text('Save')).all([
+						submitButton(black, text('Save').all([
+							fonts.bebasNeue,
+						])).all([
 							link,
 							clickThis(function () {
 								item.value = valueS.lastValue();
@@ -3994,144 +3738,7 @@ define('adminView', [
 			])),
 		}]);
 	}));
-
-
-	var emailSentS = Stream.once(false);
-	var sendingEmailsS = Stream.once(false);
-	var recipientType = {
-		all: 'all',
-		hasHolibirthday: 'hasHolibirthday',
-		birthdayBetween: 'birthdayBetween',
-		holibirthdayBetween: 'holibirthdayBetween',
-	};
-	var recipientTypeS = Stream.once(recipientType.all);
-
-	var sendEmailStreams = {
-		constraintSource: recipientTypeS,
-		monthGT: Stream.once(12),
-		dayGT: Stream.once(24),
-		monthLT: Stream.once(1),
-		dayLT: Stream.once(2),
-		from: Stream.once('webmaster@holibirthday.com'),
-		fromName: Stream.once('Holibirthday'),
-		subject: Stream.once(''),
-		text: Stream.once(''),
-	};
-	var emailFillOutAllFieldsS = Stream.once(false);
-	var sendEmailS = Stream.combineObject(sendEmailStreams);
-	var sendEmail = stack({
-		gutterSize: separatorSize,
-	}, [
-		prettyForms.input({
-			name: 'From',
-			stream: sendEmailStreams.from,
-		}),
-		prettyForms.input({
-			name: 'From Name',
-			stream: sendEmailStreams.fromName,
-		}),
-		prettyForms.input({
-			name: 'Subject',
-			stream: sendEmailStreams.subject,
-		}),
-		prettyForms.plainTextarea({
-			name: 'Text',
-			stream: sendEmailStreams.text,
-		}),
-		prettyForms.select({
-			name: 'Recipients',
-			options: [{
-				name: 'All Users',
-				value: recipientType.all,
-			}, {
-				name: 'Has Holibirthday',
-				value: recipientType.hasHolibirthday,
-			}, {
-				name: 'Birthday Between',
-				value: recipientType.birthdayBetween,
-			}, {
-				name: 'Holibirthday Between',
-				value: recipientType.holibirthdayBetween,
-			}],
-			stream: recipientTypeS,
-		}),
-		componentStream(recipientTypeS.map(function (type) {
-			switch (type) {
-			case recipientType.birthdayBetween:
-			case recipientType.holibirthdayBetween:
-				return stack({
-					gutterSize: separatorSize,
-				}, [
-					text('On Or After Month/Day').all([
-						fonts.ralewayThinBold,
-					]),
-					prettyForms.input({
-						name: 'Month',
-						stream: sendEmailStreams.monthGT,
-					}),
-					prettyForms.input({
-						name: 'Day',
-						stream: sendEmailStreams.dayGT,
-					}),
-					text('On Or Before Month/Day').all([
-						fonts.ralewayThinBold,
-					]),
-					prettyForms.input({
-						name: 'Month',
-						stream: sendEmailStreams.monthLT,
-					}),
-					prettyForms.input({
-						name: 'Day',
-						stream: sendEmailStreams.dayLT,
-					}),
-				]);
-			default:
-				return nothing;
-			}
-		})),
-		componentStream(emailFillOutAllFieldsS.map(function (fillEm) {
-			return fillEm ? text('Please fill out all fields') : nothing;
-		})),
-		componentStream(Stream.combine([
-			sendingEmailsS,
-			emailSentS,
-		], function (sendingEmails, emailSent) {
-			if (sendingEmails) {
-				return text('Sending emails...');
-			}
-			if (emailSent) {
-				return text('Emails Sent');
-			}
-			return nothing;
-		})),
-		alignLRM({
-			left: submitButton(black, text('Send Email')).all([
-				link,
-				clickThis(function (ev, disable) {
-					emailFillOutAllFieldsS.push(false);
-					emailSentS.push(false);
-					var enable = disable();
-					var sendEmail = sendEmailS.lastValue();
-					if (!sendEmail.from ||
-						!sendEmail.fromName ||
-						!sendEmail.subject ||
-						!sendEmail.text) {
-						emailFillOutAllFieldsS.push(true);
-						enable();
-						return;
-					}
-					sendingEmailsS.push(true);
-					db.sendEmail.insert(sendEmail).then(function () {
-						enable();
-						sendingEmailsS.push(false);
-						emailSentS.push(true);
-					}, function () {
-						sendingEmailsS.push(false);
-					});
-				}),
-			]),
-		}),
-	]);
+	
 
 	var famousBirthdaySmall = function (famousBirthday) {
 		return stack({}, [
@@ -4305,7 +3912,9 @@ define('adminView', [
 									left: sideBySide({
 										gutterSize: separatorSize,
 									}, [
-										submitButton(black, text('Save Famous Birthday')).all([
+										submitButton(black, text('Save Famous Birthday').all([
+											fonts.bebasNeue,
+										])).all([
 											link,
 											clickThis(function () {
 												var famousBirthday = famousBirthdayS.lastValue();
@@ -4364,18 +3973,196 @@ define('adminView', [
 		]);
 	}));
 
-	
+
+	var mailchimpTemplates = promiseComponent($.ajax({
+		url: '/mailchimp/templates',
+	}).then(function (templates) {
+		var templateOptions = templates.map(function (template) {
+			return {
+				name: template.name,
+				value: template.id,
+			};
+		});
+		templateOptions.sort(function (o1, o2) {
+			return o1.name.localeCompare(o2.name);
+		});
+		return db.mailchimpTemplate.find({}).then(function (mailchimpTemplates) {
+			return alignLRM({
+				left: stack({
+					gutterSize: separatorSize,
+				}, [{
+					name: 'Holibirthday in Three Weeks',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayInThreeWeeks,
+				}, {
+					name: 'Holibirthday Tomorrow',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayTomorrow,
+				}, {
+					name: 'Friend\'s Holibirthday in Three Weeks',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInThreeWeeks,
+				}, {
+					name: 'Friend\'s Holibirthday Tomorrow',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayTomorrow,
+				}, {
+					name: 'Your Story Deleted',
+					event: schema.mailchimpTemplate.fields.event.options.storyDeleted,
+				}, {
+					name: 'Your Comment Deleted',
+					event: schema.mailchimpTemplate.fields.event.options.commentDeleted,
+				}].map(function (config) {
+					var mailchimpTemplateStreams = Stream.splitObject(mailchimpTemplates.filter(function (t) {
+						return t.event === config.event;
+					})[0] || {
+						event: config.event,
+						mailchimpTemplateId: '',
+						toName: '',
+						fromName: '',
+						subject: '',
+					});
+
+					var mailchimpTemplateS = Stream.combineObject(mailchimpTemplateStreams);
+
+					var unsavedS = Stream.once(false);
+					var firstValueMapped = false;
+					mailchimpTemplateS.map(function () {
+						if (firstValueMapped) {
+							unsavedS.push(true);
+						}
+						firstValueMapped = true;
+					});
+
+					return stack({
+						gutterSize: separatorSize,
+					}, [
+						text(config.name).all([
+							fonts.h2,
+						]),
+						forms.selectBox({
+							options: templateOptions,
+							stream: mailchimpTemplateStreams.mailchimpTemplateId,
+						}),
+						prettyForms.input({
+							name: 'toName',
+							stream: mailchimpTemplateStreams.toName,
+						}),
+						prettyForms.input({
+							name: 'fromName',
+							stream: mailchimpTemplateStreams.fromName,
+						}),
+						prettyForms.input({
+							name: 'subject',
+							stream: mailchimpTemplateStreams.subject,
+						}),
+						sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							submitButton(black, text('Save').all([
+								fonts.bebasNeue,
+							])).all([
+								link,
+								clickThis(function (ev, disable) {
+									var enable = disable();
+									db.mailchimpTemplate.insertOrUpdate(mailchimpTemplateS.lastValue()).then(function () {
+										enable();
+										unsavedS.push(false);
+									});
+								}),
+							]),
+							alignTBM({
+								middle: componentStream(unsavedS.map(function (u) {
+									return u ? text('(unsaved)') : nothing;
+								})),
+							}),
+						]),
+					]);
+				})),
+			})
+		});
+	}));
+										  
+	var mailchimpLists = promiseComponent($.ajax({
+		url: '/mailchimp/lists',
+	}).then(function (lists) {
+		var listOptions = lists.map(function (list) {
+			return {
+				name: list.name,
+				value: list.id,
+			};
+		});
+		listOptions.sort(function (o1, o2) {
+			return o1.name.localeCompare(o2.name);
+		});
+		return db.mailchimpList.find({}).then(function (mailchimpLists) {
+			return alignLRM({
+				left: stack({
+					gutterSize: separatorSize,
+				}, [{
+					name: 'Holibirthers',
+					internalType: 'holibirthers',
+				}, {
+					name: 'Friends of Holibirthers',
+					internalType: 'friendsOfHolibirthers',
+				}].map(function (config) {
+					var mailchimpListStreams = Stream.splitObject(mailchimpLists.filter(function (l) {
+						return l.mailchimpListType === config.internalType;
+					})[0] || {
+						mailchimpListType: config.internalType,
+						mailchimpListId: '',
+					});
+
+					var mailchimpListS = Stream.combineObject(mailchimpListStreams);
+
+					var unsavedS = Stream.once(false);
+					var firstValueMapped = false;
+					mailchimpListS.map(function () {
+						if (firstValueMapped) {
+							unsavedS.push(true);
+						}
+						firstValueMapped = true;
+					});
+
+					return stack({
+						gutterSize: separatorSize,
+					}, [
+						text(config.name).all([
+							fonts.h2,
+						]),
+						forms.selectBox({
+							options: listOptions,
+							stream: mailchimpListStreams.mailchimpListId,
+						}),
+						sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							submitButton(black, text('Save').all([
+								fonts.bebasNeue,
+							])).all([
+								link,
+								clickThis(function (ev, disable) {
+									var enable = disable();
+									db.mailchimpList.insertOrUpdate(mailchimpListS.lastValue()).then(function () {
+										enable();
+										unsavedS.push(false);
+									});
+								}),
+							]),
+							alignTBM({
+								middle: componentStream(unsavedS.map(function (u) {
+									return u ? text('(unsaved)') : nothing;
+								})),
+							}),
+						]),
+					]);
+				})),
+			});
+		});
+	}));
+
+
 	return bodyColumn(stack({}, [
 		bar.horizontal(separatorSize),
 		tabs([{
 			tab: tab('Daily Theme'),
 			content: content(dailyThemesEditor),
-		// }, {
-		// 	tab: tab('Gafy Styles'),
-		// 	content: content(stylesEditor),
-		// }, {
-		// 	tab: tab('Gafy Designs'),
-		// 	content: content(designsEditor),
 		}, {
 			tab: tab('Site Copy'),
 			content: content(copyEditor),
@@ -4383,14 +4170,14 @@ define('adminView', [
 			tab: tab('Famous Birthdays'),
 			content: content(famousBirthdays),
 		}, {
-			tab: tab('Send Marketing Email'),
-			content: content(sendEmail),
+			tab: tab('Mailchimp Templates'),
+			content: content(mailchimpTemplates),
+		}, {
+			tab: tab('Mailchimp Lists'),
+			content: content(mailchimpLists),
 		}], Stream.once(0)),
 	]));
 });
-
-
-
 define('adminP', [
 	'db',
 	'meP',
@@ -4620,16 +4407,37 @@ define('storyDetailViewP', [
 								middle: padding({
 									left: 30,
 									right: 30,
-								}, stack({}, [
+								}, stack({
+									gutterSize: separatorSize / 2,
+								}, [
 									text(story.name).all([
-										fonts.ralewayThinBold,
-										$css('font-size', 40),
+										fonts.h1,
 									]),
-									linkTo('#!user/' + profile.user, padding({
-										top: 10,
-									}, text('by ' + profile.firstName + ' ' + profile.lastName).all([
-										fonts.ralewayThinBold,
-									]))),
+									linkTo('#!user/' + profile.user, paragraph('by ' + profile.firstName + ' ' + profile.lastName).all([
+										fonts.h2,
+									])),
+									story.storyType ? text('category: ' + story.storyType).all([
+										fonts.h3,
+									]) : nothing,
+									promiseComponent(db.storyTag.find({
+										story: story._id,
+									}).then(function (storyTags) {
+										return storyTags.length > 0 ? sideBySide({
+											handleSurplusWidth: giveToSecond,
+										}, [
+											text('tags: ').all([
+												fonts.h3,
+											]),
+											grid({
+												gutterSize: separatorSize / 2,
+												useFullWidth: true,
+											}, storyTags.map(function (t) {
+												return text(t.tag).all([
+													fonts.h3,
+												]);
+											})),
+										]) : nothing;
+									})),
 								]))
 							}).all([
 								withMinWidth(300, true),
@@ -4654,8 +4462,8 @@ define('storyDetailViewP', [
 						])),
 						bodyColumn(storyCommentViewP(story)),
 						bodyColumn(storyCommentsViewP(story)),
-						admin || (me && me._id === story.user) ? alignLRM({
-							middle: sideBySide({
+						bodyColumn(admin || (me && me._id === story.user) ? alignLRM({
+							left: sideBySide({
 								gutterSize: separatorSize,
 							}, [
 								linkTo('#!editStory/' + story._id, submitButton(black, text('Edit Story').all([
@@ -4679,7 +4487,7 @@ define('storyDetailViewP', [
 									}),
 								]),
 							]),
-						}) : nothing,
+						}) : nothing),
 					]);
 				});
 			});
@@ -4718,8 +4526,9 @@ define('homeViewP', [
 	'separatorSize',
 	'siteCopyItemsP',
 	'storiesP',
+	'storyPaginate',
 	'storyRowP',
-], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, db, fonts, separatorSize, siteCopyItemsP, storiesP, storyRowP) {
+], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, db, fonts, separatorSize, siteCopyItemsP, storiesP, storyPaginate, storyRowP) {
 	var bannerButton = function (label, fa) {
 		return border(colors.holibirthdayDarkRed, {
 			top: 5,
@@ -4787,11 +4596,10 @@ define('homeViewP', [
 			
 			var firstView = confettiBackground(bodyColumn(dailyTheme));
 
-			var restViews = bodyColumn(stack({
-				gutterSize: separatorSize,
-			}, intersperse(stories.map(function (story) {
-				return storyRowP(story);
-			}), bar.horizontal(1, colors.middleGray))));
+			var restViews = bodyColumn(storyPaginate({
+				perPage: 5,
+				pageS: Stream.once(0),
+			}, stories.map(storyRowP)));
 
 			return stack({
 				gutterSize: separatorSize * 2,
@@ -4811,7 +4619,18 @@ define('homeViewP', [
 					gutterSize: separatorSize,
 				}, [
 					firstView,
+					alignLRM({
+						middle: linkTo('#!browseStories', text('Stories').all([
+							fonts.h1,
+						])),
+					}),
 					restViews,
+					alignLRM({
+						middle: linkTo('#!browseStories', text('(browse stories)').all([
+							withFontColor(colors.linkBlue),
+							$css('text-decoration', 'underline'),
+						])),
+					})
 				]),
 			]);
 		});
@@ -5329,6 +5148,123 @@ define('gafyColors', [], function () {
 		}),
 	}];
 });
+define('browseStoriesView', [
+	'bodyColumn',
+	'categories',
+	'confettiBackground',
+	'db',
+	'fonts',
+	'holibirthdayRow',
+	'separatorSize',
+	'storiesP',
+	'storyPaginate',
+	'storyRowP',
+], function (bodyColumn, categories, confettiBackground, db, fonts, holibirthdayRow, separatorSize, storiesP, storyPaginate, storyRowP) {
+	var allStories = function () {
+		return true;
+	};
+	var noStories = function () {
+		return false;
+	};
+	var adjectiveS = Stream.once('');
+	var filterS = Stream.once(allStories);
+	return promiseComponent(storiesP.then(function (stories) {
+		stories.sort(function (s1, s2) {
+			return new Date(s2.createDate).getTime() - new Date(s1.createDate).getTime();
+		});
+		
+		return stack({
+			gutterSize: separatorSize,
+		}, [
+			confettiBackground(bodyColumn(holibirthdayRow(stack({
+				gutterSize: separatorSize / 2,
+			}, [
+				text(adjectiveS.map(function (a) {
+					return a + 'Stories';
+				})).all([
+					fonts.h1,
+				]),
+				padding({
+					left: separatorSize,
+				}, stack({
+					gutterSize: separatorSize / 2,
+				}, [
+					text('All Stories').all([
+						fonts.h3,
+						link,
+						clickThis(function () {
+							adjectiveS.push('');
+							filterS.push(allStories);
+						}),
+					]),
+					text('Category').all([
+						fonts.h3,
+					]),
+					grid({
+						gutterSize: separatorSize,
+					}, categories.filter(function (c) {
+						return stories.filter(function (s) {
+							return s.storyType === c.toLowerCase();
+						}).length > 0;
+					}).map(function (c) {
+						return text(c).all([
+							fonts.bebasNeue,
+							link,
+							clickThis(function () {
+								adjectiveS.push(c + ' ');
+								filterS.push(function (s) {
+									return s.storyType === c.toLowerCase();
+								});
+							}),
+						]);
+					})),
+					text('Tag').all([
+						fonts.h3,
+					]),
+					promiseComponent(db.uniqueTag.find({}).then(function (uniqueTags) {
+						return grid({
+							gutterSize: separatorSize,
+						}, uniqueTags.map(function (t) {
+							return text(t.tag).all([
+								fonts.bebasNeue,
+								link,
+								clickThis(function () {
+									adjectiveS.push(t.tag + ' ');
+									filterS.push(noStories);
+									db.storyTag.find({
+										tag: t.tag,
+									}).then(function (storyTags) {
+										filterS.push(function (story) {
+											return storyTags.filter(function (t) {
+												return t.story === story._id;
+											}).length > 0;
+										});
+									});
+								}),
+							]);
+						}));
+					})),
+				])),
+			])))),
+			componentStream(filterS.map(function (filter) {
+				return bodyColumn(storyPaginate({
+					perPage: 10,
+					pageS: Stream.once(0),
+				}, stories.filter(filter).map(storyRowP)));
+			})),
+		]);
+	}));
+});
+
+
+
+
+
+
+
+
+
+
 define('storyRowP', [
 	'fonts',
 	'holibirthdayRow',
@@ -5356,10 +5292,12 @@ define('storyRowP', [
 				gutterSize: separatorSize,
 			}, [
 				paragraph(story.name).all([
-					fonts.ralewayThinBold,
-					$css('font-size', 40),
+					fonts.h2,
 				]),
-				stack({}, paragraphs),
+				stack({
+					gutterSize: 16,
+					collapseGutters: true,
+				}, paragraphs),
 				linkTo('#!user/' + profile.user, text('by ' + profile.firstName + ' ' + profile.lastName).all([
 					fonts.ralewayThinBold,
 				])),
@@ -5369,6 +5307,19 @@ define('storyRowP', [
 			]), story.imageUrl || './content/man.png'));
 		}));
 	};
+});
+define('categories', [], function () {
+	return [
+		'Birthday',
+		'Holiday',
+		'Childhood',
+		'Family',
+		'College',
+		'High School',
+		'Workplace',
+		'Catharsis',
+		'Humor',
+	];
 });
 define('daysByMonth', [], function () {
 	return {
@@ -5998,7 +5949,6 @@ define('meP', [
 	return (function () {
 		var meD = Q.defer();
 
-		console.log(domain);
 		$.get(domain + '/auth/me').then(function (me) {
 			meD.resolve(me);
 		}, function () {
@@ -6081,6 +6031,9 @@ define('contactUsView', [
 			]),
 		})),
 	]);
+});
+define('paginate', [], function () {
+	
 });
 define('causesView', [
 	'bodyColumn',
@@ -6756,162 +6709,293 @@ define('donateSuccess', [
 });
 define('storyEditViewP', [
 	'bodyColumn',
+	'categories',
 	'colors',
 	'db',
 	'fonts',
+	'forms',
 	'meP',
 	'prettyForms',
 	'separatorSize',
 	'signInForm',
 	'signInStream',
 	'siteCopyItemsP',
-], function (bodyColumn, colors, db, fonts, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
+], function (bodyColumn, categories, colors, db, fonts, forms, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return function (story) {
 		return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
-			var storyStreams = Stream.splitObject(story);
-			var storyStream = Stream.combineObject(storyStreams);
+			return Q.all([
+				story._id ? db.storyTag.find({
+					story: story._id,
+				}) : [],
+			]).then(function (storyTagss) {
+				var storyTags = storyTagss[0];
+				var storyStreams = Stream.splitObject(story);
+				var storyStream = Stream.combineObject(storyStreams);
+				var tagsS = Stream.once(storyTags);
+				var removedTags = [];
 
-			var paragraphSeparator = text('&nbsp;');
-
-			var instructions = bodyColumn(padding(20, stack({
-				gutterSize: separatorSize,
-			}, [
-				text(siteCopyItems.find('Edit Story Title')).all([
-					fonts.bebasNeue,
-					$css('font-size', '60px'),
-				]),
-				text(siteCopyItems.find('Edit Story Smaller Title')).all([
-					fonts.ralewayThinBold,
-					$css('font-size', '30px'),
-				]),
-				paragraph(siteCopyItems.find('Edit Story Instructions').split('\n').join('<br>')).all([
-					fonts.ralewayThinBold,
-				]),
-			])));
-			var labelsAll = [
-				$css('font-size', 30),
-				$css('font-weight', 'bold'),
-			];
-			var storyForm = bodyColumn(padding(20, stack({
-				gutterSize: separatorSize,
-			}, [
-				prettyForms.input({
-					name: 'Title',
-					fieldName: 'name',
-					stream: storyStreams.name,
-					labelAll: labelsAll,
-				}),
-				prettyForms.textarea({
-					name: 'Body',
-					fieldName: 'text',
-					stream: storyStreams.text,
-					labelAll: labelsAll,
-				}),
-				stack({}, [
-					text('Category').all([
-						fonts.ralewayThinBold,
-					]).all(labelsAll),
-					prettyForms.radios({
-						fieldName: 'storyType',
-						stream: storyStreams.storyType,
-						labelAll: labelsAll,
-						options: [{
-							name: 'Birthday',
-							value: 'birthday',
-						}, {
-							name: 'Holiday',
-							value: 'holiday',
-						}, {
-							name: 'Childhood',
-							value: 'childhood',
-						}, {
-							name: 'Family',
-							value: 'family',
-						}, {
-							name: 'College',
-							value: 'college',
-						}, {
-							name: 'High School',
-							value: 'highschool',
-						}, {
-							name: 'Workplace',
-							value: 'workplace',
-						}, {
-							name: 'Catharsis',
-							value: 'catharsis',
-						}, {
-							name: 'Humor',
-							value: 'humor',
-						}],
-					}),
-				]),
-				prettyForms.imageUpload({
-					name: 'Upload Image',
-					labelAll: labelsAll,
-					stream: storyStreams.imageUrl,
-				}),
-				text(siteCopyItems.find('Edit Story Submit Instructions')).all([
-					fonts.ralewayThinBold,
-				]),
-				alignLRM({
-					left: prettyForms.submit(white, 'Submit Story', function () {
-						var latestStory = storyStream.lastValue();
-						if (latestStory._id) {
-							db.story.update({
-								_id: latestStory._id,
-							}, latestStory).then(function () {
-								window.location.hash = '#!story/' + latestStory._id;
-								window.location.reload();
-							});
-						}
-						else {
-							db.story.insert(latestStory).then(function (story) {
-								window.location.hash = '#!story/' + story._id;
-								window.location.reload();
-							});
-						}
-					}),
-				}),
-			]))).all([
-				withBackgroundColor(colors.holibirthdayRed),
-				withFontColor(white),
-			]);
-			
-			return meP.then(function (me) {
-				if (me) {
-					return stack({}, [
-						form.all([
-							child(stack({}, [
-								stack({}, [
-									instructions,
-									storyForm,
-								].map(function (c) {
-									return padding({
-										top: 10,
-									}, c);
-								})),
-							])),
-							wireChildren(passThroughToFirst),
-						]),
-					]);
-				}
-				return bodyColumn(stack({
+				var instructions = bodyColumn(padding(20, stack({
 					gutterSize: separatorSize,
 				}, [
 					text(siteCopyItems.find('Edit Story Title')).all([
 						fonts.bebasNeue,
 						$css('font-size', '60px'),
 					]),
-					paragraph('You must sign in to post a story').all([
-						fonts.bebasNeue,
+					text(siteCopyItems.find('Edit Story Smaller Title')).all([
+						fonts.ralewayThinBold,
 						$css('font-size', '30px'),
-						link,
-						clickThis(function (ev) {
-							signInStream.push(true);
-							ev.stopPropagation();
+					]),
+					paragraph(siteCopyItems.find('Edit Story Instructions').split('\n').join('<br>')).all([
+						fonts.ralewayThinBold,
+					]),
+				])));
+				var labelsAll = [
+					fonts.ralewayThinBold,
+					$css('font-size', 30),
+					$css('font-weight', 'bold'),
+				];
+				var storyForm = bodyColumn(padding(20, stack({
+					gutterSize: separatorSize,
+				}, [
+					prettyForms.input({
+						name: 'Title',
+						fieldName: 'name',
+						stream: storyStreams.name,
+						labelAll: labelsAll,
+					}),
+					prettyForms.textarea({
+						name: 'Body',
+						fieldName: 'text',
+						stream: storyStreams.text,
+						labelAll: labelsAll,
+					}),
+					stack({}, [
+						text('Category').all([
+							fonts.ralewayThinBold,
+						]).all(labelsAll),
+						prettyForms.radios({
+							fieldName: 'storyType',
+							stream: storyStreams.storyType,
+							labelAll: labelsAll,
+							options: categories.map(function (c) {
+								return {
+									name: c,
+									value: c.toLowerCase(),
+								};
+							}),
 						}),
 					]),
-				]));
+					promiseComponent(db.uniqueTag.find({}).then(function (uniqueTags) {
+						var nextTagS = Stream.once('');
+						var pushTag = function () {
+							var tag = nextTagS.lastValue().replace(',','').toLowerCase();
+							var tags = tagsS.lastValue().slice(0);
+							if (tag.length > 0 && tags.filter(function (t) {
+								return t.tag === tag;
+							}).length === 0) {
+								tags.push({
+									tag: tag,
+								});
+								tagsS.push(tags);
+							}
+							nextTagS.push('');
+						};
+						return stack({}, [
+							text('Tags').all(labelsAll),
+							border(white, {
+								all: 1,
+							}, stack({}, [
+								componentStream(tagsS.map(function (tags) {
+									return grid({}, tags.map(function (tag, i) {
+										return padding({
+											all: separatorSize / 2,
+										}, sideBySide({
+											gutterSize: separatorSize / 4,
+										}, [
+											text(tag.tag).all([
+												fonts.bebasNeue,
+											]),
+											alignTBM({
+												middle: fonts.fa('close').all([
+													$css('opacity', '0.8'),
+													link,
+													clickThis(function () {
+														tags = tags.slice(0);
+														removedTags.push(tags.splice(i, 1)[0]);
+														tagsS.push(tags);
+													}),
+												]),
+											}),
+										]));
+									}));
+								})),
+								padding({
+									all: separatorSize / 2,
+								}, sideBySide({
+									gutterSize: separatorSize / 2,
+									handleSurplusWidth: giveToSecond,
+								}, [
+									text('Add Tag:').all([
+										fonts.bebasNeue,
+									]),
+									dropdownPanel(forms.inputBox(nextTagS, 'text', 'tag', [
+										fonts.bebasNeue,
+									], true).all([
+										keyupThis(function (ev) {
+											if (ev.keyCode === 188 /* comma */) {
+												pushTag();
+											}
+										}),
+										keydownThis(function (ev) {
+											if (ev.keyCode === 13 /* enter */) {
+												pushTag();
+												ev.stopPropagation();
+												return false;
+											}
+											if (ev.keyCode === 9 /* tab */) {
+												var tag = nextTagS.lastValue();
+												var completeTag = uniqueTags.filter(function (t) {
+													return t.tag.indexOf(tag) !== -1 && tagsS.lastValue().filter(function (tag) {
+														return tag.tag === t.tag;
+													}).length === 0;
+												})[0];
+												if (completeTag) {
+													if (tag === completeTag.tag) {
+														pushTag();
+													}
+													else {
+														nextTagS.push(completeTag.tag);
+													}
+												}
+												else {
+													pushTag();
+												}
+												ev.stopPropagation();
+												return false;
+											}
+										}),
+									]), border(white, {
+										all: 1,	
+									}, componentStream(nextTagS.map(function (nextTag) {
+										return stack({}, uniqueTags.filter(function (t) {
+											return nextTag !== '' && t.tag.indexOf(nextTag) !== -1 && tagsS.lastValue().filter(function (tag) {
+												return tag.tag === t.tag;
+											}).length === 0;
+										}).map(function (tag) {
+											return padding({
+												all: separatorSize / 2,
+											}, text(tag.tag)).all([
+												fonts.bebasNeue,
+												link,
+												clickThis(function () {
+													nextTagS.push(tag.tag);
+													pushTag();
+												}),
+												hoverThis(function (hovering, i) {
+													var r = colorString(colors.holibirthdayRed);
+													var w = colorString(white);
+													i.$el.css('background-color', hovering ? w : r)
+														.css('color', hovering ? r : w);
+												}),
+											]);
+										}));
+									}))).all([
+										withBackgroundColor(colors.holibirthdayRed),
+									]), nextTagS.map(function (v) {
+										return v.length > 0;
+									}), {
+										transition: 'none',
+									}),
+								])),
+							])),
+						]);
+					})),
+					prettyForms.imageUpload({
+						name: 'Image URL',
+						labelAll: labelsAll,
+						stream: storyStreams.imageUrl,
+					}),
+					text(siteCopyItems.find('Edit Story Submit Instructions')).all([
+						fonts.ralewayThinBold,
+					]),
+					alignLRM({
+						left: prettyForms.submit(white, 'Submit Story', function () {
+							var latestStory = storyStream.lastValue();
+							var updateTags = function (story) {
+								return Q.all(tagsS.lastValue().map(function (tag) {
+									tag.story = story._id;
+									if (!tag._id) {
+										return db.storyTag.insert(tag);
+									}
+									return tag;
+								}).concat(removedTags.filter(function (tag) {
+									return tag._id;
+								}).map(function (tag) {
+									return db.storyTag.remove(tag);
+								})));
+							};
+							if (latestStory._id) {
+								return db.story.update({
+									_id: latestStory._id,
+								}, latestStory).then(function () {
+									return updateTags(latestStory).then(function () {
+										window.location.hash = '#!story/' + latestStory._id;
+										window.location.reload();
+									});
+								});
+							}
+							else {
+								return db.story.insert(latestStory).then(function (story) {
+									return updateTags(story).then(function () {
+										window.location.hash = '#!story/' + story._id;
+										window.location.reload();
+									});
+								});
+							}
+						}),
+					}),
+				]))).all([
+					withBackgroundColor(colors.holibirthdayRed),
+					withFontColor(white),
+				]);
+
+				
+				return meP.then(function (me) {
+					if (me) {
+						return stack({}, [
+							form.all([
+								child(stack({}, [
+									stack({}, [
+										instructions,
+										storyForm,
+									].map(function (c) {
+										return padding({
+											top: 10,
+										}, c);
+									})),
+								])),
+								wireChildren(passThroughToFirst),
+							]),
+						]);
+					}
+					return bodyColumn(stack({
+						gutterSize: separatorSize,
+					}, [
+						text(siteCopyItems.find('Edit Story Title')).all([
+							fonts.bebasNeue,
+							$css('font-size', '60px'),
+						]),
+						paragraph('You must sign in to post a story').all([
+							fonts.bebasNeue,
+							$css('font-size', '30px'),
+							link,
+							clickThis(function (ev) {
+								signInStream.push(true);
+								ev.stopPropagation();
+							}),
+						]),
+					]));
+				});
 			});
 		}));
 	};
@@ -7707,8 +7791,8 @@ define('donateView', [
 	}));
 });
 define('ckeditorP', [], function () {
+	$('body').append('<script src="./ckeditor/ckeditor.js"></script>');
 	return function () {
-		$('body').append('<script src="./ckeditor/ckeditor.js"></script>');
 		var ckeditorD = Q.defer();
 		var interval2 = setInterval(function () {
 			if (window.CKEDITOR) {
@@ -7762,6 +7846,11 @@ define('pageRoutes', [
 			string: '#!admin',
 			router: routeToComponentF(function () {
 				return promiseComponent(loadAsync('adminView'));
+			}),
+		}, {
+			string: '#!browseStories',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('browseStoriesView'));
 			}),
 		}, {
 			string: '#!register',
@@ -7914,14 +8003,15 @@ define('bodyColumn', [
 	'separatorSize',
 ], function (separatorSize) {
 	var columnWidth = 1070;
+	var smallerWidth = 870;
 	
-	return function (c) {
+	return function (c, shrink) {
 		return alignLRM({
 			middle: padding({
 				left: separatorSize,
 				right: separatorSize,
 			}, c).all([
-				withMinWidth(columnWidth, true),
+				withMinWidth(shrink ? smallerWidth : columnWidth, true),
 			]),
 		}).all([
 			componentName('body-column'),

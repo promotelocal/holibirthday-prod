@@ -29,28 +29,21 @@ define([
 		});
 
 		var registeredViewIndex = Stream.once(0);
-		var submit = prettyForms.submit(black, 'Submit', function () {
+		var submit = prettyForms.submit(black, 'Submit', function (enable) {
 			auth.grecaptchaP.then(function (grecaptcha) {
 				var grecaptchaResponse = grecaptcha.getResponse();
 				if (latestModel === undefined || grecaptchaResponse === '') {
 					fillOutAllFields.push(true);
+					enable();
 				}
 				else if (latestModel.password !== latestModel.confirmPassword) {
 					passwordsDoNotMatch.push(true);
+					enable();
 				}
 				else {
 					latestModel.captchaResponse = grecaptchaResponse;
 					auth.register(latestModel).then(function () {
 						registeredViewIndex.push(1);
-						setTimeout(function () {
-							auth.signIn({
-								username: model.email.lastValue(),
-								password: model.password.lastValue(),
-							}).then(function () {
-								window.location.hash = model.holibirther.lastValue() ? '#!myHolibirthday' : '#!';
-								window.location.reload();
-							});
-						}, 3000);
 					});
 				}
 			});

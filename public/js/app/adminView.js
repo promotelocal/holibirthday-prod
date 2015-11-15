@@ -7,6 +7,7 @@ define([
 	'defaultFormFor',
 	'fonts',
 	'formLayouts',
+	'forms',
 	'gafyDesignSmall',
 	'gafyStyleSmall',
 	'months',
@@ -14,14 +15,14 @@ define([
 	'separatorSize',
 	'storiesP',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
 			bottom: 10,
 			left: 10,
 			right: 10,
-		}, text(name).all([
+		}, paragraph(name, 0).all([
 			fonts.h3,
 		]));
 		
@@ -140,350 +141,7 @@ define([
 		});
 	}));
 
-	var designsEditor = promiseComponent(db.gafyDesign.find({}).then(function (designs) {
-		var designsS = Stream.once(designs);
-
-		var designFormLayout = formLayouts.stack({
-			formBuilder: defaultFormFor.gafyDesign,
-			stackConfig: {
-				gutterSize: separatorSize,
-			},
-			fields: [
-				'designDescription',
-				'designNumber',
-				'printLocation',
-				'imageUrl',
-				'month',
-				'styles',
-				'colors',
-			],
-		});
-
-		var designsTabS = Stream.once(0);
-		var editingDesignIdS = Stream.once(designs.length > 0 ? designs[0]._id : null);
-		var editingDesignS = Stream.combine([
-			designsS,
-			editingDesignIdS,
-		], function (designs, _id) {
-			return designs.filter(function (design) {
-				return design._id === _id;
-			})[0] || {};
-		});
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			text('GAFY Designs').all([
-				fonts.h1,
-			]),
-			tabs([{
-				tab: tab('Designs List'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Designs List').all([
-						fonts.h2,
-					]),
-					componentStream(designsS.map(function (designs) {
-						return grid({
-							gutterSize: separatorSize,
-							handleSurplusWidth: superSurplusWidth,
-						}, designs.map(function (design) {
-							return gafyDesignSmall(design).all([
-								link,
-								clickThis(function () {
-									editingDesignIdS.push(design._id);
-									designsTabS.push(2);
-								}),
-							]);
-						}));
-					})),
-				])),
-			}, {
-				tab: tab('Add Design'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Add Design').all([
-						fonts.h2,
-					]),
-					designFormLayout({
-						designNumber: undefined,
-						designDescription: undefined,
-						printLocation: undefined,
-						imageUrl: './content/man.png',
-						styles: [],
-						colors: [],
-					}, function (gafyDesignS) {
-						var mustFillFields = Stream.once(0);
-						gafyDesignS.onValue(function () {
-							mustFillFields.push(0);	
-						});
-						
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-							alignLRM({
-								left: submitButton(black, text('Add Design')).all([
-									link,
-									clickThis(function () {
-										var gafyDesign = gafyDesignS.lastValue();
-										if (!gafyDesign) {
-											mustFillFields.push(1);
-											return;
-										}
-										db.gafyDesign.insert(gafyDesign).then(function (design) {
-											designsS.push(designsS.lastValue().concat([design]));
-											designsTabS.push(0);
-										});
-									}),
-								]),
-							}),
-						]);
-					}),
-				])),
-			}, {
-				tab: tab('Edit Design'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					componentStream(designsS.map(function (designs) {
-						return prettyForms.select({
-							name: 'Editing Design',
-							options: designs.map(function (design) {
-								return {
-									name: design.designDescription + ' - ' + design.designNumber,
-									value: design._id,
-								};
-							}),
-							stream: editingDesignIdS,
-						}).all([
-							changeThis(function (ev) {
-								editingDesignIdS.push($(ev.target).val());
-							}),
-						]);
-					})),
-					text('Edit Design').all([
-						fonts.h2,
-					]),
-					componentStream(editingDesignS.map(function (design) {
-						design.styles = design.styles || [];
-						design.colors = design.colors || [];
-						return designFormLayout(design, function (gafyDesignS) {
-							var mustFillFields = Stream.once(0);
-							gafyDesignS.onValue(function () {
-								mustFillFields.push(0);	
-							});
-							
-							return stack({
-								gutterSize: separatorSize,
-							}, [
-								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-								alignLRM({
-									left: submitButton(black, text('Edit Design')).all([
-										link,
-										clickThis(function () {
-											var gafyDesign = gafyDesignS.lastValue();
-											if (!gafyDesign) {
-												mustFillFields.push(1);
-												return;
-											}
-											db.gafyDesign.update({
-												_id: gafyDesign._id
-											}, gafyDesign).then(function () {
-												var designs = designsS.lastValue().slice(0);
-												for (var i = 0; i < designs.length; i++) {
-													if (designs[i]._id === gafyDesign._id) {
-														designs[i] = gafyDesign;
-													}
-												}
-												designsS.push(designs);
-												designsTabS.push(0);
-											});
-										}),
-									]),
-								}),
-							]);
-						});
-					})),
-				])),
-			}], designsTabS),
-		]);
-	}));
-
-	var stylesEditor = promiseComponent(db.gafyStyle.find({}).then(function (gafyStyles) {
-		gafyStyles.map(function (gafyStyle) {
-			gafyStyle.price /= 100;
-		});
-		var stylesS = Stream.once(gafyStyles);
-
-		var styleFormLayout = formLayouts.stack({
-			formBuilder: defaultFormFor.gafyStyle,
-			stackConfig: {
-				gutterSize: separatorSize,
-			},
-			fields: [
-				'styleDescription',
-				'styleNumber',
-				'sizes',
-				'colors',
-				'imageUrl',
-				'sizesImageUrl',
-				'price',
-			],
-		});
-
-		var styleTabS = Stream.once(0);
-		var editingStyleIdS = Stream.once(gafyStyles.length > 0 ? gafyStyles[0]._id : null);
-		var editingStyleS = Stream.combine([
-			stylesS,
-			editingStyleIdS,
-		], function (designs, _id) {
-			return designs.filter(function (design) {
-				return design._id === _id;
-			})[0] || {};
-		});
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			text('GAFY Styles').all([
-				fonts.h1,
-			]),
-			tabs([{
-				tab: tab('Styles List'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Styles List').all([
-						fonts.h2,
-					]),
-					componentStream(stylesS.map(function (styles) {
-						return grid({
-							gutterSize: separatorSize,
-							handleSurplusWidth: superSurplusWidth,
-						}, styles.map(function (style) {
-							return gafyStyleSmall(style).all([
-								link,
-								clickThis(function () {
-									editingStyleIdS.push(style._id);
-									styleTabS.push(2);
-								}),
-							]);
-						}));
-					})),
-				])),
-			}, {
-				tab: tab('Add Style'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					text('Add Style').all([
-						fonts.h2,
-					]),
-					styleFormLayout({
-						styleNumber: undefined,
-						styleDescription: undefined,
-						sizes: [],
-						colors: [],
-						imageUrl: './content/man.png',
-						price: 0,
-					}, function (gafyStylesS) {
-						var mustFillFields = Stream.once(0);
-						gafyStylesS.onValue(function () {
-							mustFillFields.push(0);	
-						});
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-							alignLRM({
-								left: submitButton(black, text('Add Style')).all([
-									link,
-									clickThis(function () {
-										var gafyStyle = gafyStylesS.lastValue();
-										gafyStyle.price = Math.round(gafyStyle.price * 100);
-										if (!gafyStyle) {
-											mustFillFields.push(1);
-											return;
-										}
-										db.gafyStyle.insert(gafyStyle).then(function (style) {
-											stylesS.push(stylesS.lastValue().concat([style]));
-											styleTabS.push(0);
-										});
-									}),
-								]),
-							}),
-						]);
-					}),
-				])),
-			}, {
-				tab: tab('Edit Style'),
-				content: content(stack({
-					gutterSize: separatorSize,
-				}, [
-					componentStream(stylesS.map(function (styles) {
-						return prettyForms.select({
-							name: 'Editing Style',
-							options: styles.map(function (style) {
-								return {
-									name: style.styleDescription + ' - ' + style.styleNumber,
-									value: style._id,
-								};
-							}),
-							stream: editingStyleIdS,
-						}).all([
-							changeThis(function (ev) {
-								editingStyleIdS.push($(ev.target).val());
-							}),
-						]);
-					})),
-					text('Edit Style').all([
-						fonts.h2,
-					]),
-					componentStream(editingStyleS.map(function (style) {
-						return styleFormLayout(style, function (gafyStyleS) {
-							var mustFillFields = Stream.once(0);
-							gafyStyleS.onValue(function () {
-								mustFillFields.push(0);	
-							});
-							
-							return stack({
-								gutterSize: separatorSize,
-							}, [
-								toggleComponent([nothing, text('You must fill out all fields')], mustFillFields),
-								alignLRM({
-									left: submitButton(black, text('Edit Style')).all([
-										link,
-										clickThis(function () {
-											var gafyStyle = gafyStyleS.lastValue();
-											gafyStyle.price = Math.round(gafyStyle.price * 100);
-											if (!gafyStyle) {
-												mustFillFields.push(1);
-												return;
-											}
-											db.gafyStyle.update({
-												_id: gafyStyle._id
-											}, gafyStyle).then(function () {
-												var styles = stylesS.lastValue().slice(0);
-												for (var i = 0; i < styles.length; i++) {
-													if (styles[i]._id === gafyStyle._id) {
-														styles[i] = gafyStyle;
-													}
-												}
-												stylesS.push(styles);
-												styleTabS.push(0);
-											});
-										}),
-									]),
-								}),
-							]);
-						});
-					})),
-				])),
-			}], styleTabS),
-		]);
-	}));
-
+	
 	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
 		var copyItemEditor = function (uniqueName, formElement) {
 			var item = siteCopyItems.filter(function (item) {
@@ -510,7 +168,9 @@ define([
 					left: sideBySide({
 						gutterSize: separatorSize,
 					}, [
-						submitButton(black, text('Save')).all([
+						submitButton(black, text('Save').all([
+							fonts.bebasNeue,
+						])).all([
 							link,
 							clickThis(function () {
 								item.value = valueS.lastValue();
@@ -609,144 +269,7 @@ define([
 			])),
 		}]);
 	}));
-
-
-	var emailSentS = Stream.once(false);
-	var sendingEmailsS = Stream.once(false);
-	var recipientType = {
-		all: 'all',
-		hasHolibirthday: 'hasHolibirthday',
-		birthdayBetween: 'birthdayBetween',
-		holibirthdayBetween: 'holibirthdayBetween',
-	};
-	var recipientTypeS = Stream.once(recipientType.all);
-
-	var sendEmailStreams = {
-		constraintSource: recipientTypeS,
-		monthGT: Stream.once(12),
-		dayGT: Stream.once(24),
-		monthLT: Stream.once(1),
-		dayLT: Stream.once(2),
-		from: Stream.once('webmaster@holibirthday.com'),
-		fromName: Stream.once('Holibirthday'),
-		subject: Stream.once(''),
-		text: Stream.once(''),
-	};
-	var emailFillOutAllFieldsS = Stream.once(false);
-	var sendEmailS = Stream.combineObject(sendEmailStreams);
-	var sendEmail = stack({
-		gutterSize: separatorSize,
-	}, [
-		prettyForms.input({
-			name: 'From',
-			stream: sendEmailStreams.from,
-		}),
-		prettyForms.input({
-			name: 'From Name',
-			stream: sendEmailStreams.fromName,
-		}),
-		prettyForms.input({
-			name: 'Subject',
-			stream: sendEmailStreams.subject,
-		}),
-		prettyForms.plainTextarea({
-			name: 'Text',
-			stream: sendEmailStreams.text,
-		}),
-		prettyForms.select({
-			name: 'Recipients',
-			options: [{
-				name: 'All Users',
-				value: recipientType.all,
-			}, {
-				name: 'Has Holibirthday',
-				value: recipientType.hasHolibirthday,
-			}, {
-				name: 'Birthday Between',
-				value: recipientType.birthdayBetween,
-			}, {
-				name: 'Holibirthday Between',
-				value: recipientType.holibirthdayBetween,
-			}],
-			stream: recipientTypeS,
-		}),
-		componentStream(recipientTypeS.map(function (type) {
-			switch (type) {
-			case recipientType.birthdayBetween:
-			case recipientType.holibirthdayBetween:
-				return stack({
-					gutterSize: separatorSize,
-				}, [
-					text('On Or After Month/Day').all([
-						fonts.ralewayThinBold,
-					]),
-					prettyForms.input({
-						name: 'Month',
-						stream: sendEmailStreams.monthGT,
-					}),
-					prettyForms.input({
-						name: 'Day',
-						stream: sendEmailStreams.dayGT,
-					}),
-					text('On Or Before Month/Day').all([
-						fonts.ralewayThinBold,
-					]),
-					prettyForms.input({
-						name: 'Month',
-						stream: sendEmailStreams.monthLT,
-					}),
-					prettyForms.input({
-						name: 'Day',
-						stream: sendEmailStreams.dayLT,
-					}),
-				]);
-			default:
-				return nothing;
-			}
-		})),
-		componentStream(emailFillOutAllFieldsS.map(function (fillEm) {
-			return fillEm ? text('Please fill out all fields') : nothing;
-		})),
-		componentStream(Stream.combine([
-			sendingEmailsS,
-			emailSentS,
-		], function (sendingEmails, emailSent) {
-			if (sendingEmails) {
-				return text('Sending emails...');
-			}
-			if (emailSent) {
-				return text('Emails Sent');
-			}
-			return nothing;
-		})),
-		alignLRM({
-			left: submitButton(black, text('Send Email')).all([
-				link,
-				clickThis(function (ev, disable) {
-					emailFillOutAllFieldsS.push(false);
-					emailSentS.push(false);
-					var enable = disable();
-					var sendEmail = sendEmailS.lastValue();
-					if (!sendEmail.from ||
-						!sendEmail.fromName ||
-						!sendEmail.subject ||
-						!sendEmail.text) {
-						emailFillOutAllFieldsS.push(true);
-						enable();
-						return;
-					}
-					sendingEmailsS.push(true);
-					db.sendEmail.insert(sendEmail).then(function () {
-						enable();
-						sendingEmailsS.push(false);
-						emailSentS.push(true);
-					}, function () {
-						sendingEmailsS.push(false);
-					});
-				}),
-			]),
-		}),
-	]);
+	
 
 	var famousBirthdaySmall = function (famousBirthday) {
 		return stack({}, [
@@ -920,7 +443,9 @@ define([
 									left: sideBySide({
 										gutterSize: separatorSize,
 									}, [
-										submitButton(black, text('Save Famous Birthday')).all([
+										submitButton(black, text('Save Famous Birthday').all([
+											fonts.bebasNeue,
+										])).all([
 											link,
 											clickThis(function () {
 												var famousBirthday = famousBirthdayS.lastValue();
@@ -979,18 +504,196 @@ define([
 		]);
 	}));
 
-	
+
+	var mailchimpTemplates = promiseComponent($.ajax({
+		url: '/mailchimp/templates',
+	}).then(function (templates) {
+		var templateOptions = templates.map(function (template) {
+			return {
+				name: template.name,
+				value: template.id,
+			};
+		});
+		templateOptions.sort(function (o1, o2) {
+			return o1.name.localeCompare(o2.name);
+		});
+		return db.mailchimpTemplate.find({}).then(function (mailchimpTemplates) {
+			return alignLRM({
+				left: stack({
+					gutterSize: separatorSize,
+				}, [{
+					name: 'Holibirthday in Three Weeks',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayInThreeWeeks,
+				}, {
+					name: 'Holibirthday Tomorrow',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayTomorrow,
+				}, {
+					name: 'Friend\'s Holibirthday in Three Weeks',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInThreeWeeks,
+				}, {
+					name: 'Friend\'s Holibirthday Tomorrow',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayTomorrow,
+				}, {
+					name: 'Your Story Deleted',
+					event: schema.mailchimpTemplate.fields.event.options.storyDeleted,
+				}, {
+					name: 'Your Comment Deleted',
+					event: schema.mailchimpTemplate.fields.event.options.commentDeleted,
+				}].map(function (config) {
+					var mailchimpTemplateStreams = Stream.splitObject(mailchimpTemplates.filter(function (t) {
+						return t.event === config.event;
+					})[0] || {
+						event: config.event,
+						mailchimpTemplateId: '',
+						toName: '',
+						fromName: '',
+						subject: '',
+					});
+
+					var mailchimpTemplateS = Stream.combineObject(mailchimpTemplateStreams);
+
+					var unsavedS = Stream.once(false);
+					var firstValueMapped = false;
+					mailchimpTemplateS.map(function () {
+						if (firstValueMapped) {
+							unsavedS.push(true);
+						}
+						firstValueMapped = true;
+					});
+
+					return stack({
+						gutterSize: separatorSize,
+					}, [
+						text(config.name).all([
+							fonts.h2,
+						]),
+						forms.selectBox({
+							options: templateOptions,
+							stream: mailchimpTemplateStreams.mailchimpTemplateId,
+						}),
+						prettyForms.input({
+							name: 'toName',
+							stream: mailchimpTemplateStreams.toName,
+						}),
+						prettyForms.input({
+							name: 'fromName',
+							stream: mailchimpTemplateStreams.fromName,
+						}),
+						prettyForms.input({
+							name: 'subject',
+							stream: mailchimpTemplateStreams.subject,
+						}),
+						sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							submitButton(black, text('Save').all([
+								fonts.bebasNeue,
+							])).all([
+								link,
+								clickThis(function (ev, disable) {
+									var enable = disable();
+									db.mailchimpTemplate.insertOrUpdate(mailchimpTemplateS.lastValue()).then(function () {
+										enable();
+										unsavedS.push(false);
+									});
+								}),
+							]),
+							alignTBM({
+								middle: componentStream(unsavedS.map(function (u) {
+									return u ? text('(unsaved)') : nothing;
+								})),
+							}),
+						]),
+					]);
+				})),
+			})
+		});
+	}));
+										  
+	var mailchimpLists = promiseComponent($.ajax({
+		url: '/mailchimp/lists',
+	}).then(function (lists) {
+		var listOptions = lists.map(function (list) {
+			return {
+				name: list.name,
+				value: list.id,
+			};
+		});
+		listOptions.sort(function (o1, o2) {
+			return o1.name.localeCompare(o2.name);
+		});
+		return db.mailchimpList.find({}).then(function (mailchimpLists) {
+			return alignLRM({
+				left: stack({
+					gutterSize: separatorSize,
+				}, [{
+					name: 'Holibirthers',
+					internalType: 'holibirthers',
+				}, {
+					name: 'Friends of Holibirthers',
+					internalType: 'friendsOfHolibirthers',
+				}].map(function (config) {
+					var mailchimpListStreams = Stream.splitObject(mailchimpLists.filter(function (l) {
+						return l.mailchimpListType === config.internalType;
+					})[0] || {
+						mailchimpListType: config.internalType,
+						mailchimpListId: '',
+					});
+
+					var mailchimpListS = Stream.combineObject(mailchimpListStreams);
+
+					var unsavedS = Stream.once(false);
+					var firstValueMapped = false;
+					mailchimpListS.map(function () {
+						if (firstValueMapped) {
+							unsavedS.push(true);
+						}
+						firstValueMapped = true;
+					});
+
+					return stack({
+						gutterSize: separatorSize,
+					}, [
+						text(config.name).all([
+							fonts.h2,
+						]),
+						forms.selectBox({
+							options: listOptions,
+							stream: mailchimpListStreams.mailchimpListId,
+						}),
+						sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							submitButton(black, text('Save').all([
+								fonts.bebasNeue,
+							])).all([
+								link,
+								clickThis(function (ev, disable) {
+									var enable = disable();
+									db.mailchimpList.insertOrUpdate(mailchimpListS.lastValue()).then(function () {
+										enable();
+										unsavedS.push(false);
+									});
+								}),
+							]),
+							alignTBM({
+								middle: componentStream(unsavedS.map(function (u) {
+									return u ? text('(unsaved)') : nothing;
+								})),
+							}),
+						]),
+					]);
+				})),
+			});
+		});
+	}));
+
+
 	return bodyColumn(stack({}, [
 		bar.horizontal(separatorSize),
 		tabs([{
 			tab: tab('Daily Theme'),
 			content: content(dailyThemesEditor),
-		// }, {
-		// 	tab: tab('Gafy Styles'),
-		// 	content: content(stylesEditor),
-		// }, {
-		// 	tab: tab('Gafy Designs'),
-		// 	content: content(designsEditor),
 		}, {
 			tab: tab('Site Copy'),
 			content: content(copyEditor),
@@ -998,11 +701,11 @@ define([
 			tab: tab('Famous Birthdays'),
 			content: content(famousBirthdays),
 		}, {
-			tab: tab('Send Marketing Email'),
-			content: content(sendEmail),
+			tab: tab('Mailchimp Templates'),
+			content: content(mailchimpTemplates),
+		}, {
+			tab: tab('Mailchimp Lists'),
+			content: content(mailchimpLists),
 		}], Stream.once(0)),
 	]));
 });
-
-
-

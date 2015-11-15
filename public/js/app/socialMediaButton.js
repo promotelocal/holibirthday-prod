@@ -10,7 +10,9 @@ define([
 			}, padding(10, sideBySide({
 				gutterSize: separatorSize,
 			},[
-				text(sm.icon),
+				text(sm.icon).all([
+					$css('font-size', '20px'),
+				]),
 				text(textFunc(sm.shareVerb)).all([
 					fonts.bebasNeue,
 				]),

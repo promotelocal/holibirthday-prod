@@ -46,6 +46,15 @@
 				};
 			}
 		};
+		var foreignKeyConstraint = function (table, keyProp, constraint) {
+			return function (user, doc, db, next) {
+				return db[table].findOne({
+					_id: doc[keyProp],
+				}, function (foreignDoc) {
+					return constraint(user, foreignDoc, db, next);
+				});
+			};
+		};
 		var schema = [{
 			name: 'upload',
 			fields: [{
@@ -112,6 +121,9 @@
 				type: type.bool,
 				editorType: editorType.bool,
 				displayName: 'I wish to receive emails from Holibirthday',
+			}, {
+				name: 'unsubscribeToken',
+				type: type.string,
 			}],
 			mayFind: always,
 			mayInsert: never,
@@ -357,6 +369,47 @@
 				ifAdmin,
 				ifOwner('user')
 			]),
+		}, {
+			name: 'storyTag',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'story',
+				type: type.id,
+			}, {
+				name: 'tag',
+				type: type.string,
+			}],
+			mayFind: always,
+			mayInsert: any([
+				foreignKeyConstraint('story', 'story', ifOwner('user')),
+				ifAdmin,
+			]),
+			mayUpdate: any([
+				foreignKeyConstraint('story', 'story', ifOwner('user')),
+				ifAdmin,
+			]),
+			mayRemove: any([
+				foreignKeyConstraint('story', 'story', ifOwner('user')),
+				ifAdmin,
+			]),
+		}, {
+			name: 'uniqueTag',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'tag',
+				type: type.string,
+			}, {
+				name: 'count',
+				type: type.number,
+			}],
+			mayFind: always,
+			mayInsert: never,
+			mayUpdate: never,
+			mayRemove: never,
 		}, {
 			name: 'dailyTheme',
 			fields: [{
@@ -932,6 +985,62 @@
 			mayInsert: ifOwner('user'),
 			mayUpdate: ifOwner('user'),
 			mayRemove: ifOwner('user'),
+		}, {
+			name: 'mailchimpTemplate',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'mailchimpTemplateId',
+				type: type.string,
+			}, {
+				name: 'event',
+				type: type.string,
+				options: {
+					holibirthdayInThreeWeeks: 'holibirthdayInThreeWeeks',
+					friendsHolibirthdayInThreeWeeks: 'friendsHolibirthdayInThreeWeeks',
+					
+					holibirthdayTomorrow: 'holibirthdayTomorrow',
+					friendsHolibirthdayTomorrow: 'friendsHolibirthdayTomorrow',
+
+					storyDeleted: 'storyDeleted',
+					commentDeleted: 'commentDeleted',
+				}
+			}, {
+				name: 'toName',
+				type: type.string,
+			}, {
+				name: 'fromName',
+				type: type.string,
+			}, {
+				name: 'subject',
+				type: type.string,
+			}],
+			mayFind: ifAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
+		}, {
+			// indicates mailchimp list id for mailing lists
+			name: 'mailchimpList',
+			fields: [{
+				name: '_id',
+				type: type.id,
+			}, {
+				name: 'mailchimpListType',
+				type: type.string,
+				options: {
+					holibirthers: 'holibirthers',
+					friendsOfHolibirthers: 'friendsOfHolibirthers',
+				},
+			}, {
+				name: 'mailchimpListId',
+				type: type.string,
+			}],
+			mayFind: ifAdmin,
+			mayInsert: ifAdmin,
+			mayUpdate: ifAdmin,
+			mayRemove: ifAdmin,
 		}];
 		
 		

@@ -45,6 +45,8 @@
 
 		"changeThis": false,
 		"clickThis": false,
+		"hoverThis": false,
+		"keydownThis": false,
 		"keyupThis": false,
 		"mousedownThis": false,
 		"submitThis": false,

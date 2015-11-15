@@ -22,6 +22,11 @@ define([
 				return promiseComponent(loadAsync('adminView'));
 			}),
 		}, {
+			string: '#!browseStories',
+			router: routeToComponentF(function () {
+				return promiseComponent(loadAsync('browseStoriesView'));
+			}),
+		}, {
 			string: '#!register',
 			router: routeToComponentF(function () {
 				return promiseComponent(loadAsync('registerView'));

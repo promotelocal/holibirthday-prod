@@ -35,7 +35,7 @@ define([
 				findOne: function (query) {
 					var result = Q.defer();
 					
-					mapResponse($.ajax({
+					$.ajax({
 						type: 'post',
 						url: uri + 'find',
 						data: JSON.stringify(query),
@@ -45,9 +45,9 @@ define([
 							result.resolve(null);
 						}
 						result.resolve(docs[0]);
-					}));
+					});
 					
-					return result.promise;
+					return mapResponse(result.promise);
 				},
 				find: function (query) {
 					return mapResponse($.ajax({
@@ -75,6 +75,14 @@ define([
 						}),
 						contentType: 'application/json',
 					}));
+				},
+				insertOrUpdate: function (doc) {
+					if (doc._id) {
+						return db[table.name].update({
+							_id: doc._id,
+						}, doc);
+					}
+					return db[table.name].insert(doc);
 				},
 				remove: function (query) {
 					return mapResponse($.ajax({

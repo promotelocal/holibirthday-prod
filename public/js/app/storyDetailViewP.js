@@ -155,16 +155,37 @@ define([
 								middle: padding({
 									left: 30,
 									right: 30,
-								}, stack({}, [
+								}, stack({
+									gutterSize: separatorSize / 2,
+								}, [
 									text(story.name).all([
-										fonts.ralewayThinBold,
-										$css('font-size', 40),
+										fonts.h1,
 									]),
-									linkTo('#!user/' + profile.user, padding({
-										top: 10,
-									}, text('by ' + profile.firstName + ' ' + profile.lastName).all([
-										fonts.ralewayThinBold,
-									]))),
+									linkTo('#!user/' + profile.user, paragraph('by ' + profile.firstName + ' ' + profile.lastName).all([
+										fonts.h2,
+									])),
+									story.storyType ? text('category: ' + story.storyType).all([
+										fonts.h3,
+									]) : nothing,
+									promiseComponent(db.storyTag.find({
+										story: story._id,
+									}).then(function (storyTags) {
+										return storyTags.length > 0 ? sideBySide({
+											handleSurplusWidth: giveToSecond,
+										}, [
+											text('tags: ').all([
+												fonts.h3,
+											]),
+											grid({
+												gutterSize: separatorSize / 2,
+												useFullWidth: true,
+											}, storyTags.map(function (t) {
+												return text(t.tag).all([
+													fonts.h3,
+												]);
+											})),
+										]) : nothing;
+									})),
 								]))
 							}).all([
 								withMinWidth(300, true),
@@ -189,8 +210,8 @@ define([
 						])),
 						bodyColumn(storyCommentViewP(story)),
 						bodyColumn(storyCommentsViewP(story)),
-						admin || (me && me._id === story.user) ? alignLRM({
-							middle: sideBySide({
+						bodyColumn(admin || (me && me._id === story.user) ? alignLRM({
+							left: sideBySide({
 								gutterSize: separatorSize,
 							}, [
 								linkTo('#!editStory/' + story._id, submitButton(black, text('Edit Story').all([
@@ -214,7 +235,7 @@ define([
 									}),
 								]),
 							]),
-						}) : nothing,
+						}) : nothing),
 					]);
 				});
 			});

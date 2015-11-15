@@ -32,12 +32,12 @@ define([
 				contentType: 'application/json',
 			});
 		},
-		resendConfirmEmail: function (email) {
+		resendConfirmEmail: function (options) {
 			return $.ajax({
 				type: 'post',
 				url: domain + '/auth/resendConfirmEmail',
 				data: JSON.stringify({
-					email: email,
+					email: options.email,
 				}),
 				contentType: 'application/json',
 				

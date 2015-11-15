@@ -9,8 +9,9 @@ define([
 	'separatorSize',
 	'siteCopyItemsP',
 	'storiesP',
+	'storyPaginate',
 	'storyRowP',
-], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, db, fonts, separatorSize, siteCopyItemsP, storiesP, storyRowP) {
+], function (bar, bodyColumn, colors, confettiBackground, dailyTheme, db, fonts, separatorSize, siteCopyItemsP, storiesP, storyPaginate, storyRowP) {
 	var bannerButton = function (label, fa) {
 		return border(colors.holibirthdayDarkRed, {
 			top: 5,
@@ -78,11 +79,10 @@ define([
 			
 			var firstView = confettiBackground(bodyColumn(dailyTheme));
 
-			var restViews = bodyColumn(stack({
-				gutterSize: separatorSize,
-			}, intersperse(stories.map(function (story) {
-				return storyRowP(story);
-			}), bar.horizontal(1, colors.middleGray))));
+			var restViews = bodyColumn(storyPaginate({
+				perPage: 5,
+				pageS: Stream.once(0),
+			}, stories.map(storyRowP)));
 
 			return stack({
 				gutterSize: separatorSize * 2,
@@ -102,7 +102,18 @@ define([
 					gutterSize: separatorSize,
 				}, [
 					firstView,
+					alignLRM({
+						middle: linkTo('#!browseStories', text('Stories').all([
+							fonts.h1,
+						])),
+					}),
 					restViews,
+					alignLRM({
+						middle: linkTo('#!browseStories', text('(browse stories)').all([
+							withFontColor(colors.linkBlue),
+							$css('text-decoration', 'underline'),
+						])),
+					})
 				]),
 			]);
 		});

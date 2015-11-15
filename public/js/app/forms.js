@@ -2,17 +2,17 @@ define([
 	'ckeditorP',
 ], function (ckeditorP) {
 	return {
-		inputBox: function (stream, type, name, all) {
+		inputBox: function (stream, type, name, all, noBorder) {
 			type = type || 'text';
 			return border(color({
 				r: 169,
 				b: 169,
 				g: 169,
 			}), {
-				all: type === 'text' ||
-					type === 'password' ||
-					type === 'date' ||
-					type === 'number' ? 1 : 0,
+				all: (!noBorder && (type === 'text' ||
+									type === 'password' ||
+									type === 'date' ||
+									type === 'number')) ? 1 : 0,
 			}, input.all((all || []).concat([
 				$prop('name', name),
 				$prop('type', type),
@@ -49,7 +49,7 @@ define([
 							newVal = v;
 						}
 						
-						if (newVal && $el.val() !== newVal) {
+						if ($el.val() !== newVal) {
 							$el.val(newVal);
 						}
 					});

@@ -1,0 +1,9 @@
+body {
+	font-family: 'Open Sans' !important;
+}
+
+.tt-menu {
+	background-color: white;
+	color: black;
+	padding: 10px;
+}

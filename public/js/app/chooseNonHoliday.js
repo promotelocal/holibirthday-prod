@@ -8,8 +8,8 @@ define([], function () {
 		var createDate = function () {
 			var randomDate = new Date(new Date().getTime() * Math.random());
 			
-			var month = randomDate.getMonth();
-			var date = randomDate.getDate();
+			var month = randomDate.getUTCMonth();
+			var date = randomDate.getUTCDate();
 			var dateTens = parseInt((date / 10) + '');
 			var dateOnes = date % 10;
 			return {

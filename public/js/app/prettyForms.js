@@ -72,15 +72,11 @@ define([
 			return grid({
 				gutterSize: separatorSize,
 			}, [
-				prettyForms.fileUpload({
+				prettyForms.input({
 					name: config.name,
 					accept: config.accept,
 					labelAll: config.labelAll,
-					stream: Stream.create(),
-				}, function (file) {
-					db.uploadFile(file).then(function (filename) {
-						config.stream.push('/api/uploadFile/find/' + encodeURIComponent(filename));
-					});
+					stream: config.stream,
 				}).all([
 					withMinWidth(300, true),
 				]),
@@ -120,13 +116,16 @@ define([
 					forms.inputBox(Stream.create(), 'radio', config.fieldName).all([
 						$prop('value', option.value),
 						function (instance) {
-							config.stream.onValue(function (value) {
-								if (value === option.value) {
-									instance.$el.click();
-								}
-								else {
-									instance.$el.find('input').prop('checked', false);
-								}
+							setTimeout(function () {
+								config.stream.onValue(function (value) {
+									if (value === option.value) {
+										instance.$el.find('input').prop('checked', true);
+									}
+									else {
+										instance.$el.find('input').prop('checked', false);
+									}
+								});
+								
 							});
 						},
 						clickThis(function () {

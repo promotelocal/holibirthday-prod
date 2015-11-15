@@ -177,7 +177,7 @@ define([
 							],
 							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date && date.getMonth(),
+									index: date && date.getUTCMonth(),
 								};
 							}),
 						}),
@@ -187,7 +187,7 @@ define([
 							],
 							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date && Math.floor(date.getDate() / 10),
+									index: date && Math.floor(date.getUTCDate() / 10),
 								};
 							}),
 						}),
@@ -197,7 +197,7 @@ define([
 							],
 							stream: dateStreamDates.map(function (date) {
 								return {
-									index: date && date.getDate() % 10,
+									index: date && date.getUTCDate() % 10,
 								};
 							}),
 						}),
@@ -216,8 +216,8 @@ define([
 				return [];
 			}
 			return famousBirthdays.filter(function (fb) {
-				return fb.birthday.getMonth() === date.getMonth() &&
-					fb.birthday.getDate() === date.getDate();
+				return fb.birthday.getUTCMonth() === date.getUTCMonth() &&
+					fb.birthday.getUTCDate() === date.getUTCDate();
 			});
 		};
 		
@@ -337,7 +337,7 @@ define([
 						user: me._id,
 					}).then(function (oldHolibirthday) {
 						if (profile.holibirther && oldHolibirthday) {
-							var oldHolibirthdate = new Date(oldHolibirthday.date);
+							var oldHolibirthdate = oldHolibirthday.date;
 							holibirthday.date.push(oldHolibirthdate);
 							return stack({
 								gutterSize: separatorSize,

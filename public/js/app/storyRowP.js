@@ -25,10 +25,12 @@ define([
 				gutterSize: separatorSize,
 			}, [
 				paragraph(story.name).all([
-					fonts.ralewayThinBold,
-					$css('font-size', 40),
+					fonts.h2,
 				]),
-				stack({}, paragraphs),
+				stack({
+					gutterSize: 16,
+					collapseGutters: true,
+				}, paragraphs),
 				linkTo('#!user/' + profile.user, text('by ' + profile.firstName + ' ' + profile.lastName).all([
 					fonts.ralewayThinBold,
 				])),

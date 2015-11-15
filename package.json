@@ -24,6 +24,7 @@
     "mailchimp-api": "^2.0.7",
     "mongodb": "^2.0.28",
     "multiparty": "^4.1.2",
+    "node-schedule": "^0.5.1",
     "passport": "^0.2.1",
     "passport-facebook": "^2.0.0",
     "passport-local": "^1.0.0",

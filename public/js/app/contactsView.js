@@ -11,12 +11,29 @@ define([
 	'meP',
 	'separatorSize',
 	'signInForm',
+	'signInStream',
 	'socialMedia',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, fonts, holibirthdayRow, meP, separatorSize, signInForm, socialMedia, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, fonts, holibirthdayRow, meP, separatorSize, signInForm, signInStream, socialMedia, submitButton) {
 	return promiseComponent(meP.then(function (me) {
 		if (!me) {
-			return signInForm();
+			return stack({
+				gutterSize: separatorSize,
+			}, [
+				confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
+					fonts.ralewayThinBold,
+					fonts.h1,
+				])))),
+				bodyColumn(paragraph('You must sign in to add contacts').all([
+					fonts.bebasNeue,
+					$css('font-size', '30px'),
+					link,
+					clickThis(function (ev) {
+						signInStream.push(true);
+						ev.stopPropagation();
+					}),
+				])),
+			]);
 		}
 		var now = new Date();
 		
@@ -26,8 +43,8 @@ define([
 				return max;
 			}
 			var nowThatMonth = new Date(now);
-			nowThatMonth.setMonth(date.getMonth());
-			nowThatMonth.setDate(date.getDate());
+			nowThatMonth.setUTCMonth(date.getUTCMonth());
+			nowThatMonth.setUTCDate(date.getUTCDate());
 			
 			var howLong = nowThatMonth.getTime() - now.getTime();
 			if (howLong < 0) {
@@ -209,7 +226,7 @@ define([
 												newContactFields.email,
 												alignTBM({
 													middle: submitButton(black, text('Add Contact').all([
-														fonts.ralewayThinBold,
+														fonts.bebasNeue,
 													])).all([
 														link,
 														clickThis(function (ev, disable) {
@@ -274,7 +291,7 @@ define([
 													]),
 													alignTBM({
 														middle: submitButton(black, text('Add Contact').all([
-															fonts.ralewayThinBold,
+															fonts.bebasNeue,
 														])).all([
 															link,
 															clickThis(function () {
@@ -294,22 +311,30 @@ define([
 												];
 											})),
 										}),
-										alignLRM({
-											middle: submitButton(socialMedia.facebook.color, text(me.facebookId ? 'Invite More Facebook Friends' : 'Invite Facebook Friends').all([
-												fonts.ralewayThinBold,
-												withFontColor(socialMedia.facebook.color),
-											])).all([
-												link,
-												clickThis(function () {
-													FB.ui({
-														method: 'send',
-														link: location.origin,
-													});
-												}),
-											]),
-										})
 									]));
 								})),
+								alignLRM({
+									middle: submitButton(socialMedia.facebook.color, sideBySide({
+										gutterSize: separatorSize,
+									}, [
+										text(socialMedia.facebook.icon).all([
+											$css('font-size', '20px'),
+										]),
+										text(me.facebookId ? 'Invite More Facebook Friends' : 'Invite Facebook Friends').all([
+											fonts.bebasNeue,
+										]),
+									])).all([
+										withFontColor(socialMedia.facebook.color),
+										link,
+										clickThis(function () {
+											FB.ui({
+												display: 'popup',
+												method: 'send',
+												link: location.origin,
+											});
+										}),
+									]),
+								}),
 							]);
 						}));
 					}));
