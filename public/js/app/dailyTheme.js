@@ -6,8 +6,9 @@ define([
 	'meP',
 	'prettyForms',
 	'separatorSize',
+	'signInStream',
 	'submitButton',
-], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, submitButton) {
+], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, signInStream, submitButton) {
 	return promiseComponent(db.dailyTheme.find({}).then(function (themes) {
 		var theme = themes.sort(function (t1, t2) {
 			return t2.updateDate.getTime() - t1.updateDate.getTime();
@@ -184,6 +185,11 @@ define([
 								return alignLRM({
 									left: submitButton(white, text('Sign in to vote').all([
 										fonts.bebasNeue,
+										link,
+										clickThis(function (ev) {
+											signInStream.push(true);
+											ev.stopPropagation();
+										}),
 									])),
 								});
 							}
