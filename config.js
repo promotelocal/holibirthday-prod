@@ -4,10 +4,10 @@ module.exports = {
 	port: process.env.PORT,
 	db: {
 		// staging
-		host: "holibirthday:ka%2C.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
+		// host: "holibirthday:ka%2C.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
 		
 		// prod
-		// host: "holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday",
+		host: "holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday",
 		
 		name: "holibirthday",
 	},
