@@ -64,7 +64,7 @@ define('myHolibirthdayView', [
 						}, stopDelay);
 					});
 				});
-				
+
 				var chooseLargest = function (streams) {
 					return Stream.combine(streams, function () {
 						var args = Array.prototype.slice.call(arguments);
@@ -149,7 +149,7 @@ define('myHolibirthdayView', [
 				]),
 			}),
 		]);
-		
+
 		return stack({
 			gutterSize: separatorSize,
 		}, [
@@ -342,7 +342,9 @@ define('myHolibirthdayView', [
 							return stack({
 								gutterSize: separatorSize,
 							}, [
-								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({}, [
+								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({
+									gutterSize: separatorSize,
+								}, [
 									text('Your Holibirthday Is').all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
