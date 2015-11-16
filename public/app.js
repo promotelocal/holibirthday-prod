@@ -2930,7 +2930,7 @@ define('areYouSure', [
 	};
 });
 define('domain', [], function () {
-	return 'https://glacial-earth-6398.herokuapp.com';
+	return 'https://www.holibirthday.com';
 });
 define('app', [
 	'bar',
