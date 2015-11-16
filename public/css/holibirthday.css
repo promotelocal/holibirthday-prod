@@ -1,6 +1,6 @@
 body {
 	font-family: 'Open Sans' !important;
-	line-height: 1.5;
+	line-height: 1.5 !important;
 }
 
 .tt-menu {
