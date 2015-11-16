@@ -2934,6 +2934,7 @@ define('areYouSure', [
 	};
 });
 define('domain', [], function () {
+	// return 'http://71.89.76.184';
 	return 'https://www.holibirthday.com';
 });
 define('app', [
@@ -6925,7 +6926,7 @@ define('storyEditViewP', [
 						labelAll: labelsAll,
 						stream: storyStreams.imageUrl,
 					}),
-					text(siteCopyItems.find('Edit Story Submit Instructions')).all([
+					paragraph(siteCopyItems.find('Edit Story Submit Instructions')).all([
 						fonts.ralewayThinBold,
 					]),
 					alignLRM({

@@ -206,7 +206,7 @@ define([
 						labelAll: labelsAll,
 						stream: storyStreams.imageUrl,
 					}),
-					text(siteCopyItems.find('Edit Story Submit Instructions')).all([
+					paragraph(siteCopyItems.find('Edit Story Submit Instructions')).all([
 						fonts.ralewayThinBold,
 					]),
 					alignLRM({
