@@ -158,7 +158,7 @@ define([
 								}, stack({
 									gutterSize: separatorSize / 2,
 								}, [
-									text(story.name).all([
+									paragraph(story.name, 150).all([
 										fonts.h1,
 									]),
 									linkTo('#!user/' + profile.user, paragraph('by ' + profile.firstName + ' ' + profile.lastName).all([
@@ -202,7 +202,7 @@ define([
 								},
 							]),
 						])),
-						bodyColumn(sideBySide({
+						bodyColumn(grid({
 							gutterSize: separatorSize,
 						}, [
 							storySocialMediaButton(socialMedia.facebook),

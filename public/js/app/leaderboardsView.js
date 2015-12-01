@@ -36,6 +36,7 @@ define([
 						})[0];
 						return profile ? linkTo('#!user/' + profile.user, sideBySide({
 							gutterSize: separatorSize,
+							handleSurplusWidth: giveToSecond,
 						}, [
 							alignTBM({
 								middle: text('' + pt.amount).all([
@@ -47,7 +48,7 @@ define([
 								withMinWidth(100, true),
 							]),
 							alignTBM({
-								middle: text(profile.firstName + ' ' + profile.lastName).all([
+								middle: paragraph(profile.firstName + ' ' + profile.lastName).all([
 									fonts.ralewayThinBold,
 									fonts.h2,
 								]),

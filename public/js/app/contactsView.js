@@ -221,7 +221,7 @@ define([
 											return alignLRM({
 												middle: stack({
 													gutterSize: separatorSize,
-												}, rows.map(function (r) {
+												}, intersperse(rows.map(function (r) {
 													return grid({
 														gutterSize: separatorSize,
 														useFullWidth: true,
@@ -260,7 +260,9 @@ define([
 															withMinWidth(170, true),
 														]);
 													})),
-												])),
+												]), bar.horizontal(1).all([
+													withBackgroundColor(colors.middleGray),
+												]))),
 											});
 										});
 									})),

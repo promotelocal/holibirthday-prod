@@ -237,7 +237,7 @@ define([
 					var profileSocialMediaButton = socialMediaButton(function (verb) {
 						return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
 					});
-					var shareButtons = bodyColumn(sideBySide({
+					var shareButtons = bodyColumn(grid({
 						gutterSize: separatorSize,
 					}, [
 						profileSocialMediaButton(socialMedia.facebook),
@@ -251,7 +251,7 @@ define([
 								gutterSize: separatorSize,
 							}, [
 								bar.horizontal(1, colors.middleGray),
-								linkTo('#!leaderboards', text('Holibirthday Points (view leaderboards)').all([
+								linkTo('#!leaderboards', paragraph('Holibirthday Points (view leaderboards)').all([
 									fonts.ralewayThinBold,
 									$css('font-size', 40),
 								])),

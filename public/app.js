@@ -3302,7 +3302,7 @@ define('contactsView', [
 											return alignLRM({
 												middle: stack({
 													gutterSize: separatorSize,
-												}, rows.map(function (r) {
+												}, intersperse(rows.map(function (r) {
 													return grid({
 														gutterSize: separatorSize,
 														useFullWidth: true,
@@ -3341,7 +3341,9 @@ define('contactsView', [
 															withMinWidth(170, true),
 														]);
 													})),
-												])),
+												]), bar.horizontal(1).all([
+													withBackgroundColor(colors.middleGray),
+												]))),
 											});
 										});
 									})),
@@ -4452,7 +4454,7 @@ define('storyDetailViewP', [
 								}, stack({
 									gutterSize: separatorSize / 2,
 								}, [
-									text(story.name).all([
+									paragraph(story.name, 150).all([
 										fonts.h1,
 									]),
 									linkTo('#!user/' + profile.user, paragraph('by ' + profile.firstName + ' ' + profile.lastName).all([
@@ -4496,7 +4498,7 @@ define('storyDetailViewP', [
 								},
 							]),
 						])),
-						bodyColumn(sideBySide({
+						bodyColumn(grid({
 							gutterSize: separatorSize,
 						}, [
 							storySocialMediaButton(socialMedia.facebook),
@@ -4716,6 +4718,7 @@ define('leaderboardsView', [
 						})[0];
 						return profile ? linkTo('#!user/' + profile.user, sideBySide({
 							gutterSize: separatorSize,
+							handleSurplusWidth: giveToSecond,
 						}, [
 							alignTBM({
 								middle: text('' + pt.amount).all([
@@ -4727,7 +4730,7 @@ define('leaderboardsView', [
 								withMinWidth(100, true),
 							]),
 							alignTBM({
-								middle: text(profile.firstName + ' ' + profile.lastName).all([
+								middle: paragraph(profile.firstName + ' ' + profile.lastName).all([
 									fonts.ralewayThinBold,
 									fonts.h2,
 								]),
@@ -6594,7 +6597,7 @@ define('profileViewP', [
 					var profileSocialMediaButton = socialMediaButton(function (verb) {
 						return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
 					});
-					var shareButtons = bodyColumn(sideBySide({
+					var shareButtons = bodyColumn(grid({
 						gutterSize: separatorSize,
 					}, [
 						profileSocialMediaButton(socialMedia.facebook),
@@ -6608,7 +6611,7 @@ define('profileViewP', [
 								gutterSize: separatorSize,
 							}, [
 								bar.horizontal(1, colors.middleGray),
-								linkTo('#!leaderboards', text('Holibirthday Points (view leaderboards)').all([
+								linkTo('#!leaderboards', paragraph('Holibirthday Points (view leaderboards)').all([
 									fonts.ralewayThinBold,
 									$css('font-size', 40),
 								])),
