@@ -6,6 +6,7 @@ define([
 	'confettiBackground',
 	'db',
 	'defaultFormFor',
+	'domain',
 	'fonts',
 	'holibirthdayRow',
 	'meP',
@@ -14,7 +15,7 @@ define([
 	'signInStream',
 	'socialMedia',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, fonts, holibirthdayRow, meP, separatorSize, signInForm, signInStream, socialMedia, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, domain, fonts, holibirthdayRow, meP, separatorSize, signInForm, signInStream, socialMedia, submitButton) {
 	return promiseComponent(meP.then(function (me) {
 		if (!me) {
 			return stack({
@@ -327,11 +328,20 @@ define([
 										withFontColor(socialMedia.facebook.color),
 										link,
 										clickThis(function () {
-											FB.ui({
-												display: 'popup',
-												method: 'send',
-												link: location.origin,
-											});
+											if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)) {
+												FB.ui({
+													display: 'popup',
+													method: 'share',
+													href: location.origin,
+												});
+											}
+											else {
+												FB.ui({
+													display: 'popup',
+													method: 'send',
+													link: location.origin,
+												});
+											}
 										}),
 									]),
 								}),
