@@ -24,18 +24,18 @@ document.body.appendChild(script);
 var reset = document.createElement('link');
 reset.setAttribute('rel', 'stylesheet');
 reset.setAttribute('type', 'text/css');
-reset.setAttribute('href', 'http://71.89.76.184/css/resetEl.css');
+reset.setAttribute('href', 'https://www.holibirthday.com/css/resetEl.css');
 document.body.appendChild(reset);
 
 var fa = document.createElement('link');
 fa.setAttribute('rel', 'stylesheet');
 fa.setAttribute('type', 'text/css');
-fa.setAttribute('href', 'http://71.89.76.184/css/font-awesome.min.css');
+fa.setAttribute('href', 'https://www.holibirthday.com/css/font-awesome.min.css');
 document.body.appendChild(fa);
 
 var runRest = function () {
 	var script = document.createElement('script');
-	script.setAttribute('src', 'http://71.89.76.184/out.js');
+	script.setAttribute('src', 'https://www.holibirthday.com/out.js');
 	document.body.appendChild(script);
 
 	FB.init({
