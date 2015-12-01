@@ -27,8 +27,11 @@ window.app = function () {
 			var $giftContainer = $(document.createElement('div'))
 				.prependTo('#content')
 				.css('position', 'relative');
-			rootComponent(gift, {
+			var i = rootComponent(gift, {
 				$el: $giftContainer,
+			});
+			i.minHeight.map(function (h) {
+				$giftContainer.css('height', h);
 			});
 		});
 	}
