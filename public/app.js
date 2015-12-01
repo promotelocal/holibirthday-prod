@@ -3298,28 +3298,50 @@ define('contactsView', [
 											birthday: null,
 											email: '',
 										}, function (newContactS, newContactFields) {
-											return table({
-												paddingSize: separatorSize,
-											}, rows.concat([[
-												newContactFields.name,
-												newContactFields.birthday,
-												nothing,
-												newContactFields.email,
-												alignTBM({
-													middle: submitButton(black, text('Add Contact').all([
-														fonts.bebasNeue,
-													])).all([
-														link,
-														clickThis(function (ev, disable) {
-															var enable = disable();
-															db.contactCustom.insert(newContactS.lastValue()).then(function (newContact) {
-																ccsS.push(ccsS.lastValue().concat([newContact]));
-																enable();
-															});
+											return alignLRM({
+												middle: stack({
+													gutterSize: separatorSize,
+												}, rows.map(function (r) {
+													return grid({
+														gutterSize: separatorSize,
+														useFullWidth: true,
+														handleSurplusWidth: justifyAndCenterSurplusWidth,
+													}, r.map(function (c) {
+														return c.all([
+															withMinWidth(170, true),
+														]);
+													}));
+												}).concat([
+													grid({
+														gutterSize: separatorSize,
+														useFullWidth: true,
+														handleSurplusWidth: justifyAndCenterSurplusWidth,
+													}, [
+														newContactFields.name,
+														newContactFields.birthday,
+														nothing,
+														newContactFields.email,
+														alignTBM({
+															middle: submitButton(black, text('Add Contact').all([
+																fonts.bebasNeue,
+															])).all([
+																link,
+																clickThis(function (ev, disable) {
+																	var enable = disable();
+																	db.contactCustom.insert(newContactS.lastValue()).then(function (newContact) {
+																		ccsS.push(ccsS.lastValue().concat([newContact]));
+																		enable();
+																	});
+																}),
+															]),
 														}),
-													]),
-												}),
-											]]));
+													].map(function (c) {
+														return c.all([
+															withMinWidth(170, true),
+														]);
+													})),
+												])),
+											});
 										});
 									})),
 								})),
