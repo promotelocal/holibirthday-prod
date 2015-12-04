@@ -203,16 +203,84 @@ define([
 				copyItemEditor('Home Share Your Story'),
 				copyItemEditor('Home Claim Your Holibirthday'),
 				copyItemEditor('Home Find Friends'),
+				copyItemEditor('Home Stories'),
+				copyItemEditor('Home Browse Stories'),
+			])),
+		}, {
+			tab: tab('Story View'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Story Comment Sign In'),
+				copyItemEditor('Story Comment Post'),
+				copyItemEditor('Story Comment Delete'),
+				copyItemEditor('Story By (include a space)'),
+				copyItemEditor('Story Category (include a space)'),
+				copyItemEditor('Story Tags (include a space)'),
+				copyItemEditor('Story Edit'),
+				copyItemEditor('Story Delete'),
 			])),
 		}, {
 			tab: tab('Edit Story'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
+				copyItemEditor('Edit Story Must Sign In'),
 				copyItemEditor('Edit Story Title'),
 				copyItemEditor('Edit Story Smaller Title'),
 				copyItemEditor('Edit Story Instructions', 'plainTextarea'),
 				copyItemEditor('Edit Story Submit Instructions'),
+				copyItemEditor('Edit Story Title Field'),
+				copyItemEditor('Edit Story Body Field'),
+				copyItemEditor('Edit Story Category Field'),
+				copyItemEditor('Edit Story Tags Field'),
+				copyItemEditor('Edit Story Image URL Field'),
+				copyItemEditor('Edit Story Add Tag'),
+				copyItemEditor('Edit Story Submit Story'),
+			])),
+		}, {
+			tab: tab('Profile'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Profile Born On (include space)'),
+				copyItemEditor('Profile Holibirthday Points (include space)'),
+				copyItemEditor('Profile My Contacts'),
+				copyItemEditor('Profile Add Contact'),
+				copyItemEditor('Profile Claim a Holibirthday'),
+				copyItemEditor('Profile Holibirthday Points / View Leaderboards'),
+				copyItemEditor('Profile Holibirthday Points Total'),
+				copyItemEditor('Profile Edit'),
+			])),
+		}, {
+			tab: tab('Edit Profile'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Edit Profile Title'),
+				copyItemEditor('Edit Profile First Name'),
+				copyItemEditor('Edit Profile Last Name'),
+				copyItemEditor('Edit Profile Email'),
+				copyItemEditor('Edit Profile Receive Marketing Emails'),
+				copyItemEditor('Edit Profile Birthday'),
+				copyItemEditor('Edit Profile Bio'),
+				copyItemEditor('Edit Profile Image URL'),
+				copyItemEditor('Edit Profile Holibirther'),
+				copyItemEditor('Edit Profile Holibirthday Month'),
+				copyItemEditor('Edit Profile Holibirthday Day'),
+				copyItemEditor('Edit Profile Know a Holibirther'),
+				copyItemEditor('Edit Profile Change Your Password'),
+				copyItemEditor('Edit Profile New Password'),
+				copyItemEditor('Edit Profile Confirm New Password'),
+			])),
+		}, {
+			tab: tab('Daily Theme'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Daily Theme Placeholder'),
+				copyItemEditor('Daily Theme Poll Vote / Abstain'),
+				copyItemEditor('Daily Theme Poll Sign In'),
 			])),
 		}, {
 			tab: tab('Gifts'),
@@ -220,8 +288,6 @@ define([
 				gutterSize: separatorSize,
 			}, [
 				copyItemEditor('Gifts Title'),
-				copyItemEditor('Gifts Cart'),
-				copyItemEditor('Gifts Wishlist'),
 			])),
 		}, {
 			tab: tab('Causes'),
@@ -249,16 +315,16 @@ define([
 				copyItemEditor('Header Admin'),
 			])),
 		}, {
-			tab: tab('Order Email'),
-			content: content(stack({
-				gutterSize: separatorSize,
-			}, [
-				copyItemEditor('Order Confirmation Email: From'),
-				copyItemEditor('Order Confirmation Email: From Name'),
-				copyItemEditor('Order Confirmation Email: Subject'),
-				copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
-			])),
-		}, {
+		// 	tab: tab('Order Email'),
+		// 	content: content(stack({
+		// 		gutterSize: separatorSize,
+		// 	}, [
+		// 		copyItemEditor('Order Confirmation Email: From'),
+		// 		copyItemEditor('Order Confirmation Email: From Name'),
+		// 		copyItemEditor('Order Confirmation Email: Subject'),
+		// 		copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
+		// 	])),
+		// }, {
 			tab: tab('Donation Email'),
 			content: content(stack({
 				gutterSize: separatorSize,

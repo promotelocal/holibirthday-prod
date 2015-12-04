@@ -14,7 +14,7 @@ define([
 			confettiBackground(bodyColumn(holibirthdayRow(stack({
 				gutterSize: separatorSize,
 			}, [
-				text('Holibirthday Gifts').all([
+				text(copy.find('Gifts Title')).all([
 					fonts.ralewayThinBold,
 					fonts.h1,
 				]),

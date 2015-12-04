@@ -49,19 +49,19 @@ define([
 					gutterSize: separatorSize,
 				}, [
 					prettyForms.input({
-						name: 'Title',
+						name: siteCopyItems.find('Edit Story Title Field'),
 						fieldName: 'name',
 						stream: storyStreams.name,
 						labelAll: labelsAll,
 					}),
 					prettyForms.textarea({
-						name: 'Body',
+						name: siteCopyItems.find('Edit Story Body Field'),
 						fieldName: 'text',
 						stream: storyStreams.text,
 						labelAll: labelsAll,
 					}),
 					stack({}, [
-						text('Category').all([
+						text(siteCopyItems.find('Edit Story Category Field')).all([
 							fonts.ralewayThinBold,
 						]).all(labelsAll),
 						prettyForms.radios({
@@ -92,7 +92,7 @@ define([
 							nextTagS.push('');
 						};
 						return stack({}, [
-							text('Tags').all(labelsAll),
+							text(siteCopyItems.find('Edit Story Tags Field')).all(labelsAll),
 							border(white, {
 								all: 1,
 							}, stack({}, [
@@ -126,7 +126,7 @@ define([
 									gutterSize: separatorSize / 2,
 									handleSurplusWidth: giveToSecond,
 								}, [
-									text('Add Tag:').all([
+									text(siteCopyItems.find('Edit Story Add Tag')).all([
 										fonts.bebasNeue,
 									]),
 									dropdownPanel(forms.inputBox(nextTagS, 'text', 'tag', [
@@ -202,7 +202,7 @@ define([
 						]);
 					})),
 					prettyForms.imageUpload({
-						name: 'Image URL',
+						name: siteCopyItems.find('Edit Story Image URL Field'),
 						labelAll: labelsAll,
 						stream: storyStreams.imageUrl,
 					}),
@@ -210,7 +210,7 @@ define([
 						fonts.ralewayThinBold,
 					]),
 					alignLRM({
-						left: prettyForms.submit(white, 'Submit Story', function () {
+						left: prettyForms.submit(white, siteCopyItems.find('Edit Story Submit Story'), function () {
 							var latestStory = storyStream.lastValue();
 							var updateTags = function (story) {
 								return Q.all(tagsS.lastValue().map(function (tag) {
@@ -276,7 +276,7 @@ define([
 							fonts.bebasNeue,
 							$css('font-size', '60px'),
 						]),
-						paragraph('You must sign in to post a story').all([
+						paragraph(siteCopyItems.find('Edit Story Must Sign In')).all([
 							fonts.bebasNeue,
 							$css('font-size', '30px'),
 							link,

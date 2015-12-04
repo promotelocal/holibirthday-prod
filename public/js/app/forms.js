@@ -24,11 +24,16 @@ define([
 					}
 				}),
 				changeThis(function (val) {
+					var $target = $(val.target);
+					var v = $target.val();
 					if (type === 'date') {
-						stream.push(moment($(val.target).val()).toDate());
+						stream.push(moment(v).toDate());
+					}
+					else if (type === 'checkbox') {
+						stream.push($target.prop('checked'));
 					}
 					else {
-						stream.push($(val.target).val());
+						stream.push(v);
 					}
 				}),
 				function (instance) {
@@ -44,6 +49,7 @@ define([
 							setTimeout(function () {
 								$el.prop('checked', v);
 							});
+							newVal = v;
 						}
 						else {
 							newVal = v;

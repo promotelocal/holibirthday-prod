@@ -426,7 +426,6 @@
 				type: type.string,
 				options: {
 					featuredStory: 'featuredStory',
-					featuredGift: 'featuredGift',
 					poll: 'poll',
 					someText: 'someText',
 				},
@@ -435,13 +434,10 @@
 					name: 'Featured Story',
 					value: 'featuredStory',
 				}, {
-					name: 'Featured Gift',
-					value: 'featuredGift',
-				}, {
 					name: 'Poll',
 					value: 'poll',
 				}, {
-					name: 'Some Text',
+					name: 'Rich Text',
 					value: 'someText',
 				}]),
 			}, {

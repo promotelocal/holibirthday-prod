@@ -538,11 +538,16 @@ define('forms', [
 					}
 				}),
 				changeThis(function (val) {
+					var $target = $(val.target);
+					var v = $target.val();
 					if (type === 'date') {
-						stream.push(moment($(val.target).val()).toDate());
+						stream.push(moment(v).toDate());
+					}
+					else if (type === 'checkbox') {
+						stream.push($target.prop('checked'));
 					}
 					else {
-						stream.push($(val.target).val());
+						stream.push(v);
 					}
 				}),
 				function (instance) {
@@ -558,6 +563,7 @@ define('forms', [
 							setTimeout(function () {
 								$el.prop('checked', v);
 							});
+							newVal = v;
 						}
 						else {
 							newVal = v;
@@ -892,13 +898,14 @@ define('profileEditViewP', [
 	'prettyForms',
 	'profilesP',
 	'separatorSize',
+	'siteCopyItemsP',
 	'submitButton',
-], function (auth, bodyColumn, confettiBackground, daysByMonth, db, defaultFormFor, fonts, holibirthdayRow, meP, months, prettyForms, profilesP, separatorSize, submitButton) {
+], function (auth, bodyColumn, confettiBackground, daysByMonth, db, defaultFormFor, fonts, holibirthdayRow, meP, months, prettyForms, profilesP, separatorSize, siteCopyItemsP, submitButton) {
 	return function (user) {
 		var withPasswordEditor = function (f) {
 			var passwordS = Stream.once('');
 			var confirmPasswordS = Stream.once('');
-
+			
 			var passwordsDoNotMatch = Stream.once(false);
 			passwordS.map(function () {
 				passwordsDoNotMatch.push(false);
@@ -907,30 +914,32 @@ define('profileEditViewP', [
 				passwordsDoNotMatch.push(passwordS.lastValue() !== cp);
 			});
 			
-			var password = prettyForms.input({
-				name: 'New Password',
-				fieldName: 'password',
-				stream: passwordS,
-				type: 'password',
-			});
-			var confirmPassword = prettyForms.input({
-				name: 'New Password Again',
-				fieldName: 'confirmPassword',
-				stream: confirmPasswordS,
-				type: 'password',
-			});
-			
-			return f(stack({
-				gutterSize: separatorSize,
-			}, [
-				nothing,
-				text('Change your Password:').all([
-					fonts.bebasNeue,
-				]),
-				password,
-				confirmPassword,
-				toggleHeight(passwordsDoNotMatch)(paragraph('Passwords must match')),
-			]), function () {
+			return f(function (copy) {
+				var password = prettyForms.input({
+					name: copy.find('Edit Profile New Password'),
+					fieldName: 'password',
+					stream: passwordS,
+					type: 'password',
+				});
+				var confirmPassword = prettyForms.input({
+					name: copy.find('Edit Profile Confirm New Password'),
+					fieldName: 'confirmPassword',
+					stream: confirmPasswordS,
+					type: 'password',
+				});
+				
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					nothing,
+					text(copy.find('Edit Profile Change Your Password')).all([
+						fonts.bebasNeue,
+					]),
+					password,
+					confirmPassword,
+					toggleHeight(passwordsDoNotMatch)(paragraph('Passwords must match')),
+				]);
+			}, function () {
 				var doneD = Q.defer();
 				var password = passwordS.lastValue();
 				if (passwordsDoNotMatch.lastValue()) {
@@ -954,116 +963,152 @@ define('profileEditViewP', [
 				return db.holibirthday.findOne({
 					user: user,
 				}).then(function (holibirthday) {
-					var profile = profiles.filter(function (profile) {
-						return profile.user === user;
-					})[0];
-					profile.firstName = profile.firstName || '';
-					profile.lastName = profile.lastName || '';
-					profile.email = profile.email || '';
-					profile.birthday = profile.birthday || null;
-					profile.bio = profile.bio || null;
-					profile.imageUrl = profile.imageUrl || './content/man.png';
-					profile.holibirther = profile.holibirther || false;
-					profile.knowAHolibirther = profile.knowAHolibirther || false;
-					profile.receiveMarketingEmails = profile.receiveMarketingEmails || false;
+					return siteCopyItemsP.then(function (copy) {
+						return meP.then(function (me) {
+							var profile = profiles.filter(function (profile) {
+								return profile.user === user;
+							})[0];
+							profile.firstName = profile.firstName || '';
+							profile.lastName = profile.lastName || '';
+							profile.email = profile.email || '';
+							profile.birthday = profile.birthday || null;
+							profile.bio = profile.bio || '';
+							profile.imageUrl = profile.imageUrl || './content/man.png';
+							profile.holibirther = profile.holibirther || false;
+							profile.knowAHolibirther = profile.knowAHolibirther || false;
+							profile.receiveMarketingEmails = profile.receiveMarketingEmails || false;
+							
+							holibirthday = holibirthday || {
+								user: user,
+								month: 0,
+								day: 1,
+							};
+							holibirthday.month = months[holibirthday.month];
+							var holibirthdayStreams = Stream.splitObject(holibirthday);
+							var holibirthdayS = Stream.combineObject(holibirthdayStreams);
 
-					holibirthday = holibirthday || {
-						user: user,
-						month: 0,
-						day: 1,
-					};
-					holibirthday.month = months[holibirthday.month];
-					var holibirthdayStreams = Stream.splitObject(holibirthday);
-					var holibirthdayS = Stream.combineObject(holibirthdayStreams);
-
-					return defaultFormFor.profile(profile, function (profileS, fields) {
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							confettiBackground(bodyColumn(holibirthdayRow(text('Edit Profile').all([
-								fonts.h1,
-							]), profile.imageUrl))),
-							bodyColumn(stack({
+							var profileStreams = Stream.splitObject(profile);
+							var profileS = Stream.combineObject(profileStreams);
+							
+							return stack({
 								gutterSize: separatorSize,
 							}, [
-								fields.firstName,
-								fields.lastName,
-								fields.email,
-								fields.receiveMarketingEmails,
-								fields.birthday,
-								fields.bio,
-								fields.imageUrl,
-								stack({}, [
-									fields.holibirther,
-									componentStream(profileS.prop('holibirther').map(function (holibirther) {
-										return holibirther ? stack({
-											gutterSize: separatorSize,
-										}, [
-											nothing,
-											prettyForms.select({
-												name: 'Holibirth-month',
-												options: months,
-												stream: holibirthdayStreams.month,
-											}),
-											componentStream(holibirthdayStreams.month.map(function (month) {
-												var countDates = daysByMonth[month];
-												var dates = [];
-												for (var i = 0; i < countDates; i++) {
-													dates.push(i + 1);
-												}
-												return prettyForms.select({
-													name: 'Holibirth-day',
-													options: dates,
-													stream: holibirthdayStreams.day,
-												});
-											})),
-										]) : nothing;
-									})),					  
-								]),
-								fields.knowAHolibirther,
-								passwordEditor,
-								alignLRM({
-									middle: submitButton(black, text('Submit').all([
-										fonts.bebasNeue,
-									])).all([
-										link,
-										clickThis(function () {
-											var p = profileS.lastValue();
-											return savePassword().then(function () {
-												return db.profile.update({
-													_id: p._id,
-												}, p).then(function () {
-													if (p.holibirther) {
-														var h = holibirthdayS.lastValue();
-														h.date = new Date(h.month + ' ' + h.day + ' 2000');
-														if (h._id) {
-															return db.holibirthday.update({
-																_id: h._id,
-															}, {
-																date: h.date,
-															}).then(function () {
-																window.location.hash = '#!user/' + p.user;
-																window.location.reload();
-															});
+								confettiBackground(bodyColumn(holibirthdayRow(text(copy.find('Edit Profile Title')).all([
+									fonts.h1,
+								]), profile.imageUrl))),
+								bodyColumn(stack({
+									gutterSize: separatorSize,
+								}, [
+									prettyForms.input({
+										name: copy.find('Edit Profile First Name'),
+										stream: profileStreams.firstName,
+									}),
+									prettyForms.input({
+										name: copy.find('Edit Profile Last Name'),
+										stream: profileStreams.lastName,
+									}),
+									prettyForms.input({
+										name: copy.find('Edit Profile Email'),
+										stream: profileStreams.email,
+									}),
+									prettyForms.input({
+										name: copy.find('Edit Profile Receive Marketing Emails'),
+										stream: profileStreams.receiveMarketingEmails,
+										type: 'checkbox',
+									}),
+									prettyForms.input({
+										name: copy.find('Edit Profile Birthday'),
+										stream: profileStreams.birthday,
+										type: 'date',
+									}),
+									prettyForms.textarea({
+										name: copy.find('Edit Profile Bio'),
+										stream: profileStreams.bio,
+									}),
+									prettyForms.imageUpload({
+										name: copy.find('Edit Profile Image URL'),
+										stream: profileStreams.imageUrl,
+									}),
+									stack({}, [
+										prettyForms.input({
+											name: copy.find('Edit Profile Holibirther'),
+											stream: profileStreams.holibirther,
+											type: 'checkbox',
+										}),
+										componentStream(profileStreams.holibirther.map(function (holibirther) {
+											return holibirther ? stack({
+												gutterSize: separatorSize,
+											}, [
+												nothing,
+												prettyForms.select({
+													name: copy.find('Edit Profile Holibirthday Month'),
+													options: months,
+													stream: holibirthdayStreams.month,
+												}),
+												componentStream(holibirthdayStreams.month.map(function (month) {
+													var countDates = daysByMonth[month];
+													var dates = [];
+													for (var i = 0; i < countDates; i++) {
+														dates.push(i + 1);
+													}
+													return prettyForms.select({
+														name: copy.find('Edit Profile Holibirthday Month'),
+														options: dates,
+														stream: holibirthdayStreams.day,
+													});
+												})),
+											]) : nothing;
+										})),					  
+									]),
+									prettyForms.input({
+										name: copy.find('Edit Profile Know a Holibirther'),
+										stream: profileStreams.knowAHolibirther,
+										type: 'checkbox',
+									}),
+									((me._id === user) && !me.facebookId) ? passwordEditor(copy) : nothing,
+									alignLRM({
+										middle: submitButton(black, text('Submit').all([
+											fonts.bebasNeue,
+										])).all([
+											link,
+											clickThis(function () {
+												var p = profileS.lastValue();
+												return savePassword().then(function () {
+													return db.profile.update({
+														_id: p._id,
+													}, p).then(function () {
+														if (p.holibirther) {
+															var h = holibirthdayS.lastValue();
+															h.date = new Date(h.month + ' ' + h.day + ' 2000');
+															if (h._id) {
+																return db.holibirthday.update({
+																	_id: h._id,
+																}, {
+																	date: h.date,
+																}).then(function () {
+																	window.location.hash = '#!user/' + p.user;
+																	window.location.reload();
+																});
+															}
+															else {
+																return db.holibirthday.insert(h).then(function () {
+																	window.location.hash = '#!user/' + p.user;
+																	window.location.reload();
+																});
+															}
 														}
 														else {
-															return db.holibirthday.insert(h).then(function () {
-																window.location.hash = '#!user/' + p.user;
-																window.location.reload();
-															});
+															window.location.hash = '#!user/' + p.user;
+															window.location.reload();
 														}
-													}
-													else {
-														window.location.hash = '#!user/' + p.user;
-														window.location.reload();
-													}
+													});
 												});
-											});
-										}),
-									]),
-								}),
-							])),
-						]);
+											}),
+										]),
+									}),
+								])),
+							]);
+						});
 					});
 				});
 			});
@@ -1673,7 +1718,7 @@ define('gift', [
 			confettiBackground(bodyColumn(holibirthdayRow(stack({
 				gutterSize: separatorSize,
 			}, [
-				text('Holibirthday Gifts').all([
+				text(copy.find('Gifts Title')).all([
 					fonts.ralewayThinBold,
 					fonts.h1,
 				]),
@@ -3718,16 +3763,84 @@ define('adminView', [
 				copyItemEditor('Home Share Your Story'),
 				copyItemEditor('Home Claim Your Holibirthday'),
 				copyItemEditor('Home Find Friends'),
+				copyItemEditor('Home Stories'),
+				copyItemEditor('Home Browse Stories'),
+			])),
+		}, {
+			tab: tab('Story View'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Story Comment Sign In'),
+				copyItemEditor('Story Comment Post'),
+				copyItemEditor('Story Comment Delete'),
+				copyItemEditor('Story By (include a space)'),
+				copyItemEditor('Story Category (include a space)'),
+				copyItemEditor('Story Tags (include a space)'),
+				copyItemEditor('Story Edit'),
+				copyItemEditor('Story Delete'),
 			])),
 		}, {
 			tab: tab('Edit Story'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
+				copyItemEditor('Edit Story Must Sign In'),
 				copyItemEditor('Edit Story Title'),
 				copyItemEditor('Edit Story Smaller Title'),
 				copyItemEditor('Edit Story Instructions', 'plainTextarea'),
 				copyItemEditor('Edit Story Submit Instructions'),
+				copyItemEditor('Edit Story Title Field'),
+				copyItemEditor('Edit Story Body Field'),
+				copyItemEditor('Edit Story Category Field'),
+				copyItemEditor('Edit Story Tags Field'),
+				copyItemEditor('Edit Story Image URL Field'),
+				copyItemEditor('Edit Story Add Tag'),
+				copyItemEditor('Edit Story Submit Story'),
+			])),
+		}, {
+			tab: tab('Profile'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Profile Born On (include space)'),
+				copyItemEditor('Profile Holibirthday Points (include space)'),
+				copyItemEditor('Profile My Contacts'),
+				copyItemEditor('Profile Add Contact'),
+				copyItemEditor('Profile Claim a Holibirthday'),
+				copyItemEditor('Profile Holibirthday Points / View Leaderboards'),
+				copyItemEditor('Profile Holibirthday Points Total'),
+				copyItemEditor('Profile Edit'),
+			])),
+		}, {
+			tab: tab('Edit Profile'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Edit Profile Title'),
+				copyItemEditor('Edit Profile First Name'),
+				copyItemEditor('Edit Profile Last Name'),
+				copyItemEditor('Edit Profile Email'),
+				copyItemEditor('Edit Profile Receive Marketing Emails'),
+				copyItemEditor('Edit Profile Birthday'),
+				copyItemEditor('Edit Profile Bio'),
+				copyItemEditor('Edit Profile Image URL'),
+				copyItemEditor('Edit Profile Holibirther'),
+				copyItemEditor('Edit Profile Holibirthday Month'),
+				copyItemEditor('Edit Profile Holibirthday Day'),
+				copyItemEditor('Edit Profile Know a Holibirther'),
+				copyItemEditor('Edit Profile Change Your Password'),
+				copyItemEditor('Edit Profile New Password'),
+				copyItemEditor('Edit Profile Confirm New Password'),
+			])),
+		}, {
+			tab: tab('Daily Theme'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Daily Theme Placeholder'),
+				copyItemEditor('Daily Theme Poll Vote / Abstain'),
+				copyItemEditor('Daily Theme Poll Sign In'),
 			])),
 		}, {
 			tab: tab('Gifts'),
@@ -3735,8 +3848,6 @@ define('adminView', [
 				gutterSize: separatorSize,
 			}, [
 				copyItemEditor('Gifts Title'),
-				copyItemEditor('Gifts Cart'),
-				copyItemEditor('Gifts Wishlist'),
 			])),
 		}, {
 			tab: tab('Causes'),
@@ -3764,16 +3875,16 @@ define('adminView', [
 				copyItemEditor('Header Admin'),
 			])),
 		}, {
-			tab: tab('Order Email'),
-			content: content(stack({
-				gutterSize: separatorSize,
-			}, [
-				copyItemEditor('Order Confirmation Email: From'),
-				copyItemEditor('Order Confirmation Email: From Name'),
-				copyItemEditor('Order Confirmation Email: Subject'),
-				copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
-			])),
-		}, {
+		// 	tab: tab('Order Email'),
+		// 	content: content(stack({
+		// 		gutterSize: separatorSize,
+		// 	}, [
+		// 		copyItemEditor('Order Confirmation Email: From'),
+		// 		copyItemEditor('Order Confirmation Email: From Name'),
+		// 		copyItemEditor('Order Confirmation Email: Subject'),
+		// 		copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
+		// 	])),
+		// }, {
 			tab: tab('Donation Email'),
 			content: content(stack({
 				gutterSize: separatorSize,
@@ -4311,61 +4422,64 @@ define('storyDetailViewP', [
 	'profilesP',
 	'separatorSize',
 	'signInStream',
+	'siteCopyItemsP',
 	'socialMedia',
 	'socialMediaButton',
 	'submitButton',
-], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, signInStream, socialMedia, socialMediaButton, submitButton) {
+], function (adminP, areYouSure, bar, bodyColumn, confettiBackground, db, fonts, forms, meP, prettyForms, profilesP, separatorSize, signInStream, siteCopyItemsP, socialMedia, socialMediaButton, submitButton) {
 	var storyCommentViewP = function (story) {
 		return promiseComponent(meP.then(function (me) {
-			if (!me) {
-				return text('Sign in to comment').all([
-					fonts.bebasNeue,
-					link,
-					clickThis(function (ev) {
-						signInStream.push(true);
-						ev.stopPropagation();
+			return siteCopyItemsP.then(function (copy) {
+				if (!me) {
+					return text(copy.find('Story Comment Sign In')).all([
+						fonts.bebasNeue,
+						link,
+						clickThis(function (ev) {
+							signInStream.push(true);
+							ev.stopPropagation();
+						}),
+					]);
+				}
+				
+				var comment = {
+					user: me._id,
+					story: story._id,
+					text: '',
+				};
+				var commentStreams = Stream.splitObject(comment);
+				var commentStream = Stream.combineObject(commentStreams);
+
+				var latestComment;
+				commentStream.onValue(function (comment) {
+					latestComment = comment;
+				});
+				
+				return form.all([
+					child(stack({}, [
+						stack({}, [
+							forms.plainTextareaBox(commentStreams.text, 'text').all([
+								$prop('rows', 6),
+							]),
+							alignLRM({
+								left: prettyForms.submit(black, copy.find('Story Comment Post'), function () {
+									db.comment.insert(latestComment).then(function () {
+										window.location.reload();
+									});
+								}),
+							}),
+						].map(function (c) {
+							return padding({
+								top: 10,
+							}, c);
+						})),
+					])),
+					wireChildren(function (instance, context, i) {
+						i.minHeight.pushAll(instance.minHeight);
+						i.minWidth.pushAll(instance.minWidth);
+						return [context];
 					}),
 				]);
-			}
-			
-			var comment = {
-				user: me._id,
-				story: story._id,
-				text: '',
-			};
-			var commentStreams = Stream.splitObject(comment);
-			var commentStream = Stream.combineObject(commentStreams);
-
-			var latestComment;
-			commentStream.onValue(function (comment) {
-				latestComment = comment;
 			});
-			
-			return form.all([
-				child(stack({}, [
-					stack({}, [
-						forms.plainTextareaBox(commentStreams.text, 'text').all([
-							$prop('rows', 6),
-						]),
-						alignLRM({
-							left: prettyForms.submit(black, 'Post Comment', function () {
-								db.comment.insert(latestComment).then(function () {
-									window.location.reload();
-								});
-							}),
-						}),
-					].map(function (c) {
-						return padding({
-							top: 10,
-						}, c);
-					})),
-				])),
-				wireChildren(function (instance, context, i) {
-					i.minHeight.pushAll(instance.minHeight);
-					i.minWidth.pushAll(instance.minWidth);
-					return [context];
-				}),
-			]);
 		}));
 	};
 
@@ -4378,49 +4492,51 @@ define('storyDetailViewP', [
 			});
 			return profilesP.then(function (profiles) {
 				return adminP.then(function (admin) {
-					return stack({
-						gutterSize: separatorSize * 2,
-					}, comments.map(function (comment) {
-						var profile = profiles.filter(function (profile) {
-							return profile.user === comment.user;
-						})[0];
-						return sideBySide({
-							handleSurplusWidth: giveToNth(2),
-							gutterSize: separatorSize,
-						}, [
-							stack({
+					return siteCopyItemsP.then(function (copy) {
+						return stack({
+							gutterSize: separatorSize * 2,
+						}, comments.map(function (comment) {
+							var profile = profiles.filter(function (profile) {
+								return profile.user === comment.user;
+							})[0];
+							return sideBySide({
+								handleSurplusWidth: giveToNth(2),
 								gutterSize: separatorSize,
-								collapseGutters: true,
 							}, [
-								linkTo('#!user/' + profile.user, image({
-									src: profile.profileImageURL || './content/man.png',
-									minWidth: 100,
-									chooseHeight: true,
-								})),
-								linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName)),
-								admin ? text('(delete comment)').all([
-									link,
-									clickThis(function (ev) {
-										ev.stopPropagation();
-										areYouSure({
-											onYes: function () {
-												db.comment.remove({
-													_id: comment._id,
-												}).then(function () {
-													window.location.reload();
-												});
-											},
-										});
-									}),
-								]) : nothing,
-							]),
-							border(black, {
-								all: 1,
-							}, padding(10, text(comment.text))).all([
-								withBackgroundColor(white),
-							]),
-						]);
-					}));
+								stack({
+									gutterSize: separatorSize,
+									collapseGutters: true,
+								}, [
+									linkTo('#!user/' + profile.user, image({
+										src: profile.profileImageURL || './content/man.png',
+										minWidth: 100,
+										chooseHeight: true,
+									})),
+									linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName)),
+									admin ? text(copy.find('Story Comment Delete')).all([
+										link,
+										clickThis(function (ev) {
+											ev.stopPropagation();
+											areYouSure({
+												onYes: function () {
+													db.comment.remove({
+														_id: comment._id,
+													}).then(function () {
+														window.location.reload();
+													});
+												},
+											});
+										}),
+									]) : nothing,
+								]),
+								border(black, {
+									all: 1,
+								}, padding(10, text(comment.text))).all([
+									withBackgroundColor(white),
+								]),
+							]);
+						}));
+					});
 				});
 			});
 		}));
@@ -4437,105 +4553,107 @@ define('storyDetailViewP', [
 			})[0];
 			return meP.then(function (me) {
 				return adminP.then(function (admin) {
-					return stack({
-						gutterSize: separatorSize,
-					}, [
-						confettiBackground(bodyColumn(grid({
-							handleSurplusWidth: giveToSecond,
-						}, [
-							alignTBM({
-								middle: image({
-									src: story.imageUrl || './content/man.png',
-									minWidth: 300,
-									chooseHeight: 0,
-								}),
-							}),
-							alignTBM({
-								middle: padding({
-									left: 30,
-									right: 30,
-								}, stack({
-									gutterSize: separatorSize / 2,
-								}, [
-									paragraph(story.name, 150).all([
-										fonts.h1,
-									]),
-									linkTo('#!user/' + profile.user, paragraph('by ' + profile.firstName + ' ' + profile.lastName).all([
-										fonts.h2,
-									])),
-									story.storyType ? text('category: ' + story.storyType).all([
-										fonts.h3,
-									]) : nothing,
-									promiseComponent(db.storyTag.find({
-										story: story._id,
-									}).then(function (storyTags) {
-										return storyTags.length > 0 ? sideBySide({
-											handleSurplusWidth: giveToSecond,
-										}, [
-											text('tags: ').all([
-												fonts.h3,
-											]),
-											grid({
-												gutterSize: separatorSize / 2,
-												useFullWidth: true,
-											}, storyTags.map(function (t) {
-												return text(t.tag).all([
-													fonts.h3,
-												]);
-											})),
-										]) : nothing;
-									})),
-								]))
-							}).all([
-								withMinWidth(300, true),
-							]),
-						]))),
-						bodyColumn(stack({}, [
-							div.all([
-								componentName('story-detail-text'),
-								function (instance) {
-									var $text = $(story.text);
-									$text.find('div').css('position', 'initial');
-									$text.appendTo(instance.$el);
-									instance.updateDimensions();
-								},
-							]),
-						])),
-						bodyColumn(grid({
+					return siteCopyItemsP.then(function (copy) {
+						return stack({
 							gutterSize: separatorSize,
 						}, [
-							storySocialMediaButton(socialMedia.facebook),
-							storySocialMediaButton(socialMedia.twitter),
-						])),
-						bodyColumn(storyCommentViewP(story)),
-						bodyColumn(storyCommentsViewP(story)),
-						bodyColumn(admin || (me && me._id === story.user) ? alignLRM({
-							left: sideBySide({
+							confettiBackground(bodyColumn(grid({
+								handleSurplusWidth: giveToSecond,
+							}, [
+								alignTBM({
+									middle: image({
+										src: story.imageUrl || './content/man.png',
+										minWidth: 300,
+										chooseHeight: 0,
+									}),
+								}),
+								alignTBM({
+									middle: padding({
+										left: 30,
+										right: 30,
+									}, stack({
+										gutterSize: separatorSize / 2,
+									}, [
+										paragraph(story.name, 150).all([
+											fonts.h1,
+										]),
+										linkTo('#!user/' + profile.user, paragraph(copy.find('Story By (include a space)') + profile.firstName + ' ' + profile.lastName).all([
+											fonts.h2,
+										])),
+										story.storyType ? text(copy.find('Story Category (include a space)') + story.storyType).all([
+											fonts.h3,
+										]) : nothing,
+										promiseComponent(db.storyTag.find({
+											story: story._id,
+										}).then(function (storyTags) {
+											return storyTags.length > 0 ? sideBySide({
+												handleSurplusWidth: giveToSecond,
+											}, [
+												text(copy.find('Story Tags (include a space)')).all([
+													fonts.h3,
+												]),
+												grid({
+													gutterSize: separatorSize / 2,
+													useFullWidth: true,
+												}, storyTags.map(function (t) {
+													return text(t.tag).all([
+														fonts.h3,
+													]);
+												})),
+											]) : nothing;
+										})),
+									]))
+								}).all([
+									withMinWidth(300, true),
+								]),
+							]))),
+							bodyColumn(stack({}, [
+								div.all([
+									componentName('story-detail-text'),
+									function (instance) {
+										var $text = $(story.text);
+										$text.find('div').css('position', 'initial');
+										$text.appendTo(instance.$el);
+										instance.updateDimensions();
+									},
+								]),
+							])),
+							bodyColumn(grid({
 								gutterSize: separatorSize,
 							}, [
-								linkTo('#!editStory/' + story._id, submitButton(black, text('Edit Story').all([
-									fonts.bebasNeue,
-								]))),
-								submitButton(black, text('Delete Story').all([
-									fonts.bebasNeue,
-								])).all([
-									link,
-									clickThis(function () {
-										return areYouSure({
-											onYes: function () {
-												db.story.remove({
-													_id: story._id,
-												}).then(function () {
-													window.location.hash = '#!';
-													window.location.reload();
-												});
-											}
-										});
-									}),
+								storySocialMediaButton(socialMedia.facebook),
+								storySocialMediaButton(socialMedia.twitter),
+							])),
+							bodyColumn(storyCommentViewP(story)),
+							bodyColumn(storyCommentsViewP(story)),
+							bodyColumn(admin || (me && me._id === story.user) ? alignLRM({
+								left: sideBySide({
+									gutterSize: separatorSize,
+								}, [
+									linkTo('#!editStory/' + story._id, submitButton(black, text(copy.find('Story Edit')).all([
+										fonts.bebasNeue,
+									]))),
+									submitButton(black, text(copy.find('Story Delete')).all([
+										fonts.bebasNeue,
+									])).all([
+										link,
+										clickThis(function () {
+											return areYouSure({
+												onYes: function () {
+													db.story.remove({
+														_id: story._id,
+													}).then(function () {
+														window.location.hash = '#!';
+														window.location.reload();
+													});
+												}
+											});
+										}),
+									]),
 								]),
-							]),
-						}) : nothing),
-					]);
+							}) : nothing),
+						]);
+					});
 				});
 			});
 		}));
@@ -4667,13 +4785,13 @@ define('homeViewP', [
 				}, [
 					firstView,
 					alignLRM({
-						middle: linkTo('#!browseStories', text('Stories').all([
+						middle: linkTo('#!browseStories', text(siteCopyItems.find('Home Stories')).all([
 							fonts.h1,
 						])),
 					}),
 					restViews,
 					alignLRM({
-						middle: linkTo('#!browseStories', text('(browse stories)').all([
+						middle: linkTo('#!browseStories', text(siteCopyItems.find('Home Browse Stories')).all([
 							withFontColor(colors.linkBlue),
 							$css('text-decoration', 'underline'),
 						])),
@@ -6375,13 +6493,14 @@ define('profileViewP', [
 	'months',
 	'profilesP',
 	'separatorSize',
+	'siteCopyItemsP',
 	'socialMedia',
 	'socialMediaButton',
 	'storiesP',
 	'storyRowP',
 	'submitButton',
 	'writeOnImage',
-], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
+], function (adminP, bar, bodyColumn, colors, confettiBackground, db, fonts, holibirthdayRow, holibirthdayView, meP, months, profilesP, separatorSize, siteCopyItemsP, socialMedia, socialMediaButton, storiesP, storyRowP, submitButton, writeOnImage) {
 	return function (route) {
 		var index = route.indexOf('/');
 		var user = (index === -1) ? route : route.substring(0, index);
@@ -6452,232 +6571,236 @@ define('profileViewP', [
 		return promiseComponent(meP.then(function (me) {
 			return adminP.then(function (admin) {
 				return profilesP.then(function (profiles) {
-					var profile = profiles.filter(function (profile) {
-						return profile.user === user;
-					})[0];
-					var pointsP = db.pointsChange.find({
-						user: user,
-					});
-					var pointsTotalP = pointsP.then(function (points) {
-						return points.reduce(function (a, p) {
-							return a + p.amount;
-						}, 0);
-					});
-					var redBar = confettiBackground(bodyColumn(stack({}, [
-						holibirthdayRow(grid({
-							gutterSize: separatorSize,
-							useFullWidth: true,
-							handleSurplusWidth: giveToFirst,
-						}, [
-							alignTBM({
-								middle: stack({
-									gutterSize: separatorSize / 2,
-									collapseGutters: true,
-								}, [
-									paragraph(profile.firstName + ' ' + profile.lastName).all([
-										fonts.ralewayThinBold,
-										$css('font-size', 40),
-									]),
-									profile.birthday ? text('Born on ' + moment(profile.birthday).utc().format('MMMM Do')).all([
-										fonts.ralewayThinBold,
-										$css('font-size', 20),
-									]) : nothing,
-									promiseComponent(pointsTotalP.then(function (pointsTotal) {
-										return text('Holibirthday Points: ' + pointsTotal).all([
+					return siteCopyItemsP.then(function (copy) {
+						var profile = profiles.filter(function (profile) {
+							return profile.user === user;
+						})[0];
+						var pointsP = db.pointsChange.find({
+							user: user,
+						});
+						var pointsTotalP = pointsP.then(function (points) {
+							return points.reduce(function (a, p) {
+								return a + p.amount;
+							}, 0);
+						});
+						var redBar = confettiBackground(bodyColumn(stack({}, [
+							holibirthdayRow(grid({
+								gutterSize: separatorSize,
+								useFullWidth: true,
+								handleSurplusWidth: giveToFirst,
+							}, [
+								alignTBM({
+									middle: stack({
+										gutterSize: separatorSize / 2,
+										collapseGutters: true,
+									}, [
+										paragraph(profile.firstName + ' ' + profile.lastName).all([
+											fonts.ralewayThinBold,
+											$css('font-size', 40),
+										]),
+										profile.birthday ? text(copy.find('Profile Born On (include space)') + moment(profile.birthday).utc().format('MMMM Do')).all([
 											fonts.ralewayThinBold,
 											$css('font-size', 20),
-										]);
-									})),
-									me ? promiseComponent(db.contactOtherUser.findOne({
-										user: me._id,
-										otherUser: user,
-									}).then(function (cou) {
-										if (cou) {
-											return nothing;
-										}
-										else if (me._id === user) {
-											return linkTo('#!contacts', text('My Contacts').all([
+										]) : nothing,
+										promiseComponent(pointsTotalP.then(function (pointsTotal) {
+											return text(copy.find('Profile Holibirthday Points (include space)') + pointsTotal).all([
 												fonts.ralewayThinBold,
 												$css('font-size', 20),
-											]));
-										}
-										return text('Add Contact').all([
-											fonts.ralewayThinBold,
-											$css('font-size', 20),
+											]);
+										})),
+										me ? promiseComponent(db.contactOtherUser.findOne({
+											user: me._id,
+											otherUser: user,
+										}).then(function (cou) {
+											if (cou) {
+												return nothing;
+											}
+											else if (me._id === user) {
+												return linkTo('#!contacts', text(copy.find('Profile My Contacts')).all([
+													fonts.ralewayThinBold,
+													$css('font-size', 20),
+												]));
+											}
+											return text(copy.find('Profile Add Contact')).all([
+												fonts.ralewayThinBold,
+												$css('font-size', 20),
+												link,
+												clickThis(function (ev, disable) {
+													disable();
+													db.contactOtherUser.insert({
+														user: me._id,
+														otherUser: user,
+													}).then(function () {
+														window.location.hash = '#!contacts';
+														window.location.reload();
+													});
+												}),
+											]);
+										})) : nothing,
+									]),
+								}),
+								keepAspectRatio(promiseComponent(db.holibirthday.findOne({
+									user: user,
+								}).then(function (holibirthday) {
+									if (profile.holibirther && holibirthday)
+									{
+										var date = new Date(holibirthday.date);
+										return image({
+											src: writeOnImage({
+												width: 308,
+												height: 200,
+											}, './content/certificate-01-thumbnail.png', [{
+												center: {
+													x: 154,
+													y: 88,
+												},
+												text: profile.firstName + ' ' + profile.lastName,
+												font: 'bold 14px Raleway Thin',
+											}, {
+												center: {
+													x: 154,
+													y: 152,
+												},
+												text: moment(date).utc().format('MMMM Do'),
+												font: 'bold 14px Raleway Thin',
+											}].concat(profile.birthday ? [{
+												center: {
+													x: 46,
+													y: 171,
+												},
+												text: 'Old Birthday',
+												font: '6px BebasNeue',
+											}, {
+												center: {
+													x: 46,
+													y: 176,
+												},
+												text: moment(profile.birthday).utc().format('MMMM Do'),
+												font: '6px BebasNeue',
+											}] : [])),
+											useNativeSize: true,
+										}).all([
 											link,
-											clickThis(function (ev, disable) {
-												disable();
-												db.contactOtherUser.insert({
-													user: me._id,
-													otherUser: user,
-												}).then(function () {
-													window.location.hash = '#!contacts';
-													window.location.reload();
-												});
+											clickThis(function (ev) {
+												modalOnS.push(true);
+												ev.stopPropagation();
 											}),
 										]);
-									})) : nothing,
-								]),
-							}),
-							keepAspectRatio(promiseComponent(db.holibirthday.findOne({
-								user: user,
-							}).then(function (holibirthday) {
-								if (profile.holibirther && holibirthday)
-								{
-									var date = new Date(holibirthday.date);
-									return image({
-										src: writeOnImage({
-											width: 308,
-											height: 200,
-										}, './content/certificate-01-thumbnail.png', [{
-											center: {
-												x: 154,
-												y: 88,
-											},
-											text: profile.firstName + ' ' + profile.lastName,
-											font: 'bold 14px Raleway Thin',
-										}, {
-											center: {
-												x: 154,
-												y: 152,
-											},
-											text: moment(date).utc().format('MMMM Do'),
-											font: 'bold 14px Raleway Thin',
-										}].concat(profile.birthday ? [{
-											center: {
-												x: 46,
-												y: 171,
-											},
-											text: 'Old Birthday',
-											font: '6px BebasNeue',
-										}, {
-											center: {
-												x: 46,
-												y: 176,
-											},
-											text: moment(profile.birthday).utc().format('MMMM Do'),
-											font: '6px BebasNeue',
-										}] : [])),
-										useNativeSize: true,
-									}).all([
-										link,
-										clickThis(function (ev) {
-											modalOnS.push(true);
-											ev.stopPropagation();
-										}),
-									]);
-								}
-								return meP.then(function (me) {
-									if (me && me._id === user) {
-										return linkTo('#!myHolibirthday', alignTBM({
-											middle: submitButton(white, text('claim a holibirthday').all([
-												fonts.bebasNeue,
-											])),
-										}).all([
-											fonts.ralewayThinBold,
-										]));
 									}
-									else {
-										return nothing;
-									}
-								});
-							}))),
-						]), profile.imageUrl || './content/man.png'),
-					])));
-					var storiesC = promiseComponent(storiesP.then(function (stories) {
-						var profileStories = stories.filter(function (story) {
-							return story.user === user;
-						});
-						
-						return bodyColumn(stack({
-							gutterSize: separatorSize,
-						}, profileStories.map(storyRowP))).all([
-							withMinWidth(0),
-							withMinHeight(0),
-						]);
-					}));
-
-					var profileSocialMediaButton = socialMediaButton(function (verb) {
-						return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
-					});
-					var shareButtons = bodyColumn(grid({
-						gutterSize: separatorSize,
-					}, [
-						profileSocialMediaButton(socialMedia.facebook),
-						profileSocialMediaButton(socialMedia.twitter),
-					]));
-
-
-					var pointsC = promiseComponent(pointsP.then(function (points) {
-						return pointsTotalP.then(function (pointsTotal) {
-							return pointsTotal === 0 ? nothing : bodyColumn(stack({
+									return meP.then(function (me) {
+										if (me && me._id === user) {
+											return linkTo('#!myHolibirthday', alignTBM({
+												middle: submitButton(white, text(copy.find('Profile Claim a Holibirthday')).all([
+													fonts.bebasNeue,
+												])),
+											}).all([
+												fonts.ralewayThinBold,
+											]));
+										}
+										else {
+											return nothing;
+										}
+									});
+								}))),
+							]), profile.imageUrl || './content/man.png'),
+						])));
+						var bio = bodyColumn(paragraph(profile.bio));
+						var storiesC = promiseComponent(storiesP.then(function (stories) {
+							var profileStories = stories.filter(function (story) {
+								return story.user === user;
+							});
+							
+							return bodyColumn(stack({
 								gutterSize: separatorSize,
-							}, [
-								bar.horizontal(1, colors.middleGray),
-								linkTo('#!leaderboards', paragraph('Holibirthday Points (view leaderboards)').all([
-									fonts.ralewayThinBold,
-									$css('font-size', 40),
-								])),
-								stack({
+							}, profileStories.map(storyRowP))).all([
+								withMinWidth(0),
+								withMinHeight(0),
+							]);
+						}));
+
+						var profileSocialMediaButton = socialMediaButton(function (verb) {
+							return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
+						});
+						var shareButtons = bodyColumn(grid({
+							gutterSize: separatorSize,
+						}, [
+							profileSocialMediaButton(socialMedia.facebook),
+							profileSocialMediaButton(socialMedia.twitter),
+						]));
+
+
+						var pointsC = promiseComponent(pointsP.then(function (points) {
+							return pointsTotalP.then(function (pointsTotal) {
+								return pointsTotal === 0 ? nothing : bodyColumn(stack({
 									gutterSize: separatorSize,
-								}, points.map(function (point) {
-									return sideBySide({
-										handleSurplusWidth: giveToNth(1),
+								}, [
+									bar.horizontal(1, colors.middleGray),
+									linkTo('#!leaderboards', paragraph(copy.find('Profile Holibirthday Points / View Leaderboards')).all([
+										fonts.ralewayThinBold,
+										$css('font-size', 40),
+									])),
+									stack({
+										gutterSize: separatorSize,
+									}, points.map(function (point) {
+										return sideBySide({
+											handleSurplusWidth: giveToNth(1),
+											gutterSize: separatorSize,
+										}, [
+											alignTBM({
+												middle: text((point.amount >= 0) ? '+' + point.amount : point.amount).all([
+													withFontColor(point.amount >= 0 ? colors.darkGreen : colors.darkRed),
+													fonts.ralewayThinBold,
+													$css('font-size', '30'),
+												]),
+											}),
+											alignTBM({
+												middle: paragraph(point.reason).all([
+													fonts.ralewayThinBold,
+													$css('font-size', '30'),
+												]),
+											}),
+										]);
+									})),
+									bar.horizontal(1, colors.middleGray),
+									sideBySide({
 										gutterSize: separatorSize,
 									}, [
 										alignTBM({
-											middle: text((point.amount >= 0) ? '+' + point.amount : point.amount).all([
-												withFontColor(point.amount >= 0 ? colors.darkGreen : colors.darkRed),
+											middle: text(pointsTotal >= 0 ? '' + pointsTotal : pointsTotal).all([
+												withFontColor(pointsTotal >= 0 ? colors.darkGreen : colors.darkRed),
 												fonts.ralewayThinBold,
 												$css('font-size', '30'),
 											]),
 										}),
 										alignTBM({
-											middle: paragraph(point.reason).all([
+											middle: text(copy.find('Profile Holibirthday Points Total')).all([
 												fonts.ralewayThinBold,
 												$css('font-size', '30'),
 											]),
 										}),
-									]);
-								})),
-								bar.horizontal(1, colors.middleGray),
-								sideBySide({
-									gutterSize: separatorSize,
-								}, [
-									alignTBM({
-										middle: text(pointsTotal >= 0 ? '' + pointsTotal : pointsTotal).all([
-											withFontColor(pointsTotal >= 0 ? colors.darkGreen : colors.darkRed),
-											fonts.ralewayThinBold,
-											$css('font-size', '30'),
-										]),
-									}),
-									alignTBM({
-										middle: text('Total').all([
-											fonts.ralewayThinBold,
-											$css('font-size', '30'),
-										]),
-									}),
-								]),
-							]));
-						});
-					}));
+									]),
+								]));
+							});
+						}));
 
-					var editButton = admin || (me && me._id === profile.user) ? alignLRM({
-						middle: linkTo('#!editProfile/' + user, submitButton(black, text('Edit Profile').all([
-							fonts.bebasNeue,
-						]))),
-					}) : nothing;
-					
-					return stack({
-						gutterSize: separatorSize,
-					}, [
-						redBar,
-						shareButtons,
-						storiesC,
-						pointsC,
-						editButton,
-						holibirthdayModal,
-					]);
+						var editButton = admin || (me && me._id === profile.user) ? alignLRM({
+							middle: linkTo('#!editProfile/' + user, submitButton(black, text(copy.find('Profile Edit')).all([
+								fonts.bebasNeue,
+							]))),
+						}) : nothing;
+						
+						return stack({
+							gutterSize: separatorSize,
+						}, [
+							redBar,
+							bio,
+							shareButtons,
+							storiesC,
+							pointsC,
+							editButton,
+							holibirthdayModal,
+						]);
+					});
 				});
 			});
 		}));
@@ -6808,19 +6931,19 @@ define('storyEditViewP', [
 					gutterSize: separatorSize,
 				}, [
 					prettyForms.input({
-						name: 'Title',
+						name: siteCopyItems.find('Edit Story Title Field'),
 						fieldName: 'name',
 						stream: storyStreams.name,
 						labelAll: labelsAll,
 					}),
 					prettyForms.textarea({
-						name: 'Body',
+						name: siteCopyItems.find('Edit Story Body Field'),
 						fieldName: 'text',
 						stream: storyStreams.text,
 						labelAll: labelsAll,
 					}),
 					stack({}, [
-						text('Category').all([
+						text(siteCopyItems.find('Edit Story Category Field')).all([
 							fonts.ralewayThinBold,
 						]).all(labelsAll),
 						prettyForms.radios({
@@ -6851,7 +6974,7 @@ define('storyEditViewP', [
 							nextTagS.push('');
 						};
 						return stack({}, [
-							text('Tags').all(labelsAll),
+							text(siteCopyItems.find('Edit Story Tags Field')).all(labelsAll),
 							border(white, {
 								all: 1,
 							}, stack({}, [
@@ -6885,7 +7008,7 @@ define('storyEditViewP', [
 									gutterSize: separatorSize / 2,
 									handleSurplusWidth: giveToSecond,
 								}, [
-									text('Add Tag:').all([
+									text(siteCopyItems.find('Edit Story Add Tag')).all([
 										fonts.bebasNeue,
 									]),
 									dropdownPanel(forms.inputBox(nextTagS, 'text', 'tag', [
@@ -6961,7 +7084,7 @@ define('storyEditViewP', [
 						]);
 					})),
 					prettyForms.imageUpload({
-						name: 'Image URL',
+						name: siteCopyItems.find('Edit Story Image URL Field'),
 						labelAll: labelsAll,
 						stream: storyStreams.imageUrl,
 					}),
@@ -6969,7 +7092,7 @@ define('storyEditViewP', [
 						fonts.ralewayThinBold,
 					]),
 					alignLRM({
-						left: prettyForms.submit(white, 'Submit Story', function () {
+						left: prettyForms.submit(white, siteCopyItems.find('Edit Story Submit Story'), function () {
 							var latestStory = storyStream.lastValue();
 							var updateTags = function (story) {
 								return Q.all(tagsS.lastValue().map(function (tag) {
@@ -7035,7 +7158,7 @@ define('storyEditViewP', [
 							fonts.bebasNeue,
 							$css('font-size', '60px'),
 						]),
-						paragraph('You must sign in to post a story').all([
+						paragraph(siteCopyItems.find('Edit Story Must Sign In')).all([
 							fonts.bebasNeue,
 							$css('font-size', '30px'),
 							link,
@@ -7078,235 +7201,226 @@ define('dailyTheme', [
 	'prettyForms',
 	'separatorSize',
 	'signInStream',
+	'siteCopyItemsP',
 	'submitButton',
-], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, signInStream, submitButton) {
+], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, signInStream, siteCopyItemsP, submitButton) {
 	return promiseComponent(db.dailyTheme.find({}).then(function (themes) {
-		var theme = themes.sort(function (t1, t2) {
-			return t2.updateDate.getTime() - t1.updateDate.getTime();
-		})[0];
-		if (!theme) {
-			return holibirthdayRow(stack({
-				gutterSize: separatorSize,
-			}, [
-				text('Holibirthday').all([
-					fonts.ralewayThinBold,
-					fonts.h1,
-				]),
-			]));
-		}
-		switch (theme.type) {
-		case 'featuredStory':
-			return db.story.findOne({
-				_id: theme.storyId,
-			}).then(function (story) {
-				return db.profile.findOne({
-					user: story.user,
-				}).then(function (profile) {
-					return linkTo('#!story/' + story._id, holibirthdayRow(stack({
-						gutterSize: separatorSize,
-					}, [
-						text(story.name).all([
-							fonts.ralewayThinBold,
-							fonts.h1,
-						]),
-						linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
-							fonts.ralewayThinBold,
-							fonts.h3,
-						])),
-						paragraph(theme.storyText).all([
-							fonts.ralewayThinBold,
-						]),
-					]), story.imageUrl));
+		return siteCopyItemsP.then(function (copy) {
+			var theme = themes.sort(function (t1, t2) {
+				return t2.updateDate.getTime() - t1.updateDate.getTime();
+			})[0];
+			if (!theme) {
+				return holibirthdayRow(stack({
+					gutterSize: separatorSize,
+				}, [
+					text(copy.find('Daily Theme Placeholder')).all([
+						fonts.ralewayThinBold,
+						fonts.h1,
+					]),
+				]));
+			}
+			switch (theme.type) {
+			case 'featuredStory':
+				return db.story.findOne({
+					_id: theme.storyId,
+				}).then(function (story) {
+					return db.profile.findOne({
+						user: story.user,
+					}).then(function (profile) {
+						return linkTo('#!story/' + story._id, holibirthdayRow(stack({
+							gutterSize: separatorSize,
+						}, [
+							text(story.name).all([
+								fonts.ralewayThinBold,
+								fonts.h1,
+							]),
+							linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
+								fonts.ralewayThinBold,
+								fonts.h3,
+							])),
+							paragraph(theme.storyText).all([
+								fonts.ralewayThinBold,
+							]),
+						]), story.imageUrl));
+					});
 				});
-			});
-		case 'featuredGift':
-			var gift = storeItems[theme.giftId];
-			return linkTo("#!gift/" + theme.giftId, holibirthdayRow(stack({
-				gutterSize: separatorSize,
-			}, [
-				text(gift.name).all([
-					fonts.h1,
-				]),
-				text(theme.giftText).all([
-					fonts.h3,
-				]),
-			]), gift.imageSrc));
-		case 'poll':
-			var choiceStream = Stream.create();
-			var pollResponseS = Stream.once(null);
-			return promiseComponent(db.dailyThemePollResponse.find({
-				dailyTheme: theme._id,
-			}).then(function (pollResponses) {
-				var pollResponsesS = Stream.once(pollResponses);
-				return componentStream(pollResponsesS.map(function (pollResponses) {
-					meP.then(function (me) {
-						if (me) {
-							var myPollResponse = pollResponses.filter(function (r) {
-								return r.user === me._id;
-							})[0];
-							if (myPollResponse) {
-								pollResponseS.push(myPollResponse);
-							}
-						}
-					});
-					var resultBarHeight = 50;
-					var scores = theme.pollChoices.map(function (choice) {
-						return pollResponses.filter(function (response) {
-							return response.choice === choice;
-						}).length;
-					});
-					var totalScore = Math.max(1, scores.reduce(function (a, b) {
-						return a + b;
-					}, 0));
-					var percentages = scores.map(function (score) {
-						return score / totalScore;
-					});
-					var displayResults = theme.pollChoices.map(function (choice, i) {
-						return {
-							name: choice,
-							percentage: percentages[i],
-							total: scores[i],
-						};
-					});
-					displayResults.sort(function (a, b) {
-						return b.percentage - a.percentage;
-					});
-					var pollResults = border(white, {
-						all: 1,
-					}, padding({
-						all: separatorSize,
-					}, sideBySide({
-						gutterSize: separatorSize,
-						handleSurplusWidth: giveToSecond,
-					}, [
-						stack({
-							gutterSize: separatorSize,
-						}, displayResults.map(function (displayResult) {
-							return alignTBM({
-								middle: text(displayResult.name).all([
-									fonts.ralewayThinBold,
-								]),
-							}).all([
-								withMinHeight(resultBarHeight, true),
-							]);
-						})),
-						stack({
-							gutterSize: separatorSize,
-						}, displayResults.map(function (displayResult) {
-							return withBackground(div.all([
-								child(nothing.all([
-									withBackgroundColor(colors.holibirthdayDarkRed),
-								])),
-								wireChildren(function (instance, context) {
-									instance.minWidth.push(0);
-									instance.minHeight.push(0);
-									return [{
-										top: Stream.once(0),
-										left: Stream.once(0),
-										width: context.width.map(function (w) {
-											return w * displayResult.percentage;
-										}),
-										height: context.height,
-									}];
-								}),
-							]), alignTBM({
-								middle: padding({
-									all: 10,
-								}, text(Math.round(displayResult.percentage * 100) + '% (' + displayResult.total + ')').all([
-									fonts.ralewayThinBold,
-								])),
-							}).all([
-								withMinHeight(resultBarHeight, true),
-							]));
-						})),
-					])));
-					var pollVote = stack({
-						gutterSize: separatorSize,
-					}, [
-						prettyForms.radios({
-							options: theme.pollChoices.map(function (choice) {
-								return {
-									name: choice,
-									value: choice,
-								};
-							}),
-							stream: choiceStream,
-						}),
-						promiseComponent(meP.then(function (me) {
+			case 'poll':
+				var choiceStream = Stream.create();
+				var pollResponseS = Stream.once(null);
+				return promiseComponent(db.dailyThemePollResponse.find({
+					dailyTheme: theme._id,
+				}).then(function (pollResponses) {
+					var pollResponsesS = Stream.once(pollResponses);
+					return componentStream(pollResponsesS.map(function (pollResponses) {
+						meP.then(function (me) {
 							if (me) {
-								return alignLRM({
-									left: submitButton(white, text('Vote (or Abstain)').all([
-										fonts.bebasNeue,
-									])).all([
-										link,
-										clickThis(function () {
-											db.dailyThemePollResponse.insert({
-												user: me._id,
-												dailyTheme: theme._id,
-												choice: choiceStream.lastValue(),
-											}).then(function (response) {
-												pollResponseS.push(response);
-												pollResponsesS.push(pollResponses.concat([response]));
-											});
-										}),
+								var myPollResponse = pollResponses.filter(function (r) {
+									return r.user === me._id;
+								})[0];
+								if (myPollResponse) {
+									pollResponseS.push(myPollResponse);
+								}
+							}
+						});
+						var resultBarHeight = 50;
+						var scores = theme.pollChoices.map(function (choice) {
+							return pollResponses.filter(function (response) {
+								return response.choice === choice;
+							}).length;
+						});
+						var totalScore = Math.max(1, scores.reduce(function (a, b) {
+							return a + b;
+						}, 0));
+						var percentages = scores.map(function (score) {
+							return score / totalScore;
+						});
+						var displayResults = theme.pollChoices.map(function (choice, i) {
+							return {
+								name: choice,
+								percentage: percentages[i],
+								total: scores[i],
+							};
+						});
+						displayResults.sort(function (a, b) {
+							return b.percentage - a.percentage;
+						});
+						var pollResults = border(white, {
+							all: 1,
+						}, padding({
+							all: separatorSize,
+						}, sideBySide({
+							gutterSize: separatorSize,
+							handleSurplusWidth: giveToSecond,
+						}, [
+							stack({
+								gutterSize: separatorSize,
+							}, displayResults.map(function (displayResult) {
+								return alignTBM({
+									middle: text(displayResult.name).all([
+										fonts.ralewayThinBold,
 									]),
-								});
-							}
-							else {
-								return alignLRM({
-									left: submitButton(white, text('Sign in to vote').all([
-										fonts.bebasNeue,
-										link,
-										clickThis(function (ev) {
-											signInStream.push(true);
-											ev.stopPropagation();
-										}),
+								}).all([
+									withMinHeight(resultBarHeight, true),
+								]);
+							})),
+							stack({
+								gutterSize: separatorSize,
+							}, displayResults.map(function (displayResult) {
+								return withBackground(div.all([
+									child(nothing.all([
+										withBackgroundColor(colors.holibirthdayDarkRed),
 									])),
-								});
-							}
-						})),
-					]);
-					return holibirthdayRow(stack({
-						gutterSize: separatorSize,
-					}, [
-						text(theme.pollTitle).all([
-							fonts.h1,
-						]),
-						text(theme.pollDescription).all([
-							fonts.h2,
-						]),
-						componentStream(pollResponseS.map(function (pollResponse) {
-							if (pollResponse) {
-								return pollResults;
-							}
-							else {
-								return pollVote;
-							}
-						})),
-					]), theme.pollImage);
+									wireChildren(function (instance, context) {
+										instance.minWidth.push(0);
+										instance.minHeight.push(0);
+										return [{
+											top: Stream.once(0),
+											left: Stream.once(0),
+											width: context.width.map(function (w) {
+												return w * displayResult.percentage;
+											}),
+											height: context.height,
+										}];
+									}),
+								]), alignTBM({
+									middle: padding({
+										all: 10,
+									}, text(Math.round(displayResult.percentage * 100) + '% (' + displayResult.total + ')').all([
+										fonts.ralewayThinBold,
+									])),
+								}).all([
+									withMinHeight(resultBarHeight, true),
+								]));
+							})),
+						])));
+						var pollVote = stack({
+							gutterSize: separatorSize,
+						}, [
+							prettyForms.radios({
+								options: theme.pollChoices.map(function (choice) {
+									return {
+										name: choice,
+										value: choice,
+									};
+								}),
+								stream: choiceStream,
+							}),
+							promiseComponent(meP.then(function (me) {
+								if (me) {
+									return alignLRM({
+										left: submitButton(white, text(copy.find('Daily Theme Poll Vote / Abstain')).all([
+											fonts.bebasNeue,
+										])).all([
+											link,
+											clickThis(function () {
+												db.dailyThemePollResponse.insert({
+													user: me._id,
+													dailyTheme: theme._id,
+													choice: choiceStream.lastValue(),
+												}).then(function (response) {
+													pollResponseS.push(response);
+													pollResponsesS.push(pollResponses.concat([response]));
+												});
+											}),
+										]),
+									});
+								}
+								else {
+									return alignLRM({
+										left: submitButton(white, text(copy.find('Daily Theme Poll Sign In')).all([
+											fonts.bebasNeue,
+											link,
+											clickThis(function (ev) {
+												signInStream.push(true);
+												ev.stopPropagation();
+											}),
+										])),
+									});
+								}
+							})),
+						]);
+						return holibirthdayRow(stack({
+							gutterSize: separatorSize,
+						}, [
+							text(theme.pollTitle).all([
+								fonts.h1,
+							]),
+							text(theme.pollDescription).all([
+								fonts.h2,
+							]),
+							componentStream(pollResponseS.map(function (pollResponse) {
+								if (pollResponse) {
+									return pollResults;
+								}
+								else {
+									return pollVote;
+								}
+							})),
+						]), theme.pollImage);
+					}));
 				}));
-			}));
-		case 'someText':
-			return holibirthdayRow(stack({
-				gutterSize: separatorSize,
-			}, [
-				text(theme.someTextTitle).all([
-					fonts.h1,
-				]),
-				paragraph(theme.someTextText).all([
-					fonts.h3,
-				]),
-			]), theme.someTextImage);
-		default:
-			return holibirthdayRow(stack({
-				gutterSize: separatorSize,
-			}, [
-				text('Holibirthday').all([
-					fonts.ralewayThinBold,
-					fonts.h1,
-				]),
-			]));
-		}
+			case 'someText':
+				return holibirthdayRow(stack({
+					gutterSize: separatorSize,
+				}, [
+					text(theme.someTextTitle).all([
+						fonts.h1,
+					]),
+					paragraph(theme.someTextText).all([
+						fonts.h3,
+					]),
+				]), theme.someTextImage);
+			default:
+				return holibirthdayRow(stack({
+					gutterSize: separatorSize,
+				}, [
+					text(copy.find('Daily Theme Placeholder')).all([
+						fonts.ralewayThinBold,
+						fonts.h1,
+					]),
+				]));
+			}
+		});
 	}));
 });
 define('gridSelect', [], function () {

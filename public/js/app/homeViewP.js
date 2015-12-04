@@ -103,13 +103,13 @@ define([
 				}, [
 					firstView,
 					alignLRM({
-						middle: linkTo('#!browseStories', text('Stories').all([
+						middle: linkTo('#!browseStories', text(siteCopyItems.find('Home Stories')).all([
 							fonts.h1,
 						])),
 					}),
 					restViews,
 					alignLRM({
-						middle: linkTo('#!browseStories', text('(browse stories)').all([
+						middle: linkTo('#!browseStories', text(siteCopyItems.find('Home Browse Stories')).all([
 							withFontColor(colors.linkBlue),
 							$css('text-decoration', 'underline'),
 						])),
