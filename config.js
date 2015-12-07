@@ -1,7 +1,7 @@
 module.exports = {
 	forceHttps: true,
 	domain: 'https://www.holibirthday.com',
-	port: process.env.PORT,
+	port: process.env.OPENSHIFT_NODEJS_PORT,
 	db: {
 		// staging
 		// host: "holibirthday:ka%2C.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
@@ -30,7 +30,7 @@ module.exports = {
 		accessToken: '1/93c0f4cf53fab76bbc7e6b5ef5417817',
 	},
 	mailchimp: {
-		key: '7c0e6b6ffd68f9168c569845ec5ba92d-us12',
+		key: '9cd741c3a6b8e0bb62a9397f16eb28b8-us12',
 	},
 	adminEmail: 'holibirthday@gmail.com',
 };
