@@ -8,13 +8,13 @@ module.exports = {
 		// host: "holibirthday:ka%2C.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
 		
 		// prod
-		host: "holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday",
+		// host: "holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday",
 		
-		name: "holibirthday",
+		// name: "holibirthday",
 
 		// rhos
-		// host: "admin:6PlTxDxirvHk@" + process.env.OPENSHIFT_MONGODB_DB_HOST + ":" + OPENSHIFT_MONGODB_DB_PORT,
-		// name: "nodejs",
+		host: "admin:6PlTxDxirvHk@holibirthday.aoeu2code.com",
+		name: "nodejs",
 	},
 	grecaptcha: {
 		secret: '6Lf1ogkTAAAAAMfU6pXYGeOApwT2g7jHvS80DkM9',
