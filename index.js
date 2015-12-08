@@ -70,7 +70,7 @@ setupDb(config, schema, function (dbWith) {
 	app.use(express.static('public'));
 
 	try {
-		var server = app.listen(config.port, function () {
+		var server = app.listen(config.port, config.ip, function () {
 			console.log('up');
 		});
 	}
