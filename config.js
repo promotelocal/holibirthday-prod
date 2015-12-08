@@ -3,7 +3,7 @@ module.exports = {
 	domain: 'https://www.holibirthday.com',
 	port: process.env.OPENSHIFT_NODEJS_PORT,
 	ip: process.env.OPENSHIFT_NODEJS_IP,
-	db: {
+	// db: {
 		// staging
 		// host: "holibirthday:ka%2C.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
 		
@@ -11,11 +11,8 @@ module.exports = {
 		// host: "holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday",
 		
 		// name: "holibirthday",
-
-		// rhos
-		host: "admin:6PlTxDxirvHk@holibirthday.aoeu2code.com",
-		name: "nodejs",
-	},
+	// },
+	db: process.env.OPENSHIFT_MONGODB_DB_URL,
 	grecaptcha: {
 		secret: '6Lf1ogkTAAAAAMfU6pXYGeOApwT2g7jHvS80DkM9',
 		sitekey: '6Lf1ogkTAAAAABlzCh_MhCA8hlmkc5zmockoeQsc',
