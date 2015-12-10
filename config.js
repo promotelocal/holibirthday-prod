@@ -1,8 +1,9 @@
 module.exports = {
 	forceHttps: true,
 	domain: 'https://www.holibirthday.com',
-	port: process.env.OPENSHIFT_NODEJS_PORT,
-	ip: process.env.OPENSHIFT_NODEJS_IP,
+	port: process.env.PORT,
+	// port: process.env.OPENSHIFT_NODEJS_PORT,
+	// ip: process.env.OPENSHIFT_NODEJS_IP,
 	// db: {
 		// staging
 		// host: "holibirthday:ka%2C.hpsarocehksrao.pcgdyfsi@ds047692.mongolab.com:47692/holibirthday",
