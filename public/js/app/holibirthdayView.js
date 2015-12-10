@@ -30,8 +30,8 @@ define([
 				var canvas = document.createElement('canvas');
 				var $canvas = $(canvas);
 				$canvas.appendTo($('body'))
-					.prop('width', 1080)
-					.prop('height', 702);
+					.prop('width', 2970)
+					.prop('height', 2228);
 
 				var ctx = canvas.getContext('2d');
 
@@ -45,32 +45,34 @@ define([
 				img.onload = function() {
 					ctx.drawImage(img, 0, 0);
 					drawCenteredText({
-						x: 540,
-						y: 310,
-					}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
+						x: 1485,
+						y: 840,
+					}, profile.firstName + ' ' + profile.lastName, 'bold 100px Raleway Thin');
 					drawCenteredText({
-						x: 540,
-						y: 540,
-					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
-					if (profile.birthday) {
-						drawCenteredText({
-							x: 160,
-							y: 595,
-						}, 'Old Birthday', '20px BebasNeue');
-						drawCenteredText({
-							x: 160,
-							y: 615,
-						}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
-					}
+						x: 960,
+						y: 995,
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 100px Raleway Thin');
+					drawCenteredText({
+						x: 1572,
+						y: 1118,
+					}, moment(profile.birthday).utc().format('MMMM Do'), 'bold 100px Raleway Thin');
+					drawCenteredText({
+						x: 1893,
+						y: 1758,
+					}, moment(holibirthday.updateDate).utc().format('MMMM Do'), 'bold 100px Raleway Thin');
 					setTimeout(function () {
 						srcS.push(canvas.toDataURL());
 						$canvas.remove();
 					});
 				};
-				img.src = './content/certificate-01.png';
+				img.src = './content/certificate-new.png';
 				
 				var holibirthdaySocialMediaButton = socialMediaButton(function (verb) {
 					return verb + (me && me._id === profile.user ? ' your certificate' : ' this certificate');
+				}, {
+					imageUrl: holibirthday.imageUrl,
+					name: profile.firstName + ' ' + profile.lastName,
+					text: 'Holiborn on ' + moment(new Date(holibirthday.date)).utc().format('MMMM Do'),
 				});
 
 				var shareButtons = bodyColumn(alignLRM({

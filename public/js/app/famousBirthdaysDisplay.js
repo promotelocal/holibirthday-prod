@@ -15,7 +15,7 @@ define([
 				gutterSize: separatorSize,
 				handleSurplusWidth: evenSplitSurplusWidth,
 			}, famousBirthdays.map(function (fb) {
-				return stack({
+				return linkTo('https://www.google.com/search?q=' + encodeURIComponent(fb.name), stack({
 					gutterSize: separatorSize,
 				}, [
 					text(fb.name).all([
@@ -28,6 +28,8 @@ define([
 							minWidth: 200,
 						}),
 					}),
+				])).all([
+					$prop('target', '_blank'),
 				]);
 			})),
 		])) : nothing;

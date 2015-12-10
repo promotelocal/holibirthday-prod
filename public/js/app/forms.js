@@ -19,7 +19,8 @@ define([
 				withBackgroundColor(white),
 				withFontColor(black),
 				keyupThis(function (val) {
-					if (type === 'text') {
+					if (type === 'text' ||
+						type === 'password') {
 						stream.push($(val.target).val());
 					}
 				}),

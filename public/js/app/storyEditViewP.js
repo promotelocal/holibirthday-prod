@@ -2,16 +2,18 @@ define([
 	'bodyColumn',
 	'categories',
 	'colors',
+	'confettiBackground',
 	'db',
 	'fonts',
 	'forms',
+	'holibirthdayRow',
 	'meP',
 	'prettyForms',
 	'separatorSize',
 	'signInForm',
 	'signInStream',
 	'siteCopyItemsP',
-], function (bodyColumn, categories, colors, db, fonts, forms, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
+], function (bodyColumn, categories, colors, confettiBackground, db, fonts, forms, holibirthdayRow, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return function (story) {
 		return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 			return Q.all([
@@ -269,14 +271,13 @@ define([
 							]),
 						]);
 					}
-					return bodyColumn(stack({
+					return stack({
 						gutterSize: separatorSize,
 					}, [
-						text(siteCopyItems.find('Edit Story Title')).all([
-							fonts.bebasNeue,
-							$css('font-size', '60px'),
-						]),
-						paragraph(siteCopyItems.find('Edit Story Must Sign In')).all([
+						confettiBackground(bodyColumn(holibirthdayRow(text(siteCopyItems.find('Edit Story Title')).all([
+							fonts.h1,
+						])))),
+						bodyColumn(paragraph(siteCopyItems.find('Edit Story Must Sign In')).all([
 							fonts.bebasNeue,
 							$css('font-size', '30px'),
 							link,
@@ -284,8 +285,8 @@ define([
 								signInStream.push(true);
 								ev.stopPropagation();
 							}),
-						]),
-					]));
+						])),
+					]);
 				});
 			});
 		}));

@@ -1,8 +1,10 @@
 define([
 	'auth',
 	'bodyColumn',
+	'confettiBackground',
 	'fonts',
-], function (auth, bodyColumn, fonts) {
+	'holibirthdayRow',
+], function (auth, bodyColumn, confettiBackground, fonts, holibirthdayRow) {
 	return function (token) {
 		var pageS = Stream.once(text('Confirming Email...').all([
 			fonts.h1,
@@ -16,6 +18,6 @@ define([
 				fonts.h1,
 			]));
 		});
-		return bodyColumn(componentStream(pageS));
+		return confettiBackground(bodyColumn(holibirthdayRow(componentStream(pageS))));
 	};
 });

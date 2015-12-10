@@ -244,6 +244,7 @@ define([
 				gutterSize: separatorSize,
 			}, [
 				copyItemEditor('Profile Born On (include space)'),
+				copyItemEditor('Profile Holiborn On (include space)'),
 				copyItemEditor('Profile Holibirthday Points (include space)'),
 				copyItemEditor('Profile My Contacts'),
 				copyItemEditor('Profile Add Contact'),
@@ -283,6 +284,40 @@ define([
 				copyItemEditor('Daily Theme Poll Sign In'),
 			])),
 		}, {
+			tab: tab('Contacts'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Contacts Title'),
+				copyItemEditor('Contacts Sign In'),
+				copyItemEditor('Contacts No Holibirthday'),
+				copyItemEditor('Contacts Remove Contact'),
+				copyItemEditor('Contacts Contact Name'),
+				copyItemEditor('Contacts Contact Birthday'),
+				copyItemEditor('Contacts Contact Holibirthday'),
+				copyItemEditor('Contacts Contact Email'),
+				copyItemEditor('Contacts Contact Add / Remove Contact'),
+				copyItemEditor('Contacts Add Contact'),
+				copyItemEditor('Contacts Other Facebook Friends'),
+				copyItemEditor('Contacts Invite Facebook Friends'),
+				copyItemEditor('Contacts Facebook Invite Image', 'imageUpload'),
+				copyItemEditor('Contacts Facebook Invite Caption'),
+				copyItemEditor('Contacts Facebook Invite Description'),
+			])),
+		}, {
+			tab: tab('Slot Machine'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Slot Machine Pull'),
+				copyItemEditor('Slot Machine Change Holibirthday'),
+				copyItemEditor('Slot Machine Claim Holibirthday'),
+				copyItemEditor('Slot Machine Your Holibirthday Is'),
+				copyItemEditor('Slot Machine Claim Title'),
+				copyItemEditor('Slot Machine Description', 'textarea'),
+				copyItemEditor('Slot Machine Must Sign In'),
+			])),
+		}, {
 			tab: tab('Gifts'),
 			content: content(stack({
 				gutterSize: separatorSize,
@@ -313,6 +348,14 @@ define([
 				copyItemEditor('Header Sign Out'),
 				copyItemEditor('Header Register'),
 				copyItemEditor('Header Admin'),
+				copyItemEditor('Sign In With Facebook'),
+				copyItemEditor('Sign In Fill Out All Fields'),
+				copyItemEditor('Side Header Email Not Confirmed'),
+				copyItemEditor('Sign In Email Confirmation Resent'),
+				copyItemEditor('Sign In Resend Email Confirmation - No Such Email'),
+				copyItemEditor('Sign In Wrong Email / Password'),
+				copyItemEditor('Sign In Reset Email Sent'),
+				copyItemEditor('Sign In Or'),
 			])),
 		}, {
 		// 	tab: tab('Order Email'),
@@ -322,6 +365,7 @@ define([
 		// 		copyItemEditor('Order Confirmation Email: From'),
 		// 		copyItemEditor('Order Confirmation Email: From Name'),
 		// 		copyItemEditor('Order Confirmation Email: Subject'),
+
 		// 		copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
 		// 	])),
 		// }, {
@@ -592,11 +636,17 @@ define([
 					name: 'Holibirthday in Three Weeks',
 					event: schema.mailchimpTemplate.fields.event.options.holibirthdayInThreeWeeks,
 				}, {
+					name: 'Holibirthday in One Week',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayInOneWeek,
+				}, {
 					name: 'Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.holibirthdayTomorrow,
 				}, {
 					name: 'Friend\'s Holibirthday in Three Weeks',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInThreeWeeks,
+				}, {
+					name: 'Friend\'s Holibirthday in One Week',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInOneWeek,
 				}, {
 					name: 'Friend\'s Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayTomorrow,
@@ -673,7 +723,7 @@ define([
 						]),
 					]);
 				})),
-			})
+			});
 		});
 	}));
 										  

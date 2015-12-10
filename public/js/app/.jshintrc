@@ -81,6 +81,7 @@
 		"withMinHeight": false,
 		"withMinWidth": false,
 		
+		"align": false,
 		"alignLRM": false,
 		"alignTBM": false,
 		"componentStream": false,

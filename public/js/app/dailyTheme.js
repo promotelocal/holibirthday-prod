@@ -19,7 +19,7 @@ define([
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text(copy.find('Daily Theme Placeholder')).all([
+					paragraph(copy.find('Daily Theme Placeholder')).all([
 						fonts.ralewayThinBold,
 						fonts.h1,
 					]),
@@ -36,11 +36,11 @@ define([
 						return linkTo('#!story/' + story._id, holibirthdayRow(stack({
 							gutterSize: separatorSize,
 						}, [
-							text(story.name).all([
+							paragraph(story.name).all([
 								fonts.ralewayThinBold,
 								fonts.h1,
 							]),
-							linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
+							linkTo('#!user/' + profile.user, paragraph(profile.firstName + ' ' + profile.lastName).all([
 								fonts.ralewayThinBold,
 								fonts.h3,
 							])),
@@ -102,7 +102,7 @@ define([
 								gutterSize: separatorSize,
 							}, displayResults.map(function (displayResult) {
 								return alignTBM({
-									middle: text(displayResult.name).all([
+									middle: paragraph(displayResult.name).all([
 										fonts.ralewayThinBold,
 									]),
 								}).all([
@@ -188,10 +188,10 @@ define([
 						return holibirthdayRow(stack({
 							gutterSize: separatorSize,
 						}, [
-							text(theme.pollTitle).all([
+							paragraph(theme.pollTitle).all([
 								fonts.h1,
 							]),
-							text(theme.pollDescription).all([
+							paragraph(theme.pollDescription).all([
 								fonts.h2,
 							]),
 							componentStream(pollResponseS.map(function (pollResponse) {
@@ -209,7 +209,7 @@ define([
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text(theme.someTextTitle).all([
+					paragraph(theme.someTextTitle).all([
 						fonts.h1,
 					]),
 					paragraph(theme.someTextText).all([
@@ -220,7 +220,7 @@ define([
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text(copy.find('Daily Theme Placeholder')).all([
+					paragraph(copy.find('Daily Theme Placeholder')).all([
 						fonts.ralewayThinBold,
 						fonts.h1,
 					]),

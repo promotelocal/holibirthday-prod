@@ -17,17 +17,17 @@ define([
 			bottomToTop: true,
 			gutterSize: separatorSize,
 		}, [
+			keepAspectRatio(image({
+				src: src || domain + '/content/man.png',
+				minWidth: 300,
+			})),
 			alignTBM({
-				middle: alignLRM({
-					middle: image({
-						src: src || domain + '/content/man.png',
-						minWidth: 300,
-						chooseHeight: true,
-					}),
-				}),
-			}),
-			alignTBM({
-				middle: content,
+				middle: stack({}, [
+					content,
+					nothing.all([
+						withMinWidth(300, true),
+					]),
+				]),
 			}),
 		])));
 	};

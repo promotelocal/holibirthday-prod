@@ -994,9 +994,11 @@
 				type: type.string,
 				options: {
 					holibirthdayInThreeWeeks: 'holibirthdayInThreeWeeks',
-					friendsHolibirthdayInThreeWeeks: 'friendsHolibirthdayInThreeWeeks',
-					
+					holibirthdayInOneWeek: 'holibirthdayInOneWeek',
 					holibirthdayTomorrow: 'holibirthdayTomorrow',
+
+					friendsHolibirthdayInThreeWeeks: 'friendsHolibirthdayInThreeWeeks',
+					friendsHolibirthdayInOneWeek: 'friendsHolibirthdayInOneWeek',
 					friendsHolibirthdayTomorrow: 'friendsHolibirthdayTomorrow',
 
 					storyDeleted: 'storyDeleted',

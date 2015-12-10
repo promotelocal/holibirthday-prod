@@ -132,15 +132,19 @@ define([
 		}));
 	};
 
-	var storySocialMediaButton = socialMediaButton(function (verb) {
-		return verb + ' this story';
-	});
-
 	return function (story) {
 		return promiseComponent(profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
+			var storySocialMediaButton = socialMediaButton(function (verb) {
+				return verb + ' this story';
+			}, {
+				imageUrl: story.imageUrl,
+				name: story.name,
+				text: 'by ' + profile.firstName + ' ' + profile.lastName,
+				description: $(story.text).text(),
+			});
 			return meP.then(function (me) {
 				return adminP.then(function (admin) {
 					return siteCopyItemsP.then(function (copy) {

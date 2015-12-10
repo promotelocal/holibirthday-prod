@@ -15,388 +15,385 @@ define('myHolibirthdayView', [
 	'separatorSize',
 	'signInForm',
 	'signInStream',
+	'siteCopyItemsP',
 	'submitButton',
-	'writeOnImage',
-], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, submitButton, writeOnImage) {
-	var slotMachine = function (config) {
-		// config.options: array of options
-		// config.stream: stream of results to show
-		return div.all([
-			children(config.options.map(function (option) {
-				return padding({
-					top: 30,
-					bottom: 30,
-					left: 20,
-					right: 20,
-				}, alignLRM({
-					middle: text(option + '').all([
-						fonts.bebasNeue,
-						$css('font-size', 40),
-					]),
-				})).all([
-					withBackgroundColor(white),
-					function (instance) {
-						instance.$el.css('position', 'relative');
-						instance.$el.css('visibility', '');
-					},
-				]);
-			})),
-			wireChildren(function (instance, context, is) {
-				context.height.promise.then(function () {
-					var machine = instance.$el.slotMachine();
-
-					var maxVariability = 100;
-					var shuffleTime = 2000;
-
-					var startDelay = Math.random();
-
-					var stopDelay = shuffleTime + Math.random() * maxVariability;
-
-					config.stream.onValue(function (obj) {
-						machine.setRandomize(function () {
-							return obj.index;
-						});
-						setTimeout(function () {
-							machine.shuffle();
-						}, startDelay);
-						setTimeout(function () {
-							machine.stop();
-						}, stopDelay);
-					});
-				});
-
-				var chooseLargest = function (streams) {
-					return Stream.combine(streams, function () {
-						var args = Array.prototype.slice.call(arguments);
-						return args.reduce(function (a, v) {
-							return Math.max(a, v);
-						}, 0);
-					});
-				};
-				
-				chooseLargest(is.map(function (i) {
-					return i.minHeight;
-				})).pushAll(instance.minHeight);
-				chooseLargest(is.map(function (i) {
-					return i.minWidth;
-				})).pushAll(instance.minWidth);
-				return [
-					is.map(function () {
-						return {
-							width: context.width,
-							height: context.height,
-						};
-					}),
-				];
-			}),
-		]);
-	};
-	
-	var birthdayMachine = function (dateStream) {
-		var dateStreamDates = dateStream.filter(function (d, cb) {
-			if (d) {
-				cb(d);
-			}
-		});
-		var grabbed = false;
-		var grabMousePos;
-
-		var grabberHeight = 150;
-		var grabber = overlays([
-			alignLRM({
-				middle: nothing.all([
-					withMinWidth(2, true),
-					withMinHeight(grabberHeight, true),
-					withBackgroundColor(black),
-				]),
-			}),
-			alignTBM({
-				top: border(black, {
-					all: 2,
-				}, padding(5, text('Pull').all([
-					fonts.bebasNeue,
-					$css('font-size', 20),
-				]))).all([
-					$css('cursor', 'move'),
-					withBackgroundColor(colors.holibirthdayRed),
-					withFontColor(white),
-					mousedownThis(function (ev) {
-						grabbed = true;
-						grabMousePos = ev.clientY;
-						return false;
-					}),
-					function (instance) {
-						$('body').on('mouseup', function () {
-							if (grabbed) {
-								grabbed = false;
-								instance.$el.animate({'margin-top': 0});
-							}
-						});
-						$('body').on('mousemove', function (ev) {
-							if (grabbed) {
-								var pullDistance = Math.max(0, ev.clientY - grabMousePos);
-								var maxPullDistance = grabberHeight - parseInt(instance.$el.css('height'));
-								instance.$el.css('margin-top', pullDistance);
-								if (pullDistance > maxPullDistance) {
-									instance.$el.css('margin-top', maxPullDistance);
-									instance.$el.animate({'margin-top': 0});
-									grabbed = false;
-									dateStream.push(chooseNonHoliday());
-								}
-							}
-						});
-					},
-				]),
-			}),
-		]);
-
-		return stack({
-			gutterSize: separatorSize,
-		}, [
-			sideBySide({
-				gutterSize: separatorSize,
-			}, [
-				alignTBM({
-					middle: border(black, {
-						all: 1,
-					}, sideBySide({}, [
-						slotMachine({
-							options: [
-								'Jan',
-								'Feb',
-								'Mar',
-								'Apr',
-								'May',
-								'Jun',
-								'Jul',
-								'Aug',
-								'Sep',
-								'Oct',
-								'Nov',
-								'Dec'
-							],
-							stream: dateStreamDates.map(function (date) {
-								return {
-									index: date && date.getUTCMonth(),
-								};
-							}),
-						}),
-						slotMachine({
-							options: [
-								0, 1, 2, 3,
-							],
-							stream: dateStreamDates.map(function (date) {
-								return {
-									index: date && Math.floor(date.getUTCDate() / 10),
-								};
-							}),
-						}),
-						slotMachine({
-							options: [
-								0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-							],
-							stream: dateStreamDates.map(function (date) {
-								return {
-									index: date && date.getUTCDate() % 10,
-								};
-							}),
-						}),
-					])),
-				}),
-				grabber,
-			]).all([
-				$css('user-select', 'none'),
-			]),
-		]);
-	};
-
-	return promiseComponent(db.famousBirthday.find({}).then(function (famousBirthdays) {
-		var famousBirthdaysForDate = function (date) {
-			if (!date) {
-				return [];
-			}
-			return famousBirthdays.filter(function (fb) {
-				return fb.birthday.getUTCMonth() === date.getUTCMonth() &&
-					fb.birthday.getUTCDate() === date.getUTCDate();
-			});
-		};
-		
-		return meP.then(function (me) {
-			if (me) {
-				return profileP.then(function (profile) {
-					var holibirthday = {
-						user: Stream.once(me._id),
-						date: Stream.once(null),
-					};
-
-					var lastHolibirthday;
-					Stream.combineObject(holibirthday).onValue(function (v) {
-						lastHolibirthday = v;
-					});
-					var playTheMachine = Stream.once(false);
-					holibirthday.date.map(function () {
-						return false;
-					}).pushAll(playTheMachine);
-					
-					var machine = function (oldHolibirthday, update) {
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							alignLRM({
-								middle: birthdayMachine(holibirthday.date),
-							}),
-							alignLRM({
-								middle: toggleHeight(playTheMachine)(stack({}, [
-									text('You must pull the lever first').all([
-										fonts.ralewayThinBold,
-										$css('font-size', 30),
-									]),
-								])),
-							}),
-							alignLRM({
-								middle: submitButton(black, text(profile.holibirther && update ? 'Change Holibirthday' : 'Claim Birthday').all([
-									fonts.bebasNeue,
-								])).all([
-									link,
-									clickThis(function () {
-										if (lastHolibirthday) {
-											var canvas = document.createElement('canvas');
-											var $canvas = $(canvas);
-											$canvas.appendTo($('body'))
-												.prop('width', 1080)
-												.prop('height', 702);
-
-											var ctx = canvas.getContext('2d');
-
-											var drawCenteredText = function (p, text, font) {
-												ctx.font = font;
-												var width = ctx.measureText(text).width;
-												ctx.fillText(text, p.x - width / 2, p.y);
-											};
-											
-											var img = new Image();
-											img.onload = function() {
-												ctx.drawImage(img, 0, 0);
-												drawCenteredText({
-													x: 540,
-													y: 310,
-												}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
-												drawCenteredText({
-													x: 540,
-													y: 540,
-												}, moment(lastHolibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
-												if (profile.birthday) {
-													drawCenteredText({
-														x: 160,
-														y: 595,
-													}, 'Old Birthday', '20px BebasNeue');
-													drawCenteredText({
-														x: 160,
-														y: 615,
-													}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
-												}
-												setTimeout(function () {
-													var blob = window.dataURLtoBlob(canvas.toDataURL());
-													db.uploadFile(blob, 'certificate.png').then(function (filename) {
-														lastHolibirthday.imageUrl = '/api/uploadFile/find/' + filename;
-														db.profile.update({
-															user: me._id,
-														}, {
-															holibirther: true,
-														}).then(function () {
-															if (update) {
-																db.holibirthday.update({
-																	user: me._id,
-																}, lastHolibirthday).then(function () {
-																	window.location.hash = '#!user/' + me._id + '/certificate';
-																	window.location.reload();
-																});
-															}
-															else {
-																db.holibirthday.insert(lastHolibirthday).then(function () {
-																	window.location.hash = '#!user/' + me._id + '/certificate';
-																	window.location.reload();
-																});
-															}
-														});
-													});
-													$canvas.remove();
-												});
-											};
-											img.src = './content/certificate-01.png';
-										}
-										else {
-											playTheMachine.push(true);
-										}
-									}),
-								]),
-							}),
+], function (bar, bodyColumn, chooseNonHoliday, colors, confettiBackground, db, famousBirthdaysDisplay, fonts, holibirthdayRow, meP, months, prettyForms, profileP, separatorSize, signInForm, signInStream, siteCopyItemsP, submitButton) {
+	return promiseComponent(db.famousBirthday.find({}).then(function (famousBirthdays) {	
+		return siteCopyItemsP.then(function (copy) {
+			var slotMachine = function (config) {
+				// config.options: array of options
+				// config.stream: stream of results to show
+				return div.all([
+					children(config.options.map(function (option) {
+						return padding({
+							top: 30,
+							bottom: 30,
+							left: 20,
+							right: 20,
+						}, alignLRM({
+							middle: text(option + '').all([
+								fonts.bebasNeue,
+								$css('font-size', 40),
+							]),
+						})).all([
+							withBackgroundColor(white),
+							function (instance) {
+								instance.$el.css('position', 'relative');
+								instance.$el.css('visibility', '');
+							},
 						]);
-					};
-					return db.holibirthday.findOne({
-						user: me._id,
-					}).then(function (oldHolibirthday) {
-						if (profile.holibirther && oldHolibirthday) {
-							var oldHolibirthdate = oldHolibirthday.date;
-							holibirthday.date.push(oldHolibirthdate);
+					})),
+					wireChildren(function (instance, context, is) {
+						context.height.promise.then(function () {
+							var machine = instance.$el.slotMachine();
+
+							var maxVariability = 100;
+							var shuffleTime = 2000;
+
+							var startDelay = Math.random();
+
+							var stopDelay = shuffleTime + Math.random() * maxVariability;
+
+							config.stream.onValue(function (obj) {
+								machine.setRandomize(function () {
+									return obj.index;
+								});
+								setTimeout(function () {
+									machine.shuffle();
+								}, startDelay);
+								setTimeout(function () {
+									machine.stop();
+								}, stopDelay);
+							});
+						});
+
+						var chooseLargest = function (streams) {
+							return Stream.combine(streams, function () {
+								var args = Array.prototype.slice.call(arguments);
+								return args.reduce(function (a, v) {
+									return Math.max(a, v);
+								}, 0);
+							});
+						};
+						
+						chooseLargest(is.map(function (i) {
+							return i.minHeight;
+						})).pushAll(instance.minHeight);
+						chooseLargest(is.map(function (i) {
+							return i.minWidth;
+						})).pushAll(instance.minWidth);
+						return [
+							is.map(function () {
+								return {
+									width: context.width,
+									height: context.height,
+								};
+							}),
+						];
+					}),
+				]);
+			};
+			
+			var birthdayMachine = function (dateStream) {
+				var dateStreamDates = dateStream.filter(function (d, cb) {
+					if (d) {
+						cb(d);
+					}
+				});
+				var grabbed = false;
+				var grabMousePos;
+
+				var grabberHeight = 150;
+				var grabber = overlays([
+					alignLRM({
+						middle: nothing.all([
+							withMinWidth(2, true),
+							withMinHeight(grabberHeight, true),
+							withBackgroundColor(black),
+						]),
+					}),
+					alignTBM({
+						top: border(black, {
+							all: 2,
+						}, padding(5, text(copy.find('Slot Machine Pull')).all([
+							fonts.bebasNeue,
+							$css('font-size', 20),
+						]))).all([
+							$css('cursor', 'move'),
+							withBackgroundColor(colors.holibirthdayRed),
+							withFontColor(white),
+							mousedownThis(function (ev) {
+								grabbed = true;
+								grabMousePos = ev.clientY;
+								return false;
+							}),
+							function (instance) {
+								$('body').on('mouseup', function () {
+									if (grabbed) {
+										grabbed = false;
+										instance.$el.animate({'margin-top': 0});
+									}
+								});
+								$('body').on('mousemove', function (ev) {
+									if (grabbed) {
+										var pullDistance = Math.max(0, ev.clientY - grabMousePos);
+										var maxPullDistance = grabberHeight - parseInt(instance.$el.css('height'));
+										instance.$el.css('margin-top', pullDistance);
+										if (pullDistance > maxPullDistance) {
+											instance.$el.css('margin-top', maxPullDistance);
+											instance.$el.animate({'margin-top': 0});
+											grabbed = false;
+											dateStream.push(chooseNonHoliday());
+										}
+									}
+								});
+							},
+						]),
+					}),
+				]);
+
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					sideBySide({
+						gutterSize: separatorSize,
+					}, [
+						alignTBM({
+							middle: border(black, {
+								all: 1,
+							}, sideBySide({}, [
+								slotMachine({
+									options: [
+										'Jan',
+										'Feb',
+										'Mar',
+										'Apr',
+										'May',
+										'Jun',
+										'Jul',
+										'Aug',
+										'Sep',
+										'Oct',
+										'Nov',
+										'Dec'
+									],
+									stream: dateStreamDates.map(function (date) {
+										return {
+											index: date && date.getUTCMonth(),
+										};
+									}),
+								}),
+								slotMachine({
+									options: [
+										0, 1, 2, 3,
+									],
+									stream: dateStreamDates.map(function (date) {
+										return {
+											index: date && Math.floor(date.getUTCDate() / 10),
+										};
+									}),
+								}),
+								slotMachine({
+									options: [
+										0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+									],
+									stream: dateStreamDates.map(function (date) {
+										return {
+											index: date && date.getUTCDate() % 10,
+										};
+									}),
+								}),
+							])),
+						}),
+						grabber,
+					]).all([
+						$css('user-select', 'none'),
+					]),
+				]);
+			};
+
+			var famousBirthdaysForDate = function (date) {
+				if (!date) {
+					return [];
+				}
+				return famousBirthdays.filter(function (fb) {
+					return fb.birthday.getUTCMonth() === date.getUTCMonth() &&
+						fb.birthday.getUTCDate() === date.getUTCDate();
+				});
+			};
+			
+			return meP.then(function (me) {
+				if (me) {
+					return profileP.then(function (profile) {
+						var holibirthday = {
+							user: Stream.once(me._id),
+							date: Stream.once(null),
+						};
+
+						var lastHolibirthday;
+						var holibirthdayS = Stream.combineObject(holibirthday);
+						holibirthdayS.onValue(function (v) {
+							lastHolibirthday = v;
+						});
+						
+						var buttonState = Stream.once(false);
+						holibirthdayS.map(function () {
+							buttonState.push(true);
+						});
+						
+						var machine = function (oldHolibirthday, update) {
 							return stack({
 								gutterSize: separatorSize,
 							}, [
-								linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({
+								alignLRM({
+									middle: birthdayMachine(holibirthday.date),
+								}),
+								alignLRM({
+									middle: componentStream(buttonState.map(function (s) {
+										return (!s) ? submitButton(colors.middleGray, text(profile.holibirther && update ? copy.find('Slot Machine Change Holibirthday') : copy.find('Slot Machine Claim Holibirthday')).all([
+											fonts.bebasNeue,
+										])) : submitButton(black, text(profile.holibirther && update ? copy.find('Slot Machine Change Holibirthday') : copy.find('Slot Machine Claim Holibirthday')).all([
+											fonts.bebasNeue,
+										])).all([
+											link,
+											clickThis(function () {
+												var canvas = document.createElement('canvas');
+												var $canvas = $(canvas);
+												$canvas.appendTo($('body'))
+													.prop('width', 1080)
+													.prop('height', 702);
+
+												var ctx = canvas.getContext('2d');
+
+												var drawCenteredText = function (p, text, font) {
+													ctx.font = font;
+													var width = ctx.measureText(text).width;
+													ctx.fillText(text, p.x - width / 2, p.y);
+												};
+												
+												var img = new Image();
+												img.onload = function() {
+													ctx.drawImage(img, 0, 0);
+													drawCenteredText({
+														x: 540,
+														y: 310,
+													}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
+													drawCenteredText({
+														x: 540,
+														y: 540,
+													}, moment(lastHolibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
+													if (profile.birthday) {
+														drawCenteredText({
+															x: 160,
+															y: 595,
+														}, 'Old Birthday', '20px BebasNeue');
+														drawCenteredText({
+															x: 160,
+															y: 615,
+														}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
+													}
+													setTimeout(function () {
+														var blob = window.dataURLtoBlob(canvas.toDataURL());
+														db.uploadFile(blob, 'certificate.png').then(function (filename) {
+															lastHolibirthday.imageUrl = '/api/uploadFile/find/' + filename;
+															db.profile.update({
+																user: me._id,
+															}, {
+																holibirther: true,
+															}).then(function () {
+																if (update) {
+																	db.holibirthday.update({
+																		user: me._id,
+																	}, lastHolibirthday).then(function () {
+																		window.location.hash = '#!user/' + me._id + '/certificate';
+																		window.location.reload();
+																	});
+																}
+																else {
+																	db.holibirthday.insert(lastHolibirthday).then(function () {
+																		window.location.hash = '#!user/' + me._id + '/certificate';
+																		window.location.reload();
+																	});
+																}
+															});
+														});
+														$canvas.remove();
+													});
+												};
+												img.src = './content/certificate-new.png';
+											}),
+										]);
+									})),
+								}),
+							]);
+						};
+						return db.holibirthday.findOne({
+							user: me._id,
+						}).then(function (oldHolibirthday) {
+							if (profile.holibirther && oldHolibirthday) {
+								var oldHolibirthdate = oldHolibirthday.date;
+								holibirthday.date.push(oldHolibirthdate);
+								return stack({
 									gutterSize: separatorSize,
 								}, [
-									text('Your Holibirthday Is').all([
+									linkTo('#!user/' + me._id + '/certificate', confettiBackground(bodyColumn(holibirthdayRow(stack({
+										gutterSize: separatorSize,
+									}, [
+										text(copy.find('Slot Machine Your Holibirthday Is')).all([
+											fonts.ralewayThinBold,
+											$css('font-size', 40),
+										]),
+										text(moment(oldHolibirthdate).utc().format('MMMM Do')).all([
+											fonts.ralewayThinBold,
+											$css('font-size', 20),
+										]),
+									]))))),
+									bodyColumn(paragraph(copy.find('Slot Machine Description'))),
+									bodyColumn(alignLRM({
+										middle: machine(holibirthday, true),
+									})),
+									componentStream(holibirthday.date.delay(2500).map(function (date) {
+										return famousBirthdaysDisplay(famousBirthdaysForDate(date));
+									})),
+								]);
+							}
+							else {
+								return stack({
+									gutterSize: separatorSize,
+								}, [
+									confettiBackground(bodyColumn(holibirthdayRow(text(copy.find('Slot Machine Claim Title')).all([
 										fonts.ralewayThinBold,
 										$css('font-size', 40),
-									]),
-									text(moment(oldHolibirthdate).utc().format('MMMM Do')).all([
-										fonts.ralewayThinBold,
-										$css('font-size', 20),
-									]),
-								]))))),
-								bodyColumn(alignLRM({
-									middle: machine(holibirthday, true),
-								})),
-								componentStream(holibirthday.date.delay(2500).map(function (date) {
-									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
-								})),
-							]);
-						}
-						else {
-							return stack({
-								gutterSize: separatorSize,
-							}, [
-								confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
-									fonts.ralewayThinBold,
-									$css('font-size', 40),
-								])))),
-								bodyColumn(alignLRM({
-									middle: machine(holibirthday),
-								})),
-								componentStream(holibirthday.date.delay(2500).map(function (date) {
-									return famousBirthdaysDisplay(famousBirthdaysForDate(date));
-								})),
-							]);
-						}
+									])))),
+									bodyColumn(paragraph(copy.find('Slot Machine Description'))),
+									bodyColumn(alignLRM({
+										middle: machine(holibirthday),
+									})),
+									componentStream(holibirthday.date.delay(2500).map(function (date) {
+										return famousBirthdaysDisplay(famousBirthdaysForDate(date));
+									})),
+								]);
+							}
+						});
 					});
-				});
-			}
-			return stack({
-				gutterSize: separatorSize,
-			}, [
-				confettiBackground(bodyColumn(holibirthdayRow(text('Claim Your Holibirthday').all([
-					fonts.ralewayThinBold,
-					$css('font-size', 40),
-				])))),
-				bodyColumn(paragraph('You must sign in to claim a holibirthday').all([
-					fonts.h1,
-					link,
-					clickThis(function (ev) {
-						signInStream.push(true);
-						ev.stopPropagation();
-					}),
-				])),
-			]);
+				}
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					confettiBackground(bodyColumn(holibirthdayRow(text(copy.find('Slot Machine Claim Title')).all([
+						fonts.ralewayThinBold,
+						$css('font-size', 40),
+					])))),
+					bodyColumn(paragraph(copy.find('Slot Machine Must Sign In')).all([
+						fonts.h1,
+						link,
+						clickThis(function (ev) {
+							signInStream.push(true);
+							ev.stopPropagation();
+						}),
+					])),
+				]);
+			});
 		});
 	}));
 });
@@ -533,7 +530,8 @@ define('forms', [
 				withBackgroundColor(white),
 				withFontColor(black),
 				keyupThis(function (val) {
-					if (type === 'text') {
+					if (type === 'text' ||
+						type === 'password') {
 						stream.push($(val.target).val());
 					}
 				}),
@@ -767,9 +765,10 @@ define('loginWithFacebook', [
 	'auth',
 	'fonts',
 	'separatorSize',
+	'siteCopyItemsP',
 	'socialMedia',
 	'submitButton',
-], function (auth, fonts, separatorSize, socialMedia, submitButton) {
+], function (auth, fonts, separatorSize, siteCopyItemsP, socialMedia, submitButton) {
 	var facebookAuthResponseD = Q.defer();
 	FB.getLoginStatus(function (response) {
 		if (response.status === 'unknown' || response.status === 'not_authorized' || response.status === 'connected') {
@@ -780,41 +779,43 @@ define('loginWithFacebook', [
 	
 	return function () {
 		return promiseComponent(facebookAuthResponseD.promise.then(function (authResponse) {
-			return button.all([
-				child(submitButton(socialMedia.facebook.color, sideBySide({
-					gutterSize: separatorSize,
-				}, [
-					text(socialMedia.facebook.icon).all([
-						$css('font-size', '20px'),
-					]),
-					text('sign in with Facebook').all([
-						fonts.bebasNeue,
-					]),
-				])).all([
-					withFontColor(socialMedia.facebook.color),
-				])),
-				wireChildren(passThroughToFirst),
-			]).all([
-				link,
-				clickThis(function (e) {
-					e.stopPropagation();
-					e.preventDefault();
-					if (authResponse) {
-						auth.loginWithFacebook(authResponse).then(function () {
-							window.location.reload();
-						});
-					}
-					else {
-						FB.login(function (r) {
-							auth.loginWithFacebook(r.authResponse).then(function () {
+			return siteCopyItemsP.then(function (copy) {
+				return button.all([
+					child(submitButton(socialMedia.facebook.color, sideBySide({
+						gutterSize: separatorSize,
+					}, [
+						text(socialMedia.facebook.icon).all([
+							$css('font-size', '20px'),
+						]),
+						text(copy.find('Sign In With Facebook')).all([
+							fonts.bebasNeue,
+						]),
+					])).all([
+						withFontColor(socialMedia.facebook.color),
+					])),
+					wireChildren(passThroughToFirst),
+				]).all([
+					link,
+					clickThis(function (e) {
+						e.stopPropagation();
+						e.preventDefault();
+						if (authResponse) {
+							auth.loginWithFacebook(authResponse).then(function () {
 								window.location.reload();
 							});
-						}, {
-							scope: 'email, public_profile, user_friends, user_birthday',
-						});
-					}
-				}),
-			]);
+						}
+						else {
+							FB.login(function (r) {
+								auth.loginWithFacebook(r.authResponse).then(function () {
+									window.location.reload();
+								});
+							}, {
+								scope: 'email, public_profile, user_friends, user_birthday',
+							});
+						}
+					}),
+				]);
+			});
 		}));
 	};
 });
@@ -1011,10 +1012,9 @@ define('profileEditViewP', [
 										name: copy.find('Edit Profile Email'),
 										stream: profileStreams.email,
 									}),
-									prettyForms.input({
+									prettyForms.checkbox({
 										name: copy.find('Edit Profile Receive Marketing Emails'),
 										stream: profileStreams.receiveMarketingEmails,
-										type: 'checkbox',
 									}),
 									prettyForms.input({
 										name: copy.find('Edit Profile Birthday'),
@@ -1030,10 +1030,9 @@ define('profileEditViewP', [
 										stream: profileStreams.imageUrl,
 									}),
 									stack({}, [
-										prettyForms.input({
+										prettyForms.checkbox({
 											name: copy.find('Edit Profile Holibirther'),
 											stream: profileStreams.holibirther,
-											type: 'checkbox',
 										}),
 										componentStream(profileStreams.holibirther.map(function (holibirther) {
 											return holibirther ? stack({
@@ -1060,10 +1059,9 @@ define('profileEditViewP', [
 											]) : nothing;
 										})),					  
 									]),
-									prettyForms.input({
+									prettyForms.checkbox({
 										name: copy.find('Edit Profile Know a Holibirther'),
 										stream: profileStreams.knowAHolibirther,
-										type: 'checkbox',
 									}),
 									((me._id === user) && !me.facebookId) ? passwordEditor(copy) : nothing,
 									alignLRM({
@@ -1154,162 +1152,187 @@ define('signInForm', [
 	'loginWithFacebook',
 	'prettyForms',
 	'separatorSize',
-], function (auth, bodyColumn, colors, fonts, loginWithFacebook, prettyForms, separatorSize) {
+	'signInStream',
+	'siteCopyItemsP',
+], function (auth, bodyColumn, colors, fonts, loginWithFacebook, prettyForms, separatorSize, signInStream, siteCopyItemsP) {
 	return function () {
-		var fillOutAllFieldsS = Stream.once(false);
-		var fillOutAllFields = toggleHeight(fillOutAllFieldsS)(text('Please fill out all fields'));
+		return promiseComponent(siteCopyItemsP.then(function (copy) {
+			var fillOutAllFieldsS = Stream.once(false);
+			var fillOutAllFields = toggleHeight(fillOutAllFieldsS)(text(copy.find('Sign In Fill Out All Fields')));
 
-		var emailNotConfirmedS = Stream.once(false);
-		var emailNotConfirmed = toggleHeight(emailNotConfirmedS)(text('Email not confirmed (click to resend)').all([
-			link,
-			clickThis(function (ev, disable) {
-				disable();
-				auth.resendConfirmEmail({
-					email: model.username.lastValue(),
-				}).then(function () {
-					emailNotConfirmedS.push(false);
-					emailResentS.push(true);
-				});
-			})
-		]));
-		
-		var emailResentS = Stream.once(false);
-		var emailResent = toggleHeight(emailResentS)(text('Resent!'));
-		
-		var incorrectEmailOrPasswordS = Stream.once(false);
-		var incorrectEmailOrPassword = toggleHeight(incorrectEmailOrPasswordS)(text('Incorrect email or password (click to reset)').all([
-			link,
-			clickThis(function (ev, disable) {
-				disable();
-				auth.resetPasswordRequest({
-					email: model.username.lastValue(),
-				}).then(function () {
-					incorrectEmailOrPasswordS.push(false);
-					resetEmailSentS.push(true);
-				});
-			}),
-		]));
+			var emailNotConfirmedS = Stream.once(false);
+			var emailNotConfirmed = toggleHeight(emailNotConfirmedS)(text(copy.find('Side Header Email Not Confirmed')).all([
+				link,
+				clickThis(function (ev, disable) {
+					disable();
+					auth.resendConfirmEmail({
+						email: model.username.lastValue(),
+					}).then(function () {
+						emailNotConfirmedS.push(false);
+						emailResentS.push(true);
+					});
+				})
+			]));
+			
+			var emailResentS = Stream.once(false);
+			var emailResent = toggleHeight(emailResentS)(text(copy.find('Sign In Email Confirmation Resent')));
 
-		var resetEmailSentS = Stream.once(false);
-		var resetEmailSent = toggleHeight(resetEmailSentS)(text('Check your email!'));
-		
-		var model = {
-			username: Stream.once(''),
-			password: Stream.once(''),
-		};
-		var latestModel;
-		Stream.combineObject(model).onValue(function (m) {
-			latestModel = m;
-			fillOutAllFieldsS.push(false);
-		});
+			var noSuchEmailS = Stream.once(false);
+			var noSuchEmail = toggleHeight(noSuchEmailS)(linkTo('#!register', text(copy.find('Sign In Resend Email Confirmation - No Such Email'))).all([
+				clickThis(function () {
+					signInStream.push(false);
+				}),
+			]));
+			
+			var incorrectEmailOrPasswordS = Stream.once(false);
+			var incorrectEmailOrPassword = toggleHeight(incorrectEmailOrPasswordS)(text(copy.find('Sign In Wrong Email / Password')).all([
+				link,
+				clickThis(function (ev, disable) {
+					disable();
+					auth.resetPasswordRequest({
+						email: model.username.lastValue(),
+					}).then(function () {
+						incorrectEmailOrPasswordS.push(false);
+						resetEmailSentS.push(true);
+					}, function () {
+						incorrectEmailOrPasswordS.push(false);
+						noSuchEmailS.push(true);
+					});
+				}),
+			]));
 
-		var submit = prettyForms.submit(black, 'Submit', function (enable) {
-			enable();
-			if (latestModel === undefined) {
-				fillOutAllFieldsS.push(true);
-			}
-			else {
-				auth.signIn(latestModel).then(function () {
-					window.location.hash = '#!';
-					window.location.reload();
-				}, function (err) {
-					if (err.responseText.indexOf('confirm') !== -1) {
-						emailNotConfirmedS.push(true);
-					}
-					else {
-						incorrectEmailOrPasswordS.push(true);
-					}
-				});
-			}
-		});
-		var username = prettyForms.input({
-			name: 'email',
-			fieldName: 'username',
-			stream: model.username,
-		});
-		var password = prettyForms.input({
-			name: 'password',
-			fieldName: 'password',
-			stream: model.password,
-			type: 'password',
-		});
-		var or = text('or').all([
-			fonts.ralewayThinBold,
-		]);
+			var resetEmailSentS = Stream.once(false);
+			var resetEmailSent = toggleHeight(resetEmailSentS)(text(copy.find('Sign In Reset Email Sent')));
+			
+			var model = {
+				username: Stream.once(''),
+				password: Stream.once(''),
+			};
+			var latestModel;
+			Stream.combineObject(model).onValue(function (m) {
+				latestModel = m;
+				fillOutAllFieldsS.push(false);
+			});
 
-		var wideForm = sideBySide({
-			handleSurplusWidth: giveToSecond,
-		}, [
-			alignTBM({
-				middle: stack({}, [loginWithFacebook()]),
-			}),
-			alignLRM({
-				middle: alignTBM({
+			var submit = prettyForms.submit(black, 'Submit', function (enable) {
+				enable();
+				if (latestModel === undefined) {
+					fillOutAllFieldsS.push(true);
+				}
+				else {
+					auth.signIn(latestModel).then(function () {
+						window.location.hash = '#!';
+						window.location.reload();
+					}, function (err) {
+						if (err.responseText.indexOf('confirm') !== -1) {
+							emailNotConfirmedS.push(true);
+						}
+						else {
+							incorrectEmailOrPasswordS.push(true);
+						}
+					});
+				}
+			});
+			var username = prettyForms.input({
+				name: 'email',
+				fieldName: 'username',
+				stream: model.username,
+			});
+			var password = prettyForms.input({
+				name: 'password',
+				fieldName: 'password',
+				stream: model.password,
+				type: 'password',
+			});
+			var or = text(copy.find('Sign In Or')).all([
+				fonts.ralewayThinBold,
+			]);
+
+			var wideForm = sideBySide({
+				handleSurplusWidth: giveToSecond,
+			}, [
+				alignTBM({
+					middle: stack({}, [loginWithFacebook()]),
+				}),
+				alignLRM({
+					middle: alignTBM({
+						middle: or,
+					}),
+				}),
+				form.all([
+					child(stack({}, [
+						sideBySide({
+							gutterSize: separatorSize,
+						}, [
+							username,
+							password,
+							submit,
+						]),
+						fillOutAllFields,
+						emailNotConfirmed,
+						emailResent,
+						noSuchEmail,
+						incorrectEmailOrPassword,
+						resetEmailSent,
+					])),
+					wireChildren(passThroughToFirst),
+				]),
+			]);
+			
+			var narrowForm = stack({
+				gutterSize: separatorSize,
+				collapseGutters: true,
+			}, [
+				alignLRM({
+					middle: stack({}, [loginWithFacebook()]),
+				}),
+				alignLRM({
 					middle: or,
 				}),
-			}),
-			stack({}, [
-				sideBySide({
-					gutterSize: separatorSize,
-				}, [
-					username,
-					password,
-					submit,
+				form.all([
+					child(stack({
+						gutterSize: separatorSize,
+						collapseGutters: true,
+					}, [
+						alignLRM({
+							middle: sideBySide({
+								gutterSize: separatorSize,
+							}, [
+								username,
+								password,
+							]),
+						}),
+						fillOutAllFields,
+						emailNotConfirmed,
+						emailResent,
+						noSuchEmail,
+						incorrectEmailOrPassword,
+						resetEmailSent,
+						alignLRM({
+							middle: submit,
+						}),
+					])),
+					wireChildren(passThroughToFirst),
 				]),
-				fillOutAllFields,
-				emailNotConfirmed,
-				emailResent,
-				incorrectEmailOrPassword,
-				resetEmailSent,
-			]),
-		]);
-		
-		var narrowForm = stack({
-			gutterSize: separatorSize,
-			collapseGutters: true,
-		}, [
-			alignLRM({
-				middle: stack({}, [loginWithFacebook()]),
-			}),
-			alignLRM({
-				middle: or,
-			}),
-			alignLRM({
-				middle: sideBySide({
-					gutterSize: separatorSize,
-				}, [
-					username,
-					password,
-				]),
-			}),
-			fillOutAllFields,
-			emailNotConfirmed,
-			emailResent,
-			incorrectEmailOrPassword,
-			resetEmailSent,
-			alignLRM({
-				middle: submit,
-			}),
-		]);
+			]);
 
-		var widthS = Stream.never();
-		
-		return border(colors.middleGray, {
-			bottom: 1,
-		}, bodyColumn(padding({
+			var widthS = Stream.never();
+			
+			return border(colors.middleGray, {
+				bottom: 1,
+			}, bodyColumn(padding({
 				top: separatorSize,
 				bottom: separatorSize,
-		}, form.all([
-			child(componentStream(widthS.map(function (width) {
+			}, componentStream(widthS.map(function (width) {
 				return width > 700 ? wideForm : narrowForm;
-			}))),
-			function (instance, context) {
-				context.width.pushAll(widthS);
-			},
-			wireChildren(passThroughToFirst),
-		]))).all([
-			withBackgroundColor(colors.pageBackgroundColor),
-		]));
+			})).all([
+				function (instance, context) {
+					context.width.pushAll(widthS);
+				},
+			]))).all([
+				withBackgroundColor(colors.pageBackgroundColor),
+			]));
+		}));
 	};
 });
 define('siteCopyItemsP', [
@@ -1678,7 +1701,7 @@ define('socialMediaButton', [
 	'fonts',
 	'separatorSize',
 ], function (fonts, separatorSize) {
-	return function (textFunc) {
+	return function (textFunc, config) {
 		return function (sm) {
 			return border(sm.color, {
 				all: 2,
@@ -1696,7 +1719,7 @@ define('socialMediaButton', [
 				link,
 				withFontColor(sm.color),
 				clickThis(function () {
-					sm.shareThisPage();
+					sm.shareThisPage(config);
 				}),
 			]);
 		};
@@ -2081,8 +2104,8 @@ define('header', [
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
 			
-			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
+			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
 			if (me) {
@@ -2252,8 +2275,8 @@ define('holibirthdayView', [
 				var canvas = document.createElement('canvas');
 				var $canvas = $(canvas);
 				$canvas.appendTo($('body'))
-					.prop('width', 1080)
-					.prop('height', 702);
+					.prop('width', 2970)
+					.prop('height', 2228);
 
 				var ctx = canvas.getContext('2d');
 
@@ -2267,32 +2290,34 @@ define('holibirthdayView', [
 				img.onload = function() {
 					ctx.drawImage(img, 0, 0);
 					drawCenteredText({
-						x: 540,
-						y: 310,
-					}, profile.firstName + ' ' + profile.lastName, 'bold 50px Raleway Thin');
+						x: 1485,
+						y: 840,
+					}, profile.firstName + ' ' + profile.lastName, 'bold 100px Raleway Thin');
 					drawCenteredText({
-						x: 540,
-						y: 540,
-					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 50px Raleway Thin');
-					if (profile.birthday) {
-						drawCenteredText({
-							x: 160,
-							y: 595,
-						}, 'Old Birthday', '20px BebasNeue');
-						drawCenteredText({
-							x: 160,
-							y: 615,
-						}, moment(profile.birthday).utc().format('MMMM Do'), '20px BebasNeue');
-					}
+						x: 960,
+						y: 995,
+					}, moment(holibirthday.date).utc().format('MMMM Do'), 'bold 100px Raleway Thin');
+					drawCenteredText({
+						x: 1572,
+						y: 1118,
+					}, moment(profile.birthday).utc().format('MMMM Do'), 'bold 100px Raleway Thin');
+					drawCenteredText({
+						x: 1893,
+						y: 1758,
+					}, moment(holibirthday.updateDate).utc().format('MMMM Do'), 'bold 100px Raleway Thin');
 					setTimeout(function () {
 						srcS.push(canvas.toDataURL());
 						$canvas.remove();
 					});
 				};
-				img.src = './content/certificate-01.png';
+				img.src = './content/certificate-new.png';
 				
 				var holibirthdaySocialMediaButton = socialMediaButton(function (verb) {
 					return verb + (me && me._id === profile.user ? ' your certificate' : ' this certificate');
+				}, {
+					imageUrl: holibirthday.imageUrl,
+					name: profile.firstName + ' ' + profile.lastName,
+					text: 'Holiborn on ' + moment(new Date(holibirthday.date)).utc().format('MMMM Do'),
 				});
 
 				var shareButtons = bodyColumn(alignLRM({
@@ -2359,7 +2384,14 @@ define('prettyForms', [
 				text(config.name).all([
 					fonts.ralewayThinBold,
 				]).all(config.labelAll || []),
-				forms.selectBox(config),
+				alignLRM({
+					left: stack({}, [
+						forms.selectBox(config),
+						nothing.all([
+							withMinWidth(150, true),
+						]),
+					]),
+				}),
 			]);
 		},
 		textarea: function (config) {
@@ -2410,11 +2442,15 @@ define('prettyForms', [
 			return grid({
 				gutterSize: separatorSize,
 			}, [
-				prettyForms.input({
+				prettyForms.fileUpload({
 					name: config.name,
 					accept: config.accept,
 					labelAll: config.labelAll,
-					stream: config.stream,
+					stream: Stream.create(),
+				}, function (file) {
+					db.uploadFile(file).then(function (filename) {
+						config.stream.push('/api/uploadFile/find/' + encodeURIComponent(filename));
+					});
 				}).all([
 					withMinWidth(300, true),
 				]),
@@ -2482,8 +2518,9 @@ define('prettyForms', [
 			return stack({}, [
 				input.all([
 					$prop('type', 'submit'),
-					submitThis(function () {
-						cb();
+					submitThis(function (ev, disable) {
+						var enable = disable();
+						cb(enable);
 						return false;
 					}),
 					withMinHeight(0, true),
@@ -2522,8 +2559,10 @@ define('registerView', [
 			firstName: Stream.never(),
 			lastName: Stream.never(),
 			email: Stream.never(),
+			birthday: Stream.never(),
 			holibirther: Stream.once(false),
 			knowAHolibirther: Stream.once(false),
+			receiveMarketingEmails: Stream.once(true),
 			password: Stream.never(),
 			confirmPassword: Stream.never(),
 		};
@@ -2563,6 +2602,12 @@ define('registerView', [
 			fieldName: 'lastName',
 			stream: model.lastName,
 		});
+		var birthday = prettyForms.input({
+			name: 'Birthday',
+			fieldName: 'lastName',
+			stream: model.birthday,
+			type: 'date',
+		});
 		var email = prettyForms.input({
 			name: 'Email',
 			fieldName: 'email',
@@ -2577,6 +2622,11 @@ define('registerView', [
 			name: 'Know a Holibirther',
 			fieldName: 'knowAHolibirther',
 			stream: model.knowAHolibirther,
+		});
+		var receiveMarketingEmails = prettyForms.checkbox({
+			name: 'Receive Emails from Holibirthday',
+			fieldName: 'lastName',
+			stream: model.receiveMarketingEmails,
 		});
 		var password = prettyForms.input({
 			name: 'Password',
@@ -2613,6 +2663,13 @@ define('registerView', [
 			fonts.ralewayThinBold,
 		]);
 
+		meP.then(function (me) {
+			if (me) {
+				location.hash = '#!';
+				location.reload();
+			}
+		});
+		
 		return bodyColumn(padding({
 			top: separatorSize * 4,
 		}, sideBySide({
@@ -2635,21 +2692,23 @@ define('registerView', [
 					$css('font-size', registerFontSize),
 				]),
 			]),
-			form.all([
-				child(stack({
-					gutterSize: separatorSize,
-				}, [
-					loginWithFacebook(),
-					alignLRM({
-						middle: or,
-					}),
-					toggleComponent([
-						stack({
+			stack({
+				gutterSize: separatorSize,
+			}, [
+				loginWithFacebook(),
+				alignLRM({
+					middle: or,
+				}),
+				toggleComponent([
+					form.all([
+						child(stack({
 							gutterSize: separatorSize,
 						}, [
 							firstName,
 							lastName,
 							email,
+							receiveMarketingEmails,
+							birthday,
 							holibirther,
 							knowAHolibirther,
 							password,
@@ -2666,33 +2725,24 @@ define('registerView', [
 								])),
 								submit,
 							]),
-						]),
-						stack({
-							gutterSize: separatorSize,
-						}, [
-							paragraph('Success!').all([
-								fonts.ralewayThinBold,
-							]),
-							paragraph('Please check your email to confirm your email address.').all([
-								fonts.ralewayThinBold,
-							]),
-						]),
-					], registeredViewIndex).all([
-						withMinWidth(300, true),
+						])),
+						wireChildren(passThroughToFirst),
 					]),
-				])),
-				wireChildren(passThroughToFirst),
+					stack({
+						gutterSize: separatorSize,
+					}, [
+						paragraph('Success!').all([
+							fonts.ralewayThinBold,
+						]),
+						paragraph('Please check your email to confirm your email address.').all([
+							fonts.ralewayThinBold,
+						]),
+					]),
+				], registeredViewIndex).all([
+					withMinWidth(300, true),
+				]),
 			]),
-		]))).all([
-			function () {
-				meP.then(function (me) {
-					if (me) {
-						location.hash = '#!';
-						location.reload();
-					}
-				});
-			},				
-		]);
+		])));
 	})();
 });
 define('gafyDesignSmall', [
@@ -2979,9 +3029,10 @@ define('areYouSure', [
 	};
 });
 define('domain', [], function () {
-	return 'https://nodejs-holibirthday.rhcloud.com/';
-	return 'https://holibirthday.aoeu2code.com';
-	// return 'http://71.89.76.184';
+	// return 'http://localhost';
+	// return 'https://nodejs-holibirthday.rhcloud.com';
+	// return 'https://holibirthday.aoeu2code.com';
+	return 'http://71.89.76.184';
 	// return 'https://glacial-earth-6398.herokuapp.com';
 	return 'https://www.holibirthday.com';
 });
@@ -3139,290 +3190,286 @@ define('contactsView', [
 	'defaultFormFor',
 	'domain',
 	'fonts',
+	'formFor',
 	'holibirthdayRow',
 	'meP',
 	'separatorSize',
 	'signInForm',
 	'signInStream',
+	'siteCopyItemsP',
 	'socialMedia',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, domain, fonts, holibirthdayRow, meP, separatorSize, signInForm, signInStream, socialMedia, submitButton) {
-	return promiseComponent(meP.then(function (me) {
-		if (!me) {
-			return stack({
+], function (areYouSure, bar, bodyColumn, colors, confettiBackground, db, defaultFormFor, domain, fonts, formFor, holibirthdayRow, meP, separatorSize, signInForm, signInStream, siteCopyItemsP, socialMedia, submitButton) {
+	var alignCenter = align();
+	var contactsStack = function (rows) {
+		return alignLRM({
+			middle: stack({
 				gutterSize: separatorSize,
-			}, [
-				confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
-					fonts.ralewayThinBold,
-					fonts.h1,
-				])))),
-				bodyColumn(paragraph('You must sign in to add contacts').all([
-					fonts.bebasNeue,
-					$css('font-size', '30px'),
-					link,
-					clickThis(function (ev) {
-						signInStream.push(true);
-						ev.stopPropagation();
-					}),
-				])),
-			]);
-		}
-		var now = new Date();
-		
-		var max = 365 * 24 * 60 * 60 * 1000;
-		var howLongUntilDate = function (date) {
-			if (!date) {
-				return max;
+			}, intersperse(rows.map(function (r) {
+				return grid({
+					gutterSize: separatorSize,
+					useFullWidth: true,
+					handleSurplusWidth: justifyAndCenterSurplusWidth,
+				}, r.map(function (c) {
+					return alignCenter(c.all([
+						$css('text-align', 'center'),
+						withMinWidth(170, true),
+					]));
+				}));
+			}), bar.horizontal(1).all([
+				withBackgroundColor(colors.middleGray),
+			]))),
+		});
+	};
+	return promiseComponent(meP.then(function (me) {
+		return siteCopyItemsP.then(function (copy) {
+			if (!me) {
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					confettiBackground(bodyColumn(holibirthdayRow(text(copy.find('Contacts Title')).all([
+						fonts.ralewayThinBold,
+						fonts.h1,
+					])))),
+					bodyColumn(paragraph(copy.find('Contacts Sign In')).all([
+						fonts.bebasNeue,
+						$css('font-size', '30px'),
+						link,
+						clickThis(function (ev) {
+							signInStream.push(true);
+							ev.stopPropagation();
+						}),
+					])),
+				]);
 			}
-			var nowThatMonth = new Date(now);
-			nowThatMonth.setUTCMonth(date.getUTCMonth());
-			nowThatMonth.setUTCDate(date.getUTCDate());
+			var now = new Date();
 			
-			var howLong = nowThatMonth.getTime() - now.getTime();
-			if (howLong < 0) {
-				howLong += max;
-			}
-			return howLong;
-		};
+			var max = 365 * 24 * 60 * 60 * 1000;
+			var howLongUntilDate = function (date) {
+				if (!date) {
+					return max;
+				}
+				var nowThatMonth = new Date(now);
+				nowThatMonth.setUTCMonth(date.getUTCMonth());
+				nowThatMonth.setUTCDate(date.getUTCDate());
+				
+				var howLong = nowThatMonth.getTime() - now.getTime();
+				if (howLong < 0) {
+					howLong += max;
+				}
+				return howLong;
+			};
 
-		return socialMedia.facebook.api('/me/friends', 'get', {}).then(function (friends) {
-			var ids = (friends.data && friends.data.map(function (friend) {
-				return friend.id;
-			})) || [];
-			return $.ajax({
-				type: 'post',
-				url: '/userIdsByFacebookIds',
-				data: JSON.stringify(ids),
-				contentType: 'application/json',
-			}).then(function (userIds) {
-				return Q.all([
-					db.contactOtherUser.find({
-						user: me._id,
-					}),
-					db.contactCustom.find({
-						user: me._id,
-					}),
-				]).then(function (results) {
-					var cousS = Stream.once(results[0]);
-					var ccsS = Stream.once(results[1]);
-					var $orS = cousS.map(function (cous) {
-						return userIds.map(function (userId) {
-							return {
-								user: userId,
-							};
-						}).concat(cous.map(function (cou) {
-							return {
-								user: cou.otherUser,
-							};
-						}));
-					});
-					return componentStream($orS.map(function ($or) {
-						return promiseComponent(Q.all([
-							db.profile.find({
-								$or: $or,
-							}),
-							db.holibirthday.find({
-								$or: $or,
-							}),
-						]).then(function (results) {
-							var profiles = results[0];
-							var holibirthdays = results[1];
+			return socialMedia.facebook.api('/me/friends', 'get', {}).then(function (friends) {
+				var ids = (friends.data && friends.data.map(function (friend) {
+					return friend.id;
+				})) || [];
+				return $.ajax({
+					type: 'post',
+					url: '/userIdsByFacebookIds',
+					data: JSON.stringify(ids),
+					contentType: 'application/json',
+				}).then(function (userIds) {
+					return Q.all([
+						db.contactOtherUser.find({
+							user: me._id,
+						}),
+						db.contactCustom.find({
+							user: me._id,
+						}),
+					]).then(function (results) {
+						var cousS = Stream.once(results[0]);
+						var ccsS = Stream.once(results[1]);
+						var $orS = cousS.map(function (cous) {
+							return userIds.map(function (userId) {
+								return {
+									user: userId,
+								};
+							}).concat(cous.map(function (cou) {
+								return {
+									user: cou.otherUser,
+								};
+							}));
+						});
+						return componentStream($orS.map(function ($or) {
+							return promiseComponent(Q.all([
+								db.profile.find({
+									$or: $or,
+								}),
+								db.holibirthday.find({
+									$or: $or,
+								}),
+							]).then(function (results) {
+								var profiles = results[0];
+								var holibirthdays = results[1];
 
-							var couRowsS = cousS.map(function (cous) {
-								return cous.map(function (cou) {
-									var profile = profiles.filter(function (p) {
-										return p.user === cou.otherUser;
-									})[0];
-									var holibirthday = holibirthdays.filter(function (h) {
-										return h.user === profile.user;
-									})[0];
-									return {
-										row: [
-											linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
-												fonts.ralewayThinBold,
-											])),
-											text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
-												fonts.ralewayThinBold,
-												$css('text-align', 'center'),
-											]),
-											text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
-												fonts.ralewayThinBold,
-												$css('text-align', 'center'),
-											]),
-											text(profile.email || '&nbsp;').all([
-												fonts.ralewayThinBold,
-												$css('text-align', 'center'),
-											]),
-											text('(remove this contact)').all([
-												fonts.ralewayThinBold,
-											]).all([
-												link,
-												clickThis(function () {
-													areYouSure({
-														onYes: function () {
-															db.contactOtherUser.remove({
-																user: me._id,
-																otherUser: profile.user,
-															}).then(function () {
-																cousS.push(cousS.lastValue().filter(function (c) {
-																	return c._id !== cou._id;
-																}));
-															});
-														},
-													});
-												}),
-											]),
-										].map(function (c) {
-											return alignTBM({
-												middle: c,
-											});
-										}),
-										howLong: Math.min(howLongUntilDate(profile.birthday), howLongUntilDate(holibirthday && holibirthday.date)),
-									};
-								});
-							});
-							var ccRowsS = ccsS.map(function (ccs) {
-								return ccs.map(function (cc) {
-									return {
-										row: [
-											text(cc.name).all([
-												fonts.ralewayThinBold,
-											]),
-											text(cc.birthday ? 'Born on<br>' + moment(cc.birthday).utc().format('MMMM Do') : '&nbsp;').all([
-												fonts.ralewayThinBold,
-												$css('text-align', 'center'),
-											]),
-											nothing,
-											text(cc.email || '&nbsp;').all([
-												fonts.ralewayThinBold,
-												$css('text-align', 'center'),
-											]),
-											text('(remove this contact)').all([
-												fonts.ralewayThinBold,
-											]).all([
-												link,
-												clickThis(function () {
-													areYouSure({
-														onYes: function () {
-															db.contactCustom.remove({
-																_id: cc._id,
-															}).then(function () {
-																ccsS.push(ccsS.lastValue().filter(function (c) {
-																	return c._id !== cc._id;
-																}));
-															});
-														},
-													});
-												}),
-											]),
-										].map(function (c) {
-											return alignTBM({
-												middle: c,
-											});
-										}),
-										howLong: howLongUntilDate(cc.birthday),
-									};
-								});
-							});
-							var rowsS = Stream.combine([
-								couRowsS,
-								ccRowsS,
-							], function (couRows, ccRows) {
-								return couRows.concat(ccRows).sort(function (r1, r2) {
-									return r2.howLong - r1.howLong;
-								}).map(function (r) {
-									return r.row;
-								});
-							});
-							return stack({
-								gutterSize: separatorSize,
-							}, [
-								confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
-									fonts.ralewayThinBold,
-									fonts.h1,
-								])))),
-								bodyColumn(alignLRM({
-									middle: componentStream(rowsS.map(function (rows) {
-										return defaultFormFor.contactCustom({
-											user: me._id,
-											name: '',
-											birthday: null,
-											email: '',
-										}, function (newContactS, newContactFields) {
-											return alignLRM({
-												middle: stack({
-													gutterSize: separatorSize,
-												}, intersperse(rows.map(function (r) {
-													return grid({
-														gutterSize: separatorSize,
-														useFullWidth: true,
-														handleSurplusWidth: justifyAndCenterSurplusWidth,
-													}, r.map(function (c) {
-														return c.all([
-															withMinWidth(170, true),
-														]);
-													}));
-												}).concat([
-													grid({
-														gutterSize: separatorSize,
-														useFullWidth: true,
-														handleSurplusWidth: justifyAndCenterSurplusWidth,
-													}, [
-														newContactFields.name,
-														newContactFields.birthday,
-														nothing,
-														newContactFields.email,
-														alignTBM({
-															middle: submitButton(black, text('Add Contact').all([
-																fonts.bebasNeue,
-															])).all([
-																link,
-																clickThis(function (ev, disable) {
-																	var enable = disable();
-																	db.contactCustom.insert(newContactS.lastValue()).then(function (newContact) {
-																		ccsS.push(ccsS.lastValue().concat([newContact]));
-																		enable();
-																	});
-																}),
-															]),
-														}),
-													].map(function (c) {
-														return c.all([
-															withMinWidth(170, true),
-														]);
-													})),
-												]), bar.horizontal(1).all([
-													withBackgroundColor(colors.middleGray),
-												]))),
-											});
-										});
-									})),
-								})),
-								bar.horizontal(1).all([
-									withBackgroundColor(black),
-								]),
-								componentStream(cousS.map(function (cous) {
-									var additionalFacebookFriends = userIds.filter(function (userId) {
-										return cous.filter(function (cou) {
-											return userId === cou.otherUser;
-										}).length === 0;
+								var couRowsS = cousS.map(function (cous) {
+									return cous.map(function (cou) {
+										var profile = profiles.filter(function (p) {
+											return p.user === cou.otherUser;
+										})[0];
+										var holibirthday = holibirthdays.filter(function (h) {
+											return h.user === profile.user;
+										})[0];
+										return {
+											row: [
+												linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
+													fonts.ralewayThinBold,
+												])),
+												text(profile.birthday ? moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
+													fonts.ralewayThinBold,
+												]),
+												text(holibirthday ? + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
+													fonts.ralewayThinBold,
+												]),
+												text(profile.email || '&nbsp;').all([
+													fonts.ralewayThinBold,
+												]),
+												text(copy.find('Contacts Remove Contact')).all([
+													fonts.ralewayThinBold,
+												]).all([
+													link,
+													clickThis(function () {
+														areYouSure({
+															onYes: function () {
+																db.contactOtherUser.remove({
+																	user: me._id,
+																	otherUser: profile.user,
+																}).then(function () {
+																	cousS.push(cousS.lastValue().filter(function (c) {
+																		return c._id !== cou._id;
+																	}));
+																});
+															},
+														});
+													}),
+												]),
+											],
+											howLong: Math.min(howLongUntilDate(profile.birthday), howLongUntilDate(holibirthday && holibirthday.date)),
+										};
 									});
-									if (additionalFacebookFriends.length === 0) {
-										return nothing;
-									}
-									return bodyColumn(stack({
-										gutterSize: separatorSize,
-										collapseGutters: true,
-									}, [
-										me.facebookId ? alignLRM({
-											middle: text('Facebook friends who use Holibirthday').all([
-												fonts.h2,
-											]),
-										}) : nothing,
-										alignLRM({
-											middle: table({
-												paddingSize: separatorSize,
-											}, additionalFacebookFriends.map(function (userId) {
+								});
+								var ccRowsS = ccsS.map(function (ccs) {
+									return ccs.map(function (cc) {
+										return {
+											row: [
+												text(cc.name).all([
+													fonts.ralewayThinBold,
+												]),
+												text(cc.birthday ? moment(cc.birthday).utc().format('MMMM Do') : '&nbsp;').all([
+													fonts.ralewayThinBold,
+												]),
+												text(copy.find('Contacts No Holibirthday')),
+												text(cc.email || '&nbsp;').all([
+													fonts.ralewayThinBold,
+												]),
+												text(copy.find('Contacts Remove Contact')).all([
+													fonts.ralewayThinBold,
+												]).all([
+													link,
+													clickThis(function () {
+														areYouSure({
+															onYes: function () {
+																db.contactCustom.remove({
+																	_id: cc._id,
+																}).then(function () {
+																	ccsS.push(ccsS.lastValue().filter(function (c) {
+																		return c._id !== cc._id;
+																	}));
+																});
+															},
+														});
+													}),
+												]),
+											],
+											howLong: howLongUntilDate(cc.birthday),
+										};
+									});
+								});
+								var rowsS = Stream.combine([
+									couRowsS,
+									ccRowsS,
+								], function (couRows, ccRows) {
+									return couRows.concat(ccRows).sort(function (r1, r2) {
+										return r2.howLong - r1.howLong;
+									}).map(function (r) {
+										return r.row;
+									});
+								});
+								return stack({
+									gutterSize: separatorSize,
+								}, [
+									confettiBackground(bodyColumn(holibirthdayRow(text('Contacts').all([
+										fonts.ralewayThinBold,
+										fonts.h1,
+									])))),
+									bodyColumn(alignLRM({
+										middle: componentStream(rowsS.map(function (rows) {
+											return formFor.contactCustom([
+												$css('display', 'none'),
+												withMinHeight(0, true),
+											])({
+												user: me._id,
+												name: '',
+												birthday: null,
+												email: '',
+											}, function (newContactS, newContactFields) {
+												var headers = [
+													text(copy.find('Contacts Contact Name')),
+													text(copy.find('Contacts Contact Birthday')),
+													text(copy.find('Contacts Contact Holibirthday')),
+													text(copy.find('Contacts Contact Email')),
+													text(copy.find('Contacts Contact Add / Remove Contact')),
+												].map(function (c) {
+													return c.all([
+														fonts.bebasNeue,
+													]);
+												});
+												var form = [
+													newContactFields.name,
+													newContactFields.birthday,
+													text(copy.find('Contacts No Holibirthday')),
+													newContactFields.email,
+													submitButton(black, text(copy.find('Contacts Add Contact')).all([
+														fonts.bebasNeue,
+													])).all([
+														link,
+														clickThis(function (ev, disable) {
+															var enable = disable();
+															db.contactCustom.insert(newContactS.lastValue()).then(function (newContact) {
+																ccsS.push(ccsS.lastValue().concat([newContact]));
+																enable();
+															});
+														}),
+													]),
+												];
+												var alignCenter = align();
+												return contactsStack([headers].concat(rows).concat([form]));
+											});
+										})),
+									})),
+									bar.horizontal(1).all([
+										withBackgroundColor(black),
+									]),
+									componentStream(cousS.map(function (cous) {
+										var additionalFacebookFriends = userIds.filter(function (userId) {
+											return cous.filter(function (cou) {
+												return userId === cou.otherUser;
+											}).length === 0;
+										});
+										if (additionalFacebookFriends.length === 0) {
+											return nothing;
+										}
+										return bodyColumn(stack({
+											gutterSize: separatorSize,
+											collapseGutters: true,
+										}, [
+											me.facebookId ? alignLRM({
+												middle: text(copy.find('Contacts Other Facebook Friends')).all([
+													fonts.h2,
+												]),
+											}) : nothing,
+											contactsStack(additionalFacebookFriends.map(function (userId) {
 												var profile = profiles.filter(function (p) {
 													return p.user === userId;
 												})[0];
@@ -3433,76 +3480,62 @@ define('contactsView', [
 													linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
 														fonts.ralewayThinBold,
 													])),
-													text(profile.birthday ? 'Born on<br>' + moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
+													text(profile.birthday ? moment(profile.birthday).utc().format('MMMM Do') : '&nbsp;').all([
 														fonts.ralewayThinBold,
-														$css('text-align', 'center'),
 													]),
-													text(holibirthday ? 'Holiborn on<br>' + moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
+													text(holibirthday ? moment(holibirthday.date).utc().format('MMMM Do') : '&nbsp;').all([
 														fonts.ralewayThinBold,
-														$css('text-align', 'center'),
 													]),
 													text(profile.email || '&nbsp;').all([
 														fonts.ralewayThinBold,
-														$css('text-align', 'center'),
 													]),
-													alignTBM({
-														middle: submitButton(black, text('Add Contact').all([
-															fonts.bebasNeue,
-														])).all([
-															link,
-															clickThis(function () {
-																areYouSure({
-																	onYes: function () {
-																		db.contactOtherUser.insert({
-																			user: me._id,
-																			otherUser: profile.user,
-																		}).then(function (cou) {
-																			cousS.push(cousS.lastValue().concat([cou]));
-																		});
-																	},
-																});
-															}),
-														]),
-													}),
+													submitButton(black, text(copy.find('Contacs Add Contact')).all([
+														fonts.bebasNeue,
+													])).all([
+														link,
+														clickThis(function () {
+															areYouSure({
+																onYes: function () {
+																	db.contactOtherUser.insert({
+																		user: me._id,
+																		otherUser: profile.user,
+																	}).then(function (cou) {
+																		cousS.push(cousS.lastValue().concat([cou]));
+																	});
+																},
+															});
+														}),
+													]),
 												];
 											})),
-										}),
-									]));
-								})),
-								alignLRM({
-									middle: submitButton(socialMedia.facebook.color, sideBySide({
-										gutterSize: separatorSize,
-									}, [
-										text(socialMedia.facebook.icon).all([
-											$css('font-size', '20px'),
-										]),
-										text(me.facebookId ? 'Invite More Facebook Friends' : 'Invite Facebook Friends').all([
-											fonts.bebasNeue,
-										]),
-									])).all([
-										withFontColor(socialMedia.facebook.color),
-										link,
-										clickThis(function () {
-											if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)) {
-												FB.ui({
-													display: 'popup',
-													method: 'share',
-													href: location.origin,
+										]));
+									})),
+									alignLRM({
+										middle: submitButton(socialMedia.facebook.color, sideBySide({
+											gutterSize: separatorSize,
+										}, [
+											text(socialMedia.facebook.icon).all([
+												$css('font-size', '20px'),
+											]),
+											text(copy.find('Contacts Invite Facebook Friends')).all([
+												fonts.bebasNeue,
+											]),
+										])).all([
+											withFontColor(socialMedia.facebook.color),
+											link,
+											clickThis(function () {
+												socialMedia.facebook.shareThisPage({
+													imageUrl: copy.find('Contacts Facebook Invite Image'),
+													text: copy.find('Contacts Facebook Invite Caption'),
+													description: copy.find('Contacts Facebook Invite Description'),
 												});
-											}
-											else {
-												FB.ui({
-													display: 'popup',
-													method: 'send',
-													link: location.origin,
-												});
-											}
-										}),
-									]),
-								}),
-							]);
+											}),
+										]),
+									}),
+								]);
+							}));
 						}));
-					}));
+					});
 				});
 			});
 		});
@@ -3806,6 +3839,7 @@ define('adminView', [
 				gutterSize: separatorSize,
 			}, [
 				copyItemEditor('Profile Born On (include space)'),
+				copyItemEditor('Profile Holiborn On (include space)'),
 				copyItemEditor('Profile Holibirthday Points (include space)'),
 				copyItemEditor('Profile My Contacts'),
 				copyItemEditor('Profile Add Contact'),
@@ -3845,6 +3879,40 @@ define('adminView', [
 				copyItemEditor('Daily Theme Poll Sign In'),
 			])),
 		}, {
+			tab: tab('Contacts'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Contacts Title'),
+				copyItemEditor('Contacts Sign In'),
+				copyItemEditor('Contacts No Holibirthday'),
+				copyItemEditor('Contacts Remove Contact'),
+				copyItemEditor('Contacts Contact Name'),
+				copyItemEditor('Contacts Contact Birthday'),
+				copyItemEditor('Contacts Contact Holibirthday'),
+				copyItemEditor('Contacts Contact Email'),
+				copyItemEditor('Contacts Contact Add / Remove Contact'),
+				copyItemEditor('Contacts Add Contact'),
+				copyItemEditor('Contacts Other Facebook Friends'),
+				copyItemEditor('Contacts Invite Facebook Friends'),
+				copyItemEditor('Contacts Facebook Invite Image', 'imageUpload'),
+				copyItemEditor('Contacts Facebook Invite Caption'),
+				copyItemEditor('Contacts Facebook Invite Description'),
+			])),
+		}, {
+			tab: tab('Slot Machine'),
+			content: content(stack({
+				gutterSize: separatorSize,
+			}, [
+				copyItemEditor('Slot Machine Pull'),
+				copyItemEditor('Slot Machine Change Holibirthday'),
+				copyItemEditor('Slot Machine Claim Holibirthday'),
+				copyItemEditor('Slot Machine Your Holibirthday Is'),
+				copyItemEditor('Slot Machine Claim Title'),
+				copyItemEditor('Slot Machine Description', 'textarea'),
+				copyItemEditor('Slot Machine Must Sign In'),
+			])),
+		}, {
 			tab: tab('Gifts'),
 			content: content(stack({
 				gutterSize: separatorSize,
@@ -3875,6 +3943,14 @@ define('adminView', [
 				copyItemEditor('Header Sign Out'),
 				copyItemEditor('Header Register'),
 				copyItemEditor('Header Admin'),
+				copyItemEditor('Sign In With Facebook'),
+				copyItemEditor('Sign In Fill Out All Fields'),
+				copyItemEditor('Side Header Email Not Confirmed'),
+				copyItemEditor('Sign In Email Confirmation Resent'),
+				copyItemEditor('Sign In Resend Email Confirmation - No Such Email'),
+				copyItemEditor('Sign In Wrong Email / Password'),
+				copyItemEditor('Sign In Reset Email Sent'),
+				copyItemEditor('Sign In Or'),
 			])),
 		}, {
 		// 	tab: tab('Order Email'),
@@ -3884,6 +3960,7 @@ define('adminView', [
 		// 		copyItemEditor('Order Confirmation Email: From'),
 		// 		copyItemEditor('Order Confirmation Email: From Name'),
 		// 		copyItemEditor('Order Confirmation Email: Subject'),
+
 		// 		copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
 		// 	])),
 		// }, {
@@ -4154,11 +4231,17 @@ define('adminView', [
 					name: 'Holibirthday in Three Weeks',
 					event: schema.mailchimpTemplate.fields.event.options.holibirthdayInThreeWeeks,
 				}, {
+					name: 'Holibirthday in One Week',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayInOneWeek,
+				}, {
 					name: 'Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.holibirthdayTomorrow,
 				}, {
 					name: 'Friend\'s Holibirthday in Three Weeks',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInThreeWeeks,
+				}, {
+					name: 'Friend\'s Holibirthday in One Week',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInOneWeek,
 				}, {
 					name: 'Friend\'s Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayTomorrow,
@@ -4235,7 +4318,7 @@ define('adminView', [
 						]),
 					]);
 				})),
-			})
+			});
 		});
 	}));
 										  
@@ -4350,7 +4433,9 @@ define('adminP', [
 		}
 	});
 });
-define('socialMedia', [], function () {
+define('socialMedia', [
+	'domain',
+], function (domain) {
 	return (function () {
 		var shareWindow = function (url) {
 			var width  = 575,
@@ -4375,10 +4460,26 @@ define('socialMedia', [], function () {
 				}),
 				name: 'Facebook',
 				shareVerb: 'share',
-				shareThisPage: function () {
+				shareThisPage: function (config) {
+					config = config || {};
+					if (config.description && config.description.length > 200) {
+						config.description = config.description.substring(0, 197) + '...';
+					}
+					config.imageUrl = config.imageUrl || './content/man2.png';
+					if (config.imageUrl.indexOf('/api') === 0) {
+						config.imageUrl = domain + config.imageUrl;
+					}
+					if (config.imageUrl.indexOf('.') === 0) {
+						config.imageUrl = domain + '/' + config.imageUrl;
+					}
+					console.log(config.imageUrl);
 					return FB.ui({
 						display: 'popup',
-						method: 'share',
+						method: 'feed',
+						picture: config.imageUrl,
+						name: config.name,
+						caption: config.text,
+						description: config.description,
 						href: location.href,
 					});
 				},
@@ -4544,15 +4645,19 @@ define('storyDetailViewP', [
 		}));
 	};
 
-	var storySocialMediaButton = socialMediaButton(function (verb) {
-		return verb + ' this story';
-	});
-
 	return function (story) {
 		return promiseComponent(profilesP.then(function (profiles) {
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
+			var storySocialMediaButton = socialMediaButton(function (verb) {
+				return verb + ' this story';
+			}, {
+				imageUrl: story.imageUrl,
+				name: story.name,
+				text: 'by ' + profile.firstName + ' ' + profile.lastName,
+				description: $(story.text).text(),
+			});
 			return meP.then(function (me) {
 				return adminP.then(function (admin) {
 					return siteCopyItemsP.then(function (copy) {
@@ -4664,8 +4769,10 @@ define('storyDetailViewP', [
 define('confirmEmailView', [
 	'auth',
 	'bodyColumn',
+	'confettiBackground',
 	'fonts',
-], function (auth, bodyColumn, fonts) {
+	'holibirthdayRow',
+], function (auth, bodyColumn, confettiBackground, fonts, holibirthdayRow) {
 	return function (token) {
 		var pageS = Stream.once(text('Confirming Email...').all([
 			fonts.h1,
@@ -4679,7 +4786,7 @@ define('confirmEmailView', [
 				fonts.h1,
 			]));
 		});
-		return bodyColumn(componentStream(pageS));
+		return confettiBackground(bodyColumn(holibirthdayRow(componentStream(pageS))));
 	};
 });
 define('homeViewP', [
@@ -5522,7 +5629,7 @@ define('famousBirthdaysDisplay', [
 				gutterSize: separatorSize,
 				handleSurplusWidth: evenSplitSurplusWidth,
 			}, famousBirthdays.map(function (fb) {
-				return stack({
+				return linkTo('https://www.google.com/search?q=' + encodeURIComponent(fb.name), stack({
 					gutterSize: separatorSize,
 				}, [
 					text(fb.name).all([
@@ -5535,6 +5642,8 @@ define('famousBirthdaysDisplay', [
 							minWidth: 200,
 						}),
 					}),
+				])).all([
+					$prop('target', '_blank'),
 				]);
 			})),
 		])) : nothing;
@@ -6570,238 +6679,238 @@ define('profileViewP', [
 				});
 			},
 		]));
-		return promiseComponent(meP.then(function (me) {
-			return adminP.then(function (admin) {
-				return profilesP.then(function (profiles) {
-					return siteCopyItemsP.then(function (copy) {
-						var profile = profiles.filter(function (profile) {
-							return profile.user === user;
-						})[0];
-						var pointsP = db.pointsChange.find({
-							user: user,
-						});
-						var pointsTotalP = pointsP.then(function (points) {
-							return points.reduce(function (a, p) {
-								return a + p.amount;
-							}, 0);
-						});
-						var redBar = confettiBackground(bodyColumn(stack({}, [
-							holibirthdayRow(grid({
-								gutterSize: separatorSize,
-								useFullWidth: true,
-								handleSurplusWidth: giveToFirst,
-							}, [
-								alignTBM({
-									middle: stack({
-										gutterSize: separatorSize / 2,
-										collapseGutters: true,
-									}, [
-										paragraph(profile.firstName + ' ' + profile.lastName).all([
-											fonts.ralewayThinBold,
-											$css('font-size', 40),
-										]),
-										profile.birthday ? text(copy.find('Profile Born On (include space)') + moment(profile.birthday).utc().format('MMMM Do')).all([
-											fonts.ralewayThinBold,
-											$css('font-size', 20),
-										]) : nothing,
-										promiseComponent(pointsTotalP.then(function (pointsTotal) {
-											return text(copy.find('Profile Holibirthday Points (include space)') + pointsTotal).all([
+		return promiseComponent(db.holibirthday.findOne({
+			user: user,
+		}).then(function (holibirthday) {
+			return meP.then(function (me) {
+				return adminP.then(function (admin) {
+					return profilesP.then(function (profiles) {
+						return siteCopyItemsP.then(function (copy) {
+							var profile = profiles.filter(function (profile) {
+								return profile.user === user;
+							})[0];
+							var pointsP = db.pointsChange.find({
+								user: user,
+							});
+							var pointsTotalP = pointsP.then(function (points) {
+								return points.reduce(function (a, p) {
+									return a + p.amount;
+								}, 0);
+							});
+							var redBar = confettiBackground(bodyColumn(stack({}, [
+								holibirthdayRow(grid({
+									gutterSize: separatorSize,
+									useFullWidth: true,
+									handleSurplusWidth: giveToFirst,
+								}, [
+									alignTBM({
+										middle: stack({
+											gutterSize: separatorSize / 2,
+											collapseGutters: true,
+										}, [
+											paragraph(profile.firstName + ' ' + profile.lastName).all([
+												fonts.ralewayThinBold,
+												$css('font-size', 40),
+											]),
+											profile.birthday ? text(copy.find('Profile Born On (include space)') + moment(profile.birthday).utc().format('MMMM Do')).all([
 												fonts.ralewayThinBold,
 												$css('font-size', 20),
-											]);
-										})),
-										me ? promiseComponent(db.contactOtherUser.findOne({
-											user: me._id,
-											otherUser: user,
-										}).then(function (cou) {
-											if (cou) {
-												return nothing;
-											}
-											else if (me._id === user) {
-												return linkTo('#!contacts', text(copy.find('Profile My Contacts')).all([
+											]) : nothing,
+											promiseComponent(pointsTotalP.then(function (pointsTotal) {
+												return text(copy.find('Profile Holibirthday Points (include space)') + pointsTotal).all([
 													fonts.ralewayThinBold,
 													$css('font-size', 20),
-												]));
-											}
-											return text(copy.find('Profile Add Contact')).all([
-												fonts.ralewayThinBold,
-												$css('font-size', 20),
-												link,
-												clickThis(function (ev, disable) {
-													disable();
-													db.contactOtherUser.insert({
-														user: me._id,
-														otherUser: user,
-													}).then(function () {
-														window.location.hash = '#!contacts';
-														window.location.reload();
-													});
+												]);
+											})),
+											me ? promiseComponent(db.contactOtherUser.findOne({
+												user: me._id,
+												otherUser: user,
+											}).then(function (cou) {
+												if (cou) {
+													return nothing;
+												}
+												else if (me._id === user) {
+													return linkTo('#!contacts', text(copy.find('Profile My Contacts')).all([
+														fonts.ralewayThinBold,
+														$css('font-size', 20),
+													]));
+												}
+												return text(copy.find('Profile Add Contact')).all([
+													fonts.ralewayThinBold,
+													$css('font-size', 20),
+													link,
+													clickThis(function (ev, disable) {
+														disable();
+														db.contactOtherUser.insert({
+															user: me._id,
+															otherUser: user,
+														}).then(function () {
+															window.location.hash = '#!contacts';
+															window.location.reload();
+														});
+													}),
+												]);
+											})) : nothing,
+										]),
+									}),
+									keepAspectRatio((profile.holibirther && holibirthday) ? image({
+										src: writeOnImage({
+											width: 308,
+											height: 200,
+										}, './content/certificate-new-thumbnail.png', [{
+											center: {
+												x: 133,
+												y: 75,
+											},
+											text: profile.firstName + ' ' + profile.lastName,
+											font: 'bold 9px Raleway Thin',
+										}, {
+											center: {
+												x: 86,
+												y: 89,
+											},
+											text: moment(new Date(holibirthday.date)).utc().format('MMMM Do'),
+											font: 'bold 9px Raleway Thin',
+										}, {
+											center: {
+												x: 141,
+												y: 100,
+											},
+											text: moment(profile.birthday).utc().format('MMMM Do'),
+											font: 'bold 9px Raleway Thin',
+										}, {
+											center: {
+												x: 170,
+												y: 158,
+											},
+											text: moment(holibirthday.updateDate.birthday).utc().format('MMMM Do'),
+											font: 'bold 9px Raleway Thin',
+										}]),
+										useNativeSize: true,
+									}).all([
+										link,
+										clickThis(function (ev) {
+											modalOnS.push(true);
+											ev.stopPropagation();
+										}),
+									]) : ((me && me._id === user) ? linkTo('#!myHolibirthday', alignTBM({
+										middle: submitButton(white, text(copy.find('Profile Claim a Holibirthday')).all([
+											fonts.bebasNeue,
+										])),
+									}).all([
+										fonts.ralewayThinBold,
+									])) : nothing)),
+								]), profile.imageUrl || './content/man.png'),
+							])));
+							var bio = bodyColumn(paragraph(profile.bio));
+							var storiesC = promiseComponent(storiesP.then(function (stories) {
+								var profileStories = stories.filter(function (story) {
+									return story.user === user;
+								});
+								
+								return bodyColumn(stack({
+									gutterSize: separatorSize,
+								}, profileStories.map(storyRowP))).all([
+									withMinWidth(0),
+									withMinHeight(0),
+								]);
+							}));
+
+							var caption = (profile.holibirther && holibirthday) ?
+								copy.find('Profile Holiborn On (include space)') +
+								moment(new Date(holibirthday.date)).utc().format('MMMM Do') :
+								(profile.birthday ?
+								 copy.find('Profile Born On (include space)') +
+								 moment(profile.birthday).utc().format('MMMM Do') : 'Holibirthday');
+							
+							var profileSocialMediaButton = socialMediaButton(function (verb) {
+								return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
+							}, {
+								imageUrl: profile.imageUrl,
+								name: profile.firstName + ' ' + profile.lastName,
+								text: caption,
+								description: $(profile.bio).text(),
+							});
+							var shareButtons = bodyColumn(grid({
+								gutterSize: separatorSize,
+							}, [
+								profileSocialMediaButton(socialMedia.facebook),
+								profileSocialMediaButton(socialMedia.twitter),
+							]));
+
+
+							var pointsC = promiseComponent(pointsP.then(function (points) {
+								return pointsTotalP.then(function (pointsTotal) {
+									return pointsTotal === 0 ? nothing : bodyColumn(stack({
+										gutterSize: separatorSize,
+									}, [
+										bar.horizontal(1, colors.middleGray),
+										linkTo('#!leaderboards', paragraph(copy.find('Profile Holibirthday Points / View Leaderboards')).all([
+											fonts.ralewayThinBold,
+											$css('font-size', 40),
+										])),
+										stack({
+											gutterSize: separatorSize,
+										}, points.map(function (point) {
+											return sideBySide({
+												handleSurplusWidth: giveToNth(1),
+												gutterSize: separatorSize,
+											}, [
+												alignTBM({
+													middle: text((point.amount >= 0) ? '+' + point.amount : point.amount).all([
+														withFontColor(point.amount >= 0 ? colors.darkGreen : colors.darkRed),
+														fonts.ralewayThinBold,
+														$css('font-size', '30'),
+													]),
+												}),
+												alignTBM({
+													middle: paragraph(point.reason).all([
+														fonts.ralewayThinBold,
+														$css('font-size', '30'),
+													]),
 												}),
 											]);
-										})) : nothing,
-									]),
-								}),
-								keepAspectRatio(promiseComponent(db.holibirthday.findOne({
-									user: user,
-								}).then(function (holibirthday) {
-									if (profile.holibirther && holibirthday)
-									{
-										var date = new Date(holibirthday.date);
-										return image({
-											src: writeOnImage({
-												width: 308,
-												height: 200,
-											}, './content/certificate-01-thumbnail.png', [{
-												center: {
-													x: 154,
-													y: 88,
-												},
-												text: profile.firstName + ' ' + profile.lastName,
-												font: 'bold 14px Raleway Thin',
-											}, {
-												center: {
-													x: 154,
-													y: 152,
-												},
-												text: moment(date).utc().format('MMMM Do'),
-												font: 'bold 14px Raleway Thin',
-											}].concat(profile.birthday ? [{
-												center: {
-													x: 46,
-													y: 171,
-												},
-												text: 'Old Birthday',
-												font: '6px BebasNeue',
-											}, {
-												center: {
-													x: 46,
-													y: 176,
-												},
-												text: moment(profile.birthday).utc().format('MMMM Do'),
-												font: '6px BebasNeue',
-											}] : [])),
-											useNativeSize: true,
-										}).all([
-											link,
-											clickThis(function (ev) {
-												modalOnS.push(true);
-												ev.stopPropagation();
-											}),
-										]);
-									}
-									return meP.then(function (me) {
-										if (me && me._id === user) {
-											return linkTo('#!myHolibirthday', alignTBM({
-												middle: submitButton(white, text(copy.find('Profile Claim a Holibirthday')).all([
-													fonts.bebasNeue,
-												])),
-											}).all([
-												fonts.ralewayThinBold,
-											]));
-										}
-										else {
-											return nothing;
-										}
-									});
-								}))),
-							]), profile.imageUrl || './content/man.png'),
-						])));
-						var bio = bodyColumn(paragraph(profile.bio));
-						var storiesC = promiseComponent(storiesP.then(function (stories) {
-							var profileStories = stories.filter(function (story) {
-								return story.user === user;
-							});
-							
-							return bodyColumn(stack({
-								gutterSize: separatorSize,
-							}, profileStories.map(storyRowP))).all([
-								withMinWidth(0),
-								withMinHeight(0),
-							]);
-						}));
-
-						var profileSocialMediaButton = socialMediaButton(function (verb) {
-							return verb + (me && me._id === profile.user ? ' your profile' : ' this profile');
-						});
-						var shareButtons = bodyColumn(grid({
-							gutterSize: separatorSize,
-						}, [
-							profileSocialMediaButton(socialMedia.facebook),
-							profileSocialMediaButton(socialMedia.twitter),
-						]));
-
-
-						var pointsC = promiseComponent(pointsP.then(function (points) {
-							return pointsTotalP.then(function (pointsTotal) {
-								return pointsTotal === 0 ? nothing : bodyColumn(stack({
-									gutterSize: separatorSize,
-								}, [
-									bar.horizontal(1, colors.middleGray),
-									linkTo('#!leaderboards', paragraph(copy.find('Profile Holibirthday Points / View Leaderboards')).all([
-										fonts.ralewayThinBold,
-										$css('font-size', 40),
-									])),
-									stack({
-										gutterSize: separatorSize,
-									}, points.map(function (point) {
-										return sideBySide({
-											handleSurplusWidth: giveToNth(1),
+										})),
+										bar.horizontal(1, colors.middleGray),
+										sideBySide({
 											gutterSize: separatorSize,
 										}, [
 											alignTBM({
-												middle: text((point.amount >= 0) ? '+' + point.amount : point.amount).all([
-													withFontColor(point.amount >= 0 ? colors.darkGreen : colors.darkRed),
+												middle: text(pointsTotal >= 0 ? '' + pointsTotal : pointsTotal).all([
+													withFontColor(pointsTotal >= 0 ? colors.darkGreen : colors.darkRed),
 													fonts.ralewayThinBold,
 													$css('font-size', '30'),
 												]),
 											}),
 											alignTBM({
-												middle: paragraph(point.reason).all([
+												middle: text(copy.find('Profile Holibirthday Points Total')).all([
 													fonts.ralewayThinBold,
 													$css('font-size', '30'),
 												]),
 											}),
-										]);
-									})),
-									bar.horizontal(1, colors.middleGray),
-									sideBySide({
-										gutterSize: separatorSize,
-									}, [
-										alignTBM({
-											middle: text(pointsTotal >= 0 ? '' + pointsTotal : pointsTotal).all([
-												withFontColor(pointsTotal >= 0 ? colors.darkGreen : colors.darkRed),
-												fonts.ralewayThinBold,
-												$css('font-size', '30'),
-											]),
-										}),
-										alignTBM({
-											middle: text(copy.find('Profile Holibirthday Points Total')).all([
-												fonts.ralewayThinBold,
-												$css('font-size', '30'),
-											]),
-										}),
-									]),
-								]));
-							});
-						}));
+										]),
+									]));
+								});
+							}));
 
-						var editButton = admin || (me && me._id === profile.user) ? alignLRM({
-							middle: linkTo('#!editProfile/' + user, submitButton(black, text(copy.find('Profile Edit')).all([
-								fonts.bebasNeue,
-							]))),
-						}) : nothing;
-						
-						return stack({
-							gutterSize: separatorSize,
-						}, [
-							redBar,
-							bio,
-							shareButtons,
-							storiesC,
-							pointsC,
-							editButton,
-							holibirthdayModal,
-						]);
+							var editButton = admin || (me && me._id === profile.user) ? alignLRM({
+								middle: linkTo('#!editProfile/' + user, submitButton(black, text(copy.find('Profile Edit')).all([
+									fonts.bebasNeue,
+								]))),
+							}) : nothing;
+							
+							return stack({
+								gutterSize: separatorSize,
+							}, [
+								redBar,
+								bio,
+								shareButtons,
+								storiesC,
+								pointsC,
+								editButton,
+								holibirthdayModal,
+							]);
+						});
 					});
 				});
 			});
@@ -6886,16 +6995,18 @@ define('storyEditViewP', [
 	'bodyColumn',
 	'categories',
 	'colors',
+	'confettiBackground',
 	'db',
 	'fonts',
 	'forms',
+	'holibirthdayRow',
 	'meP',
 	'prettyForms',
 	'separatorSize',
 	'signInForm',
 	'signInStream',
 	'siteCopyItemsP',
-], function (bodyColumn, categories, colors, db, fonts, forms, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
+], function (bodyColumn, categories, colors, confettiBackground, db, fonts, forms, holibirthdayRow, meP, prettyForms, separatorSize, signInForm, signInStream, siteCopyItemsP) {
 	return function (story) {
 		return promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
 			return Q.all([
@@ -7153,14 +7264,13 @@ define('storyEditViewP', [
 							]),
 						]);
 					}
-					return bodyColumn(stack({
+					return stack({
 						gutterSize: separatorSize,
 					}, [
-						text(siteCopyItems.find('Edit Story Title')).all([
-							fonts.bebasNeue,
-							$css('font-size', '60px'),
-						]),
-						paragraph(siteCopyItems.find('Edit Story Must Sign In')).all([
+						confettiBackground(bodyColumn(holibirthdayRow(text(siteCopyItems.find('Edit Story Title')).all([
+							fonts.h1,
+						])))),
+						bodyColumn(paragraph(siteCopyItems.find('Edit Story Must Sign In')).all([
 							fonts.bebasNeue,
 							$css('font-size', '30px'),
 							link,
@@ -7168,8 +7278,8 @@ define('storyEditViewP', [
 								signInStream.push(true);
 								ev.stopPropagation();
 							}),
-						]),
-					]));
+						])),
+					]);
 				});
 			});
 		}));
@@ -7215,7 +7325,7 @@ define('dailyTheme', [
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text(copy.find('Daily Theme Placeholder')).all([
+					paragraph(copy.find('Daily Theme Placeholder')).all([
 						fonts.ralewayThinBold,
 						fonts.h1,
 					]),
@@ -7232,11 +7342,11 @@ define('dailyTheme', [
 						return linkTo('#!story/' + story._id, holibirthdayRow(stack({
 							gutterSize: separatorSize,
 						}, [
-							text(story.name).all([
+							paragraph(story.name).all([
 								fonts.ralewayThinBold,
 								fonts.h1,
 							]),
-							linkTo('#!user/' + profile.user, text(profile.firstName + ' ' + profile.lastName).all([
+							linkTo('#!user/' + profile.user, paragraph(profile.firstName + ' ' + profile.lastName).all([
 								fonts.ralewayThinBold,
 								fonts.h3,
 							])),
@@ -7298,7 +7408,7 @@ define('dailyTheme', [
 								gutterSize: separatorSize,
 							}, displayResults.map(function (displayResult) {
 								return alignTBM({
-									middle: text(displayResult.name).all([
+									middle: paragraph(displayResult.name).all([
 										fonts.ralewayThinBold,
 									]),
 								}).all([
@@ -7384,10 +7494,10 @@ define('dailyTheme', [
 						return holibirthdayRow(stack({
 							gutterSize: separatorSize,
 						}, [
-							text(theme.pollTitle).all([
+							paragraph(theme.pollTitle).all([
 								fonts.h1,
 							]),
-							text(theme.pollDescription).all([
+							paragraph(theme.pollDescription).all([
 								fonts.h2,
 							]),
 							componentStream(pollResponseS.map(function (pollResponse) {
@@ -7405,7 +7515,7 @@ define('dailyTheme', [
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text(theme.someTextTitle).all([
+					paragraph(theme.someTextTitle).all([
 						fonts.h1,
 					]),
 					paragraph(theme.someTextText).all([
@@ -7416,7 +7526,7 @@ define('dailyTheme', [
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
 				}, [
-					text(copy.find('Daily Theme Placeholder')).all([
+					paragraph(copy.find('Daily Theme Placeholder')).all([
 						fonts.ralewayThinBold,
 						fonts.h1,
 					]),
@@ -7716,17 +7826,17 @@ define('holibirthdayRow', [
 			bottomToTop: true,
 			gutterSize: separatorSize,
 		}, [
+			keepAspectRatio(image({
+				src: src || domain + '/content/man.png',
+				minWidth: 300,
+			})),
 			alignTBM({
-				middle: alignLRM({
-					middle: image({
-						src: src || domain + '/content/man.png',
-						minWidth: 300,
-						chooseHeight: true,
-					}),
-				}),
-			}),
-			alignTBM({
-				middle: content,
+				middle: stack({}, [
+					content,
+					nothing.all([
+						withMinWidth(300, true),
+					]),
+				]),
 			}),
 		])));
 	};

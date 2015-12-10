@@ -21,7 +21,14 @@ define([
 				text(config.name).all([
 					fonts.ralewayThinBold,
 				]).all(config.labelAll || []),
-				forms.selectBox(config),
+				alignLRM({
+					left: stack({}, [
+						forms.selectBox(config),
+						nothing.all([
+							withMinWidth(150, true),
+						]),
+					]),
+				}),
 			]);
 		},
 		textarea: function (config) {
@@ -72,11 +79,15 @@ define([
 			return grid({
 				gutterSize: separatorSize,
 			}, [
-				prettyForms.input({
+				prettyForms.fileUpload({
 					name: config.name,
 					accept: config.accept,
 					labelAll: config.labelAll,
-					stream: config.stream,
+					stream: Stream.create(),
+				}, function (file) {
+					db.uploadFile(file).then(function (filename) {
+						config.stream.push('/api/uploadFile/find/' + encodeURIComponent(filename));
+					});
 				}).all([
 					withMinWidth(300, true),
 				]),
@@ -144,8 +155,9 @@ define([
 			return stack({}, [
 				input.all([
 					$prop('type', 'submit'),
-					submitThis(function () {
-						cb();
+					submitThis(function (ev, disable) {
+						var enable = disable();
+						cb(enable);
 						return false;
 					}),
 					withMinHeight(0, true),

@@ -125,10 +125,9 @@ define([
 										name: copy.find('Edit Profile Email'),
 										stream: profileStreams.email,
 									}),
-									prettyForms.input({
+									prettyForms.checkbox({
 										name: copy.find('Edit Profile Receive Marketing Emails'),
 										stream: profileStreams.receiveMarketingEmails,
-										type: 'checkbox',
 									}),
 									prettyForms.input({
 										name: copy.find('Edit Profile Birthday'),
@@ -144,10 +143,9 @@ define([
 										stream: profileStreams.imageUrl,
 									}),
 									stack({}, [
-										prettyForms.input({
+										prettyForms.checkbox({
 											name: copy.find('Edit Profile Holibirther'),
 											stream: profileStreams.holibirther,
-											type: 'checkbox',
 										}),
 										componentStream(profileStreams.holibirther.map(function (holibirther) {
 											return holibirther ? stack({
@@ -174,10 +172,9 @@ define([
 											]) : nothing;
 										})),					  
 									]),
-									prettyForms.input({
+									prettyForms.checkbox({
 										name: copy.find('Edit Profile Know a Holibirther'),
 										stream: profileStreams.knowAHolibirther,
-										type: 'checkbox',
 									}),
 									((me._id === user) && !me.facebookId) ? passwordEditor(copy) : nothing,
 									alignLRM({

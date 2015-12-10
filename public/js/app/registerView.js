@@ -17,8 +17,10 @@ define([
 			firstName: Stream.never(),
 			lastName: Stream.never(),
 			email: Stream.never(),
+			birthday: Stream.never(),
 			holibirther: Stream.once(false),
 			knowAHolibirther: Stream.once(false),
+			receiveMarketingEmails: Stream.once(true),
 			password: Stream.never(),
 			confirmPassword: Stream.never(),
 		};
@@ -58,6 +60,12 @@ define([
 			fieldName: 'lastName',
 			stream: model.lastName,
 		});
+		var birthday = prettyForms.input({
+			name: 'Birthday',
+			fieldName: 'lastName',
+			stream: model.birthday,
+			type: 'date',
+		});
 		var email = prettyForms.input({
 			name: 'Email',
 			fieldName: 'email',
@@ -72,6 +80,11 @@ define([
 			name: 'Know a Holibirther',
 			fieldName: 'knowAHolibirther',
 			stream: model.knowAHolibirther,
+		});
+		var receiveMarketingEmails = prettyForms.checkbox({
+			name: 'Receive Emails from Holibirthday',
+			fieldName: 'lastName',
+			stream: model.receiveMarketingEmails,
 		});
 		var password = prettyForms.input({
 			name: 'Password',
@@ -108,6 +121,13 @@ define([
 			fonts.ralewayThinBold,
 		]);
 
+		meP.then(function (me) {
+			if (me) {
+				location.hash = '#!';
+				location.reload();
+			}
+		});
+		
 		return bodyColumn(padding({
 			top: separatorSize * 4,
 		}, sideBySide({
@@ -130,21 +150,23 @@ define([
 					$css('font-size', registerFontSize),
 				]),
 			]),
-			form.all([
-				child(stack({
-					gutterSize: separatorSize,
-				}, [
-					loginWithFacebook(),
-					alignLRM({
-						middle: or,
-					}),
-					toggleComponent([
-						stack({
+			stack({
+				gutterSize: separatorSize,
+			}, [
+				loginWithFacebook(),
+				alignLRM({
+					middle: or,
+				}),
+				toggleComponent([
+					form.all([
+						child(stack({
 							gutterSize: separatorSize,
 						}, [
 							firstName,
 							lastName,
 							email,
+							receiveMarketingEmails,
+							birthday,
 							holibirther,
 							knowAHolibirther,
 							password,
@@ -161,32 +183,23 @@ define([
 								])),
 								submit,
 							]),
-						]),
-						stack({
-							gutterSize: separatorSize,
-						}, [
-							paragraph('Success!').all([
-								fonts.ralewayThinBold,
-							]),
-							paragraph('Please check your email to confirm your email address.').all([
-								fonts.ralewayThinBold,
-							]),
-						]),
-					], registeredViewIndex).all([
-						withMinWidth(300, true),
+						])),
+						wireChildren(passThroughToFirst),
 					]),
-				])),
-				wireChildren(passThroughToFirst),
+					stack({
+						gutterSize: separatorSize,
+					}, [
+						paragraph('Success!').all([
+							fonts.ralewayThinBold,
+						]),
+						paragraph('Please check your email to confirm your email address.').all([
+							fonts.ralewayThinBold,
+						]),
+					]),
+				], registeredViewIndex).all([
+					withMinWidth(300, true),
+				]),
 			]),
-		]))).all([
-			function () {
-				meP.then(function (me) {
-					if (me) {
-						location.hash = '#!';
-						location.reload();
-					}
-				});
-			},				
-		]);
+		])));
 	})();
 });

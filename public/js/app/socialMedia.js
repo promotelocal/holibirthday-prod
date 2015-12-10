@@ -1,4 +1,6 @@
-define([], function () {
+define([
+	'domain',
+], function (domain) {
 	return (function () {
 		var shareWindow = function (url) {
 			var width  = 575,
@@ -23,10 +25,26 @@ define([], function () {
 				}),
 				name: 'Facebook',
 				shareVerb: 'share',
-				shareThisPage: function () {
+				shareThisPage: function (config) {
+					config = config || {};
+					if (config.description && config.description.length > 200) {
+						config.description = config.description.substring(0, 197) + '...';
+					}
+					config.imageUrl = config.imageUrl || './content/man2.png';
+					if (config.imageUrl.indexOf('/api') === 0) {
+						config.imageUrl = domain + config.imageUrl;
+					}
+					if (config.imageUrl.indexOf('.') === 0) {
+						config.imageUrl = domain + '/' + config.imageUrl;
+					}
+					console.log(config.imageUrl);
 					return FB.ui({
 						display: 'popup',
-						method: 'share',
+						method: 'feed',
+						picture: config.imageUrl,
+						name: config.name,
+						caption: config.text,
+						description: config.description,
 						href: location.href,
 					});
 				},

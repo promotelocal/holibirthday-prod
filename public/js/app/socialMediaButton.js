@@ -2,7 +2,7 @@ define([
 	'fonts',
 	'separatorSize',
 ], function (fonts, separatorSize) {
-	return function (textFunc) {
+	return function (textFunc, config) {
 		return function (sm) {
 			return border(sm.color, {
 				all: 2,
@@ -20,7 +20,7 @@ define([
 				link,
 				withFontColor(sm.color),
 				clickThis(function () {
-					sm.shareThisPage();
+					sm.shareThisPage(config);
 				}),
 			]);
 		};
