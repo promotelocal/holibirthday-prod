@@ -1,5 +1,5 @@
 window.app = function () {
-	if (-1 === window.location.origin.indexOf('holibirthdaygift')) {
+	if (-1 === window.location.href.indexOf('holibirthdaygift')) {
 		require(['app'], function (app) {
 			rootComponent(app);
 		});

@@ -137,6 +137,7 @@ define([
 									prettyForms.textarea({
 										name: copy.find('Edit Profile Bio'),
 										stream: profileStreams.bio,
+										fieldName: 'profile_bio',
 									}),
 									prettyForms.imageUpload({
 										name: copy.find('Edit Profile Image URL'),

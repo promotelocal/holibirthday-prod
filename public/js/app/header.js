@@ -125,7 +125,7 @@ define([
 										}),
 									]),
 								], windowHash.map(function (h) {
-									if (-1 !== window.location.origin.indexOf('gift')) {
+									if (-1 !== window.location.href.indexOf('gift')) {
 										return 0;
 									}
 									return (h === '' ||

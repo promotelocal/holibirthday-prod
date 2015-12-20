@@ -526,7 +526,7 @@ define('forms', [
 									type === 'number')) ? 1 : 0,
 			}, input.all((all || []).concat([
 				$prop('name', name),
-				$prop('type', type),
+				$prop('type', (type === 'date') ? 'text' : type),
 				withBackgroundColor(white),
 				withFontColor(black),
 				keyupThis(function (val) {
@@ -550,11 +550,17 @@ define('forms', [
 				}),
 				function (instance) {
 					var $el = instance.$el;
+					if (type === 'date') {
+						$el.datepicker({
+							dateFormat: 'mm/dd/yy',
+						});
+					}
 					stream.onValue(function (v) {
 						var newVal;
 						if (type === 'date') {
 							if (v) {
-								newVal = moment(v).utc().format('YYYY-MM-DD');
+								newVal = moment(v).utc().format('MM/DD/YYYY');
+								$el.datepicker("setDate", newVal);
 							}
 						}
 						else if (type === 'checkbox') {
@@ -594,64 +600,92 @@ define('forms', [
 			]);
 		},
 		textareaBox: function (stream, name) {
-			return promiseComponent(ckeditorP().then(function (ckeditor) {
-				return div.all([
-					child(textarea.all([
-						$prop('id', name),
-						$prop('name', name),
-						$prop('rows', 21),
-						keyupThis(function (val) {
-							stream.push($(val.target).val());
-						}),
-						changeThis(function (val) {
-							stream.push($(val.target).val());
-						}),
-						function (instance, context) {
-							var gone = false;
+			var editorHeight = 400;
+			return div.all([
+				child(textarea.all([
+					$prop('name', name),
+					$prop('rows', 21),
+					keyupThis(function (val) {
+						stream.push($(val.target).val());
+					}),
+					changeThis(function (val) {
+						stream.push($(val.target).val());
+					}),
+					function (instance, context) {
+						var id = name + (Math.random() + '').substring(2);
+						instance.$el.prop('id', id);
+						setTimeout(function () {
+							var setDimensions = function (editor) {
+								instance.minHeight.push(parseInt($(editor.editorContainer).css('height')));
+							};
 							var editorP = stream.promise.then(function (text) {
 								instance.$el.val(text);
-								ckeditor.config.resize_enabled = false;
-								var editor = CKEDITOR.replace(instance.$el[0]);
-								editor.on('instanceReady', function () {
-									editor.on('change', function () {
-										stream.push(editor.getData());
-									});
-									Stream.combine([
-										context.width,
-										context.height,
-									], function (w, h) {
-										if (!gone) {
-											editor.resize(px(w), px(h), true, true);
-										}
-									});
+								window.tinymce.init({
+									selector: '#' + id,
+									plugins: [
+										'autoresize',
+										'colorpicker',
+										'image',
+										'link',
+										'textcolor',
+									],
+									menubar: false,
+									toolbar: 'styleselect | undo redo | bold italic underline_that_works | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons',
+									resize: false,
+									autoresize_min_height: editorHeight,
+									autoresize_max_height: editorHeight,
+									init_instance_callback: function (editor) {
+										setTimeout(function () {
+											context.width.map(function () {
+												setDimensions(editor);
+											});
+										});
+										editor.on('change', function () {
+											stream.push(editor.getContent());
+										});
+									},
+									setup: function(editor) {
+										editor.addButton('underline_that_works', {
+											title : 'Underline',
+											icon: 'underline',
+											onclick: function (editor) {
+												window.tinymce.execCommand('mceToggleFormat', false, 'underline_that_works');
+											},
+										});
+									},
+									style_formats: [
+										{title: 'Header 1', format: 'h1'},
+										{title: 'Header 2', format: 'h2'},
+										{title: 'Header 3', format: 'h3'},
+										{title: 'Header 4', format: 'h4'},
+										{title: 'Header 5', format: 'h5'},
+										{title: 'Header 6', format: 'h6'},
+										{title: 'Underline', format: 'underline_that_works'},
+									],
+									formats: {
+										underline_that_works: {
+											inline: 'u',
+											remove: 'all',
+										},
+									},
 								});
-								return editor;
 							});
-							return function () {
-								gone = true;
-								editorP.then(function (editor) {
-									if (!gone) {
-										try {
-											editor.destroy();
-										}
-										catch (e) {
-											console.log('ckeditor exception happened');
-										}
-									}
-								});
-							};
-						},
-					])),
-					wireChildren(function (instance, context, i) {
-						i.minHeight.pushAll(instance.minHeight);
-						i.minWidth.pushAll(instance.minWidth);
-						return [{
-							width: context.width,
-							height: context.height,
-						}];
-					}),
-				]);
-			}));
+						}, 2000);
+						return function () {
+							console.log('removing');
+							window.tinymce.execCommand('mceRemoveControl', true, id);
+						};
+					},
+				])),
+				wireChildren(function (instance, context, i) {
+					i.minHeight.pushAll(instance.minHeight);
+					i.minWidth.pushAll(instance.minWidth);
+					return [{
+						width: context.width,
+						height: context.height,
+					}];
+				}),
+			]);
 		},
 		selectBox: function (config) {
 			return border(color({
@@ -1024,6 +1058,7 @@ define('profileEditViewP', [
 									prettyForms.textarea({
 										name: copy.find('Edit Profile Bio'),
 										stream: profileStreams.bio,
+										fieldName: 'profile_bio',
 									}),
 									prettyForms.imageUpload({
 										name: copy.find('Edit Profile Image URL'),
@@ -2190,7 +2225,7 @@ define('header', [
 										}),
 									]),
 								], windowHash.map(function (h) {
-									if (-1 !== window.location.origin.indexOf('gift')) {
+									if (-1 !== window.location.href.indexOf('gift')) {
 										return 0;
 									}
 									return (h === '' ||
@@ -3032,7 +3067,7 @@ define('domain', [], function () {
 	// return 'http://localhost';
 	// return 'https://nodejs-holibirthday.rhcloud.com';
 	// return 'https://holibirthday.aoeu2code.com';
-	// return 'http://71.89.76.184';
+	return 'http://71.89.76.184';
 	// return 'https://glacial-earth-6398.herokuapp.com';
 	return 'https://www.holibirthday.com';
 });
@@ -3075,7 +3110,7 @@ define('submitButton', [], function () {
 	};
 });
 window.app = function () {
-	if (-1 === window.location.origin.indexOf('holibirthdaygift')) {
+	if (-1 === window.location.href.indexOf('holibirthdaygift')) {
 		require(['app'], function (app) {
 			rootComponent(app);
 		});
@@ -3704,7 +3739,9 @@ define('adminView', [
 					clickThis(function () {
 						var theme = dailyThemeS.lastValue();
 						delete theme._id;
-						db.dailyTheme.insert(theme).then(function () {
+						db.dailyTheme.update({
+							id: theme._id,
+						}, theme).then(function () {
 							window.location.hash = '#!';
 							window.location.reload();
 						});
@@ -4721,6 +4758,10 @@ define('storyDetailViewP', [
 										var $text = $(story.text);
 										$text.find('div').css('position', 'initial');
 										$text.appendTo(instance.$el);
+										$text.find('img')
+											.css('max-width', '100%')
+											.attr('width', '')
+											.attr('height', '');
 										instance.updateDimensions();
 									},
 								]),
@@ -6287,6 +6328,7 @@ define('contactUsView', [
 		bodyColumn(prettyForms.textarea({
 			name: 'Message',
 			stream: messageS,
+			fieldName: 'contactUsMessage',
 		})),
 		bodyColumn(componentStream(state.map(text))),
 		bodyColumn(alignLRM({
@@ -7023,11 +7065,11 @@ define('storyEditViewP', [
 				var instructions = bodyColumn(padding(20, stack({
 					gutterSize: separatorSize,
 				}, [
-					text(siteCopyItems.find('Edit Story Title')).all([
+					paragraph(siteCopyItems.find('Edit Story Title')).all([
 						fonts.bebasNeue,
 						$css('font-size', '60px'),
 					]),
-					text(siteCopyItems.find('Edit Story Smaller Title')).all([
+					paragraph(siteCopyItems.find('Edit Story Smaller Title')).all([
 						fonts.ralewayThinBold,
 						$css('font-size', '30px'),
 					]),
@@ -7316,11 +7358,8 @@ define('dailyTheme', [
 	'siteCopyItemsP',
 	'submitButton',
 ], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, signInStream, siteCopyItemsP, submitButton) {
-	return promiseComponent(db.dailyTheme.find({}).then(function (themes) {
+	return promiseComponent(db.dailyTheme.findOne({}).then(function (theme) {
 		return siteCopyItemsP.then(function (copy) {
-			var theme = themes.sort(function (t1, t2) {
-				return t2.updateDate.getTime() - t1.updateDate.getTime();
-			})[0];
 			if (!theme) {
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
@@ -7826,7 +7865,9 @@ define('holibirthdayRow', [
 			bottomToTop: true,
 			gutterSize: separatorSize,
 		}, [
-			keepAspectRatio(image({
+			keepAspectRatioCorner({
+				top: true,
+			})(image({
 				src: src || domain + '/content/man.png',
 				minWidth: 300,
 			})),

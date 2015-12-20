@@ -31,6 +31,7 @@ define([
 		bodyColumn(prettyForms.textarea({
 			name: 'Message',
 			stream: messageS,
+			fieldName: 'contactUsMessage',
 		})),
 		bodyColumn(componentStream(state.map(text))),
 		bodyColumn(alignLRM({

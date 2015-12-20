@@ -30,11 +30,11 @@ define([
 				var instructions = bodyColumn(padding(20, stack({
 					gutterSize: separatorSize,
 				}, [
-					text(siteCopyItems.find('Edit Story Title')).all([
+					paragraph(siteCopyItems.find('Edit Story Title')).all([
 						fonts.bebasNeue,
 						$css('font-size', '60px'),
 					]),
-					text(siteCopyItems.find('Edit Story Smaller Title')).all([
+					paragraph(siteCopyItems.find('Edit Story Smaller Title')).all([
 						fonts.ralewayThinBold,
 						$css('font-size', '30px'),
 					]),

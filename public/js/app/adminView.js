@@ -109,7 +109,9 @@ define([
 					clickThis(function () {
 						var theme = dailyThemeS.lastValue();
 						delete theme._id;
-						db.dailyTheme.insert(theme).then(function () {
+						db.dailyTheme.update({
+							id: theme._id,
+						}, theme).then(function () {
 							window.location.hash = '#!';
 							window.location.reload();
 						});

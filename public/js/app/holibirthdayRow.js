@@ -17,7 +17,9 @@ define([
 			bottomToTop: true,
 			gutterSize: separatorSize,
 		}, [
-			keepAspectRatio(image({
+			keepAspectRatioCorner({
+				top: true,
+			})(image({
 				src: src || domain + '/content/man.png',
 				minWidth: 300,
 			})),

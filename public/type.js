@@ -10,7 +10,7 @@
 			id: {
 				title: 'Object ID',
 				fromString: function (str) {
-					return new ObjectId(str);
+					return ObjectId ? new ObjectId(str) : str;
 				},
 			},
 			json: {
@@ -44,7 +44,7 @@
 	};
 
 	if (typeof exports === 'undefined') {
-		window.type = genType(ObjectId);
+		window.type = genType();
 	}
 	else {
 		var ObjectID = require('mongodb').ObjectID;

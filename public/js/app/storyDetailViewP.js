@@ -208,6 +208,10 @@ define([
 										var $text = $(story.text);
 										$text.find('div').css('position', 'initial');
 										$text.appendTo(instance.$el);
+										$text.find('img')
+											.css('max-width', '100%')
+											.attr('width', '')
+											.attr('height', '');
 										instance.updateDimensions();
 									},
 								]),

@@ -1096,10 +1096,7 @@
 
 
 	if (typeof exports === 'undefined') {
-		ObjectId.equal = function (id1, id2) {
-			return id1 && id2 && id1.toString() === id2.toString();
-		};
-		window.schema = genSchema(window.editorType, window.Err, window.type, ObjectId);
+		window.schema = genSchema(window.editorType, window.Err, window.type);
 	}
 	else {
 		var ObjectID = require('mongodb').ObjectID;

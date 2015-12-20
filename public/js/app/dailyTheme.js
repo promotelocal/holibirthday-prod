@@ -10,11 +10,8 @@ define([
 	'siteCopyItemsP',
 	'submitButton',
 ], function (colors, db, fonts, holibirthdayRow, meP, prettyForms, separatorSize, signInStream, siteCopyItemsP, submitButton) {
-	return promiseComponent(db.dailyTheme.find({}).then(function (themes) {
+	return promiseComponent(db.dailyTheme.findOne({}).then(function (theme) {
 		return siteCopyItemsP.then(function (copy) {
-			var theme = themes.sort(function (t1, t2) {
-				return t2.updateDate.getTime() - t1.updateDate.getTime();
-			})[0];
 			if (!theme) {
 				return holibirthdayRow(stack({
 					gutterSize: separatorSize,
