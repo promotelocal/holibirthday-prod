@@ -4,7 +4,12 @@
 			string: {
 				title: 'String',
 				fromString: function (str) {
-					return xss ? xss(str) : str;
+					if (xss) {
+						xss.whiteList.div.push('align');
+					}
+					return xss ? xss(str, {
+						whiteList: xss.whiteList,
+					}) : str;
 				},
 			},
 			id: {

@@ -13,9 +13,10 @@ define([
 	'months',
 	'prettyForms',
 	'separatorSize',
+	'siteCopyItemsP',
 	'storiesP',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, siteCopyItemsP, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
@@ -144,8 +145,8 @@ define([
 	}));
 
 	
-	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
-		var copyItemEditor = function (uniqueName, formElement) {
+	var copyItemEditorForItems = function (siteCopyItems) {
+		return function (uniqueName, formElement) {
 			var item = siteCopyItems.filter(function (item) {
 				return item.uniqueName === uniqueName;
 			})[0] || {
@@ -195,7 +196,10 @@ define([
 				}),
 			]);
 		};
-		
+	};
+	
+	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
+		var copyItemEditor = copyItemEditorForItems(siteCopyItems);
 		return tabs([{
 			tab: tab('Home Page'),
 			content: content(stack({
@@ -728,6 +732,18 @@ define([
 			});
 		});
 	}));
+
+	var holibirthdayUnsubscribe = promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
+		var copyItemEditor = copyItemEditorForItems(siteCopyItems);
+		return copyItemEditor('Automated Emails Unsubscribe Footer (wrap text for "unsubscribe" link in double curly braces, e.g. {{unsubscribe}} )', 'textarea');
+	}));
+
+	var automatedEmails = stack({
+		gutterSize: separatorSize,
+	}, [
+		mailchimpTemplates,
+		holibirthdayUnsubscribe,
+	]);
 										  
 	var mailchimpLists = promiseComponent($.ajax({
 		url: '/mailchimp/lists',
@@ -821,7 +837,7 @@ define([
 			content: content(famousBirthdays),
 		}, {
 			tab: tab('Mailchimp Templates'),
-			content: content(mailchimpTemplates),
+			content: content(automatedEmails),
 		}, {
 			tab: tab('Mailchimp Lists'),
 			content: content(mailchimpLists),

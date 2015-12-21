@@ -113,13 +113,11 @@ define([
 									selector: '#' + id,
 									plugins: [
 										'autoresize',
-										'colorpicker',
 										'image',
 										'link',
-										'textcolor',
 									],
 									menubar: false,
-									toolbar: 'styleselect | undo redo | bold italic underline_that_works | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons',
+									toolbar: 'styleselect | undo redo | bold italic underline_that_works | align_left align_center align_right | bullist numlist | link image | print preview media fullpage | forecolor backcolor emoticons',
 									resize: false,
 									autoresize_min_height: editorHeight,
 									autoresize_max_height: editorHeight,
@@ -137,8 +135,29 @@ define([
 										editor.addButton('underline_that_works', {
 											title : 'Underline',
 											icon: 'underline',
-											onclick: function (editor) {
+											onclick: function () {
 												window.tinymce.execCommand('mceToggleFormat', false, 'underline_that_works');
+											},
+										});
+										editor.addButton('align_left', {
+											title : 'Align Left',
+											icon: 'alignleft',
+											onclick: function () {
+												window.tinymce.execCommand('mceToggleFormat', false, 'align_left');
+											},
+										});
+										editor.addButton('align_right', {
+											title : 'Align Right',
+											icon: 'alignright',
+											onclick: function () {
+												window.tinymce.execCommand('mceToggleFormat', false, 'align_right');
+											},
+										});
+										editor.addButton('align_center', {
+											title : 'Align Center',
+											icon: 'aligncenter',
+											onclick: function () {
+												window.tinymce.execCommand('mceToggleFormat', false, 'align_center');
 											},
 										});
 									},
@@ -149,12 +168,32 @@ define([
 										{title: 'Header 4', format: 'h4'},
 										{title: 'Header 5', format: 'h5'},
 										{title: 'Header 6', format: 'h6'},
-										{title: 'Underline', format: 'underline_that_works'},
 									],
 									formats: {
 										underline_that_works: {
 											inline: 'u',
 											remove: 'all',
+										},
+										align_left: {
+											block: 'div',
+											remove: 'all',
+											attributes: {
+												align: 'left',
+											},
+										},
+										align_right: {
+											block: 'div',
+											remove: 'all',
+											attributes: {
+												align: 'right',
+											},
+										},
+										align_center: {
+											block: 'div',
+											remove: 'all',
+											attributes: {
+												align: 'center',
+											},
 										},
 									},
 								});

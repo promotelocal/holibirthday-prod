@@ -624,13 +624,11 @@ define('forms', [
 									selector: '#' + id,
 									plugins: [
 										'autoresize',
-										'colorpicker',
 										'image',
 										'link',
-										'textcolor',
 									],
 									menubar: false,
-									toolbar: 'styleselect | undo redo | bold italic underline_that_works | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | print preview media fullpage | forecolor backcolor emoticons',
+									toolbar: 'styleselect | undo redo | bold italic underline_that_works | align_left align_center align_right | bullist numlist | link image | print preview media fullpage | forecolor backcolor emoticons',
 									resize: false,
 									autoresize_min_height: editorHeight,
 									autoresize_max_height: editorHeight,
@@ -648,8 +646,29 @@ define('forms', [
 										editor.addButton('underline_that_works', {
 											title : 'Underline',
 											icon: 'underline',
-											onclick: function (editor) {
+											onclick: function () {
 												window.tinymce.execCommand('mceToggleFormat', false, 'underline_that_works');
+											},
+										});
+										editor.addButton('align_left', {
+											title : 'Align Left',
+											icon: 'alignleft',
+											onclick: function () {
+												window.tinymce.execCommand('mceToggleFormat', false, 'align_left');
+											},
+										});
+										editor.addButton('align_right', {
+											title : 'Align Right',
+											icon: 'alignright',
+											onclick: function () {
+												window.tinymce.execCommand('mceToggleFormat', false, 'align_right');
+											},
+										});
+										editor.addButton('align_center', {
+											title : 'Align Center',
+											icon: 'aligncenter',
+											onclick: function () {
+												window.tinymce.execCommand('mceToggleFormat', false, 'align_center');
 											},
 										});
 									},
@@ -666,6 +685,27 @@ define('forms', [
 										underline_that_works: {
 											inline: 'u',
 											remove: 'all',
+										},
+										align_left: {
+											block: 'div',
+											remove: 'all',
+											attributes: {
+												align: 'left',
+											},
+										},
+										align_right: {
+											block: 'div',
+											remove: 'all',
+											attributes: {
+												align: 'right',
+											},
+										},
+										align_center: {
+											block: 'div',
+											remove: 'all',
+											attributes: {
+												align: 'center',
+											},
 										},
 									},
 								});
@@ -3643,9 +3683,10 @@ define('adminView', [
 	'months',
 	'prettyForms',
 	'separatorSize',
+	'siteCopyItemsP',
 	'storiesP',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, storiesP, submitButton) {
+], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, siteCopyItemsP, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
@@ -3774,8 +3815,8 @@ define('adminView', [
 	}));
 
 	
-	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
-		var copyItemEditor = function (uniqueName, formElement) {
+	var copyItemEditorForItems = function (siteCopyItems) {
+		return function (uniqueName, formElement) {
 			var item = siteCopyItems.filter(function (item) {
 				return item.uniqueName === uniqueName;
 			})[0] || {
@@ -3825,7 +3866,10 @@ define('adminView', [
 				}),
 			]);
 		};
-		
+	};
+	
+	var copyEditor = promiseComponent(db.siteCopyItem.find({}).then(function (siteCopyItems) {
+		var copyItemEditor = copyItemEditorForItems(siteCopyItems);
 		return tabs([{
 			tab: tab('Home Page'),
 			content: content(stack({
@@ -4358,6 +4402,18 @@ define('adminView', [
 			});
 		});
 	}));
+
+	var holibirthdayUnsubscribe = promiseComponent(siteCopyItemsP.then(function (siteCopyItems) {
+		var copyItemEditor = copyItemEditorForItems(siteCopyItems);
+		return copyItemEditor('Automated Emails Unsubscribe Footer (wrap text for "unsubscribe" link in double curly braces, e.g. {{unsubscribe}} )', 'textarea');
+	}));
+
+	var automatedEmails = stack({
+		gutterSize: separatorSize,
+	}, [
+		mailchimpTemplates,
+		holibirthdayUnsubscribe,
+	]);
 										  
 	var mailchimpLists = promiseComponent($.ajax({
 		url: '/mailchimp/lists',
@@ -4451,7 +4507,7 @@ define('adminView', [
 			content: content(famousBirthdays),
 		}, {
 			tab: tab('Mailchimp Templates'),
-			content: content(mailchimpTemplates),
+			content: content(automatedEmails),
 		}, {
 			tab: tab('Mailchimp Lists'),
 			content: content(mailchimpLists),
