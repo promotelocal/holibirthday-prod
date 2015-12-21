@@ -124,6 +124,9 @@
 			}, {
 				name: 'unsubscribeToken',
 				type: type.string,
+			}, {
+				name: 'optOutToken',
+				type: type.string,
 			}],
 			mayFind: always,
 			mayInsert: never,

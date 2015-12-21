@@ -42,6 +42,11 @@ define([
 				return promiseComponent(loadAsync('resetPasswordView', [token]));
 			}),
 		}, {
+			string: '#!optOutEmails',
+			router: routeMatchRest(function (token) {
+				return promiseComponent(loadAsync('optOutEmailsView', [token]));
+			}),
+		}, {
 			string: '#!design/',
 			router: routeMatchRest(function (id) {
 				return promiseComponent(loadAsync('gafyDesignView', [id]));

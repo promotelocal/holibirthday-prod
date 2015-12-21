@@ -364,25 +364,12 @@ define([
 				copyItemEditor('Sign In Or'),
 			])),
 		}, {
-		// 	tab: tab('Order Email'),
-		// 	content: content(stack({
-		// 		gutterSize: separatorSize,
-		// 	}, [
-		// 		copyItemEditor('Order Confirmation Email: From'),
-		// 		copyItemEditor('Order Confirmation Email: From Name'),
-		// 		copyItemEditor('Order Confirmation Email: Subject'),
-
-		// 		copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
-		// 	])),
-		// }, {
-			tab: tab('Donation Email'),
+			tab: tab('Unsubscribed'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
-				copyItemEditor('Donate Confirmation Email: From'),
-				copyItemEditor('Donate Confirmation Email: From Name'),
-				copyItemEditor('Donate Confirmation Email: Subject'),
-				copyItemEditor('Donate Confirmation Email: Text ( {{donationNumber}} includes donation number)', 'plainTextarea'),
+				copyItemEditor('Unsubscribed Title'),
+				copyItemEditor('Unsubscribed Message'),
 			])),
 		}]);
 	}));

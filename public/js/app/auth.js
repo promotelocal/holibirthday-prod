@@ -84,6 +84,16 @@ define([
 				contentType: 'application/json',
 			});
 		},
+		optOutEmails: function (options) {
+			return $.ajax({
+				type: 'post',
+				url: domain + '/auth/optOutEmails',
+				data: JSON.stringify({
+					token: options.token,
+				}),
+				contentType: 'application/json',
+			});
+		},
 		grecaptchaSitekeyP: $.get(domain + '/grecaptcha/sitekey'),
 		grecaptchaP: (function () {
 			var d = Q.defer();

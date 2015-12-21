@@ -483,6 +483,16 @@ define('auth', [
 				contentType: 'application/json',
 			});
 		},
+		optOutEmails: function (options) {
+			return $.ajax({
+				type: 'post',
+				url: domain + '/auth/optOutEmails',
+				data: JSON.stringify({
+					token: options.token,
+				}),
+				contentType: 'application/json',
+			});
+		},
 		grecaptchaSitekeyP: $.get(domain + '/grecaptcha/sitekey'),
 		grecaptchaP: (function () {
 			var d = Q.defer();
@@ -679,7 +689,6 @@ define('forms', [
 										{title: 'Header 4', format: 'h4'},
 										{title: 'Header 5', format: 'h5'},
 										{title: 'Header 6', format: 'h6'},
-										{title: 'Underline', format: 'underline_that_works'},
 									],
 									formats: {
 										underline_that_works: {
@@ -4034,25 +4043,12 @@ define('adminView', [
 				copyItemEditor('Sign In Or'),
 			])),
 		}, {
-		// 	tab: tab('Order Email'),
-		// 	content: content(stack({
-		// 		gutterSize: separatorSize,
-		// 	}, [
-		// 		copyItemEditor('Order Confirmation Email: From'),
-		// 		copyItemEditor('Order Confirmation Email: From Name'),
-		// 		copyItemEditor('Order Confirmation Email: Subject'),
-
-		// 		copyItemEditor('Order Confirmation Email: Text ( {{orderNumber}} includes order number)', 'plainTextarea'),
-		// 	])),
-		// }, {
-			tab: tab('Donation Email'),
+			tab: tab('Unsubscribed'),
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
-				copyItemEditor('Donate Confirmation Email: From'),
-				copyItemEditor('Donate Confirmation Email: From Name'),
-				copyItemEditor('Donate Confirmation Email: Subject'),
-				copyItemEditor('Donate Confirmation Email: Text ( {{donationNumber}} includes donation number)', 'plainTextarea'),
+				copyItemEditor('Unsubscribed Title'),
+				copyItemEditor('Unsubscribed Message'),
 			])),
 		}]);
 	}));
@@ -4526,6 +4522,35 @@ define('adminP', [
 		}
 	});
 });
+define('optOutEmailsView', [
+	'auth',
+	'bodyColumn',
+	'confettiBackground',
+	'fonts',
+	'holibirthdayRow',
+	'separatorSize',
+	'siteCopyItemsP',
+], function (auth, bodyColumn, confettiBackground, fonts, holibirthdayRow, separatorSize, siteCopyItemsP) {
+	return function (token) {
+		return promiseComponent(siteCopyItemsP.then(function (copy) {
+			return auth.optOutEmails({
+				token: token
+			}).then(function () {
+				return stack({
+					gutterSize: separatorSize,
+				}, [
+					confettiBackground(bodyColumn(holibirthdayRow(paragraph(copy.find('Unsubscribed Title')).all([
+						fonts.h1,
+					])))),
+					bodyColumn(paragraph(copy.find('Unsubscribed Message')).all([
+						fonts.h1,
+					])),
+				]);
+			});
+		}));
+	};
+});
+
 define('socialMedia', [
 	'domain',
 ], function (domain) {
@@ -8245,6 +8270,11 @@ define('pageRoutes', [
 			string: '#!resetPassword/',
 			router: routeMatchRest(function (token) {
 				return promiseComponent(loadAsync('resetPasswordView', [token]));
+			}),
+		}, {
+			string: '#!optOutEmails',
+			router: routeMatchRest(function (token) {
+				return promiseComponent(loadAsync('optOutEmailsView', [token]));
 			}),
 		}, {
 			string: '#!design/',
