@@ -40,6 +40,10 @@ define([
 			}
 			
 			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
+			buttons.push(nothing.all([
+				withMinWidth(10, 0),
+				withMinHeight(10, 0),
+			]));
 			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
