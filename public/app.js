@@ -2190,8 +2190,8 @@ define('header', [
 			
 			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
 			buttons.push(nothing.all([
-				withMinWidth(10, 0),
-				withMinHeight(10, 0),
+				withMinWidth(10, true),
+				withMinHeight(10, true),
 			]));
 			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
@@ -2287,7 +2287,7 @@ define('header', [
 								})),
 							}),
 							right: componentStream(windowWidth.map(function (width) {
-								if (width > 560) {
+								if (width > 690) {
 									menuOpenStream.push(false);
 									return buttons;
 								}
