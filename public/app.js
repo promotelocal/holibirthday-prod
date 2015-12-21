@@ -3116,7 +3116,7 @@ define('domain', [], function () {
 	// return 'http://localhost';
 	// return 'https://nodejs-holibirthday.rhcloud.com';
 	// return 'https://holibirthday.aoeu2code.com';
-	// return 'http://71.89.76.184';
+	return 'http://71.89.76.184';
 	// return 'https://glacial-earth-6398.herokuapp.com';
 	return 'https://www.holibirthday.com';
 });
@@ -8123,71 +8123,9 @@ define('donateView', [
 								fonts.h1,
 							]),
 						]), copy.find('Causes Image')))),
-						bodyColumn(stack({
-							gutterSize: separatorSize,
-							collapseGutters: true,
-						}, [
-							prettyForms.input({
-								name: 'Donation Amount $',
-								fieldName: 'email',
-								type: 'text',
-								stream: stripeStreams.amount,
-							}),
-							prettyForms.input({
-								name: 'Email',
-								fieldName: 'email',
-								type: 'text',
-								stream: stripeStreams.email,
-							}),
-							prettyForms.input({
-								name: 'Card Number',
-								type: 'text',
-								stream: stripeStreams.number,
-							}),
-							sideBySide({
-								handleSurplusWidth: evenSplitSurplusWidth,
-								gutterSize: separatorSize,
-							}, [
-								prettyForms.input({
-									name: 'CVC',
-									type: 'text',
-									stream: stripeStreams.cvc,
-								}),
-								prettyForms.input({
-									name: 'Exp Month',
-									type: 'text',
-									stream: stripeStreams.exp_month,
-								}),
-								prettyForms.input({
-									name: 'Exp Year',
-									type: 'text',
-									stream: stripeStreams.exp_year,
-								}),
-							]),
-							componentStream(fillOutAllFieldsS.map(function (fillEm) {
-								return fillEm ? alignLRM({
-									right: text('Please fill out all fields')
-								}) : nothing;
-							})),
-							componentStream(couldNotChargeCardS.map(function (fillEm) {
-								return fillEm ? alignLRM({
-									right: text('Could not charge card')
-								}) : nothing;
-							})),
-							alignLRM({
-								right: submitButton(black, text('Donate Now')).all([
-									link,
-									clickThis(function (ev, disable) {
-										fillOutAllFieldsS.push(false);
-										couldNotChargeCardS.push(false);
-										var enable = disable();
-										payWithStripe().then(function () {
-											enable();
-										});
-									}),
-								]),
-							}),
-						])),
+						alignLRM({
+							middle: paragraph('<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top"><input type="hidden" name="cmd" value="_s-xclick"><input type="hidden" name="hosted_button_id" value="MXHBEA3FTW5DN"><input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!"><img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1"></form>'),
+						}),
 					]);
 				});
 			});
