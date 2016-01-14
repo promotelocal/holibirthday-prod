@@ -1033,6 +1033,7 @@
 				options: {
 					holibirthers: 'holibirthers',
 					friendsOfHolibirthers: 'friendsOfHolibirthers',
+					all: 'all',
 				},
 			}, {
 				name: 'mailchimpListId',

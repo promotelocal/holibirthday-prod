@@ -754,6 +754,9 @@ define([
 				}, {
 					name: 'Friends of Holibirthers',
 					internalType: 'friendsOfHolibirthers',
+				}, {
+					name: 'All Users',
+					internalType: 'all',
 				}].map(function (config) {
 					var mailchimpListStreams = Stream.splitObject(mailchimpLists.filter(function (l) {
 						return l.mailchimpListType === config.internalType;
