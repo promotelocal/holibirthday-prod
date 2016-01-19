@@ -759,16 +759,16 @@ define([
 					name: 'All Users',
 					internalType: 'all',
 				}].map(function (config) {
-					var mailchimpListStreams = Stream.splitObject($.extend(mailchimpLists.filter(function (l) {
-						return l.mailchimpListType === config.internalType;
-					})[0] || {}, {
+					var mailchimpListStreams = Stream.splitObject($.extend({
 						mailchimpListType: config.internalType,
 						mailchimpListId: '',
 						firstNameMergeVar: '',
 						lastNameMergeVar: '',
 						birthdayMergeVar: '',
 						holibirthdayMergeVar: '',
-					}));
+					}, mailchimpLists.filter(function (l) {
+						return l.mailchimpListType === config.internalType;
+					})[0] || {}));
 
 					var mailchimpListS = Stream.combineObject(mailchimpListStreams);
 
