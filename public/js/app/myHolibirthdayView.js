@@ -367,7 +367,7 @@ define([
 									])))),
 									bodyColumn(paragraph(copy.find('Slot Machine Description'))),
 									bodyColumn(alignLRM({
-										middle: machine(holibirthday),
+										middle: machine(holibirthday, oldHolibirthday),
 									})),
 									componentStream(holibirthday.date.delay(2500).map(function (date) {
 										return famousBirthdaysDisplay(famousBirthdaysForDate(date));

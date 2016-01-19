@@ -367,7 +367,7 @@ define('myHolibirthdayView', [
 									])))),
 									bodyColumn(paragraph(copy.find('Slot Machine Description'))),
 									bodyColumn(alignLRM({
-										middle: machine(holibirthday),
+										middle: machine(holibirthday, oldHolibirthday),
 									})),
 									componentStream(holibirthday.date.delay(2500).map(function (date) {
 										return famousBirthdaysDisplay(famousBirthdaysForDate(date));
@@ -3685,6 +3685,7 @@ define('adminView', [
 	'areYouSure',
 	'bar',
 	'bodyColumn',
+	'caseSplit',
 	'colors',
 	'db',
 	'defaultFormFor',
@@ -3699,7 +3700,7 @@ define('adminView', [
 	'siteCopyItemsP',
 	'storiesP',
 	'submitButton',
-], function (areYouSure, bar, bodyColumn, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, siteCopyItemsP, storiesP, submitButton) {
+], function (areYouSure, bar, bodyColumn, caseSplit, colors, db, defaultFormFor, fonts, formLayouts, forms, gafyDesignSmall, gafyStyleSmall, months, prettyForms, separatorSize, siteCopyItemsP, storiesP, submitButton) {
 	var tab = function (name) {
 		var body = padding({
 			top: 10,
@@ -4437,18 +4438,26 @@ define('adminView', [
 				}, {
 					name: 'Friends of Holibirthers',
 					internalType: 'friendsOfHolibirthers',
+				}, {
+					name: 'All Users',
+					internalType: 'all',
 				}].map(function (config) {
 					var mailchimpListStreams = Stream.splitObject(mailchimpLists.filter(function (l) {
 						return l.mailchimpListType === config.internalType;
 					})[0] || {
 						mailchimpListType: config.internalType,
 						mailchimpListId: '',
+						firstNameMergeVar: '',
+						lastNameMergeVar: '',
+						birthdayMergeVar: '',
+						holibirthdayMergeVar: '',
 					});
 
 					var mailchimpListS = Stream.combineObject(mailchimpListStreams);
 
 					var unsavedS = Stream.once(false);
 					var firstValueMapped = false;
+					var subscribeAllStream = Stream.once('off');
 					mailchimpListS.map(function () {
 						if (firstValueMapped) {
 							unsavedS.push(true);
@@ -4458,6 +4467,7 @@ define('adminView', [
 
 					return stack({
 						gutterSize: separatorSize,
+						collapseGutters: true,
 					}, [
 						text(config.name).all([
 							fonts.h2,
@@ -4466,6 +4476,22 @@ define('adminView', [
 							options: listOptions,
 							stream: mailchimpListStreams.mailchimpListId,
 						}),
+						prettyForms.input({
+							name: 'First Name Merge Tag',
+							stream: mailchimpListStreams.firstNameMergeVar,
+						}),
+						prettyForms.input({
+							name: 'Last Name Merge Tag',
+							stream: mailchimpListStreams.lastNameMergeVar,
+						}),
+						prettyForms.input({
+							name: 'Birthday Merge Tag',
+							stream: mailchimpListStreams.birthdayMergeVar,
+						}),
+						config.internalType === 'holibirthers' ? prettyForms.input({
+							name: 'Holibirthday Merge Tag',
+							stream: mailchimpListStreams.holibirthdayMergeVar,
+						}) : nothing,
 						sideBySide({
 							gutterSize: separatorSize,
 						}, [
@@ -4485,6 +4511,37 @@ define('adminView', [
 								middle: componentStream(unsavedS.map(function (u) {
 									return u ? text('(unsaved)') : nothing;
 								})),
+							}),
+						]),
+						text(subscribeAllStream.map(function (success) {
+							return ({
+								running: 'Running',
+								done: 'Done',
+								error: 'Error',
+								off: '',
+							})[success];
+						})),
+						submitButton(black, text('Subscribe All').all([
+							fonts.bebasNeue,
+						])).all([
+							link,
+							clickThis(function (ev, disable) {
+								var enable = disable();
+								var subscribeUrl = ({
+									all: 'All',
+									holibirthers: 'Holibirthers',
+									friendsOfHolibirthers: 'Friends',
+								})[config.internalType];
+								subscribeAllStream.push('running');
+								$.ajax({
+									url: '/mailchimp/subscribe' + subscribeUrl,
+								}).then(function () {
+									enable();
+									subscribeAllStream.push('done');
+								}, function () {
+									enable();
+									subscribeAllStream.push('error');
+								});
 							}),
 						]),
 					]);
@@ -7706,6 +7763,18 @@ define('gridSelect', [], function () {
 				}));
 			}));
 		};
+	};
+});
+define('caseSplit', [], function () {
+	return function (cases, obj) {
+		for (var key in cases) {
+			if (cases.hasOwnProperty(key) && obj.hasOwnProperty(key)) {
+				if (!$.isFunction(cases[key])) {
+					return cases[key];
+				}
+				return cases[key](obj[key]);
+			}
+		}
 	};
 });
 define('giftDetailView', [

@@ -1038,14 +1038,25 @@
 			}, {
 				name: 'mailchimpListId',
 				type: type.string,
+			}, {
+				name: 'firstNameMergeVar',
+				type: type.string,
+			}, {
+				name: 'lastNameMergeVar',
+				type: type.string,
+			}, {
+				name: 'birthdayMergeVar',
+				type: type.string,
+			}, {
+				name: 'holibirthdayMergeVar',
+				type: type.string,
 			}],
 			mayFind: ifAdmin,
 			mayInsert: ifAdmin,
 			mayUpdate: ifAdmin,
 			mayRemove: ifAdmin,
 		}];
-		
-		
+
 		schema.map(function (table) {
 			schema[table.name] = table;
 			table.fields.map(function (field) {
