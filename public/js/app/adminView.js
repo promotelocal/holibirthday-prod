@@ -809,58 +809,58 @@ define([
 							name: 'Holibirthday Merge Tag',
 							stream: mailchimpListStreams.holibirthdayMergeVar,
 						}) : nothing,
-						sideBySide({
-							gutterSize: separatorSize,
-						}, [
-							submitButton(black, text('Save').all([
-								fonts.bebasNeue,
-							])).all([
-								link,
-								clickThis(function (ev, disable) {
-									var enable = disable();
-									db.mailchimpList.insertOrUpdate(mailchimpListS.lastValue()).then(function () {
-										enable();
-										unsavedS.push(false);
-									});
-								}),
-							]),
-							alignTBM({
-								middle: componentStream(unsavedS.map(function (u) {
-									return u ? text('(unsaved)') : nothing;
-								})),
-							}),
-						]),
-						text(subscribeAllStream.map(function (success) {
-							return ({
-								running: 'Running',
-								done: 'Done',
-								error: 'Error',
-								off: '',
-							})[success];
-						})),
-						submitButton(black, text('Subscribe All').all([
-							fonts.bebasNeue,
-						])).all([
-							link,
-							clickThis(function (ev, disable) {
-								var enable = disable();
-								var subscribeUrl = ({
-									all: 'All',
-									holibirthers: 'Holibirthers',
-									friendsOfHolibirthers: 'Friends',
-								})[config.internalType];
-								subscribeAllStream.push('running');
-								$.ajax({
-									url: '/mailchimp/subscribe' + subscribeUrl,
-								}).then(function () {
-									enable();
-									subscribeAllStream.push('done');
-								}, function () {
-									enable();
-									subscribeAllStream.push('error');
-								});
-							}),
-						]),
+					// 	sideBySide({
+					// 		gutterSize: separatorSize,
+					// 	}, [
+					// 		submitButton(black, text('Save').all([
+					// 			fonts.bebasNeue,
+					// 		])).all([
+					// 			link,
+					// 			clickThis(function (ev, disable) {
+					// 				var enable = disable();
+					// 				db.mailchimpList.insertOrUpdate(mailchimpListS.lastValue()).then(function () {
+					// 					enable();
+					// 					unsavedS.push(false);
+					// 				});
+					// 			}),
+					// 		]),
+					// 		alignTBM({
+					// 			middle: componentStream(unsavedS.map(function (u) {
+					// 				return u ? text('(unsaved)') : nothing;
+					// 			})),
+					// 		}),
+					// 	]),
+					// 	text(subscribeAllStream.map(function (success) {
+					// 		return ({
+					// 			running: 'Running',
+					// 			done: 'Done',
+					// 			error: 'Error',
+					// 			off: '',
+					// 		})[success];
+					// 	})),
+					// 	submitButton(black, text('Subscribe All').all([
+					// 		fonts.bebasNeue,
+					// 	])).all([
+					// 		link,
+					// 		clickThis(function (ev, disable) {
+					// 			var enable = disable();
+					// 			var subscribeUrl = ({
+					// 				all: 'All',
+					// 				holibirthers: 'Holibirthers',
+					// 				friendsOfHolibirthers: 'Friends',
+					// 			})[config.internalType];
+					// 			subscribeAllStream.push('running');
+					// 			$.ajax({
+					// 				url: '/mailchimp/subscribe' + subscribeUrl,
+					// 			}).then(function () {
+					// 				enable();
+					// 				subscribeAllStream.push('done');
+					// 			}, function () {
+					// 				enable();
+					// 				subscribeAllStream.push('error');
+					// 			});
+					// 		}),
+						// ]),
 					]);
 				})),
 			});
