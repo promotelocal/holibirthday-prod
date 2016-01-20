@@ -2187,7 +2187,7 @@ define('header', [
 			if (admin) {
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
-			
+
 			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
 			buttons.push(nothing.all([
 				withMinWidth(10, true),
@@ -5734,6 +5734,9 @@ define('storyRowP', [
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
+			if (!profile) {
+				return nothing;
+			}
 			var paragraphs = [];
 			var n = 0;
 			var chars = 0;

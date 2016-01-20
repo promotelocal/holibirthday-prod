@@ -38,7 +38,7 @@ define([
 			if (admin) {
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
-			
+
 			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
 			buttons.push(nothing.all([
 				withMinWidth(10, true),

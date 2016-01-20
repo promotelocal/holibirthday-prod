@@ -9,6 +9,9 @@ define([
 			var profile = profiles.filter(function (p) {
 				return p.user === story.user;
 			})[0];
+			if (!profile) {
+				return nothing;
+			}
 			var paragraphs = [];
 			var n = 0;
 			var chars = 0;
