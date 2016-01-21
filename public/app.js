@@ -3117,7 +3117,7 @@ define('areYouSure', [
 });
 define('domain', [], function () {
 	// return 'http://localhost';
-	// return 'https://nodejs-holibirthday.rhcloud.com';
+	return 'https://holibirthdayproduction-holibirthday.rhcloud.com';
 	// return 'https://holibirthday.aoeu2code.com';
 	// return 'http://71.89.76.184';
 	// return 'https://glacial-earth-6398.herokuapp.com';
@@ -3126,11 +3126,13 @@ define('domain', [], function () {
 define('app', [
 	'bar',
 	'colors',
+	'doTune',
 	'footer',
 	'header',
 	'pageRoutes',
 	'separatorSize',
-], function (bar, colors, footer, header, pageRoutes, separatorSize) {
+], function (bar, colors, doTune, footer, header, pageRoutes, separatorSize) {
+	doTune();
 	var page = extendToWindowBottom(alignTBM({
 		top: fixedHeaderBody({}, header, stack({}, [
 			bar.horizontal(separatorSize),
@@ -4976,6 +4978,23 @@ define('confirmEmailView', [
 			]));
 		});
 		return confettiBackground(bodyColumn(holibirthdayRow(componentStream(pageS))));
+	};
+});
+define('doTune', [
+	'db',
+	'profileP',
+], function (db, profileP) {
+	return function () {
+		profileP.then(function (profile) {
+			if (!profile.hasHeardTune) {
+				db.profile.update({
+					_id: profile._id,
+				}, {
+					hasHeardTune: true,
+				});
+				
+			}
+		});
 	};
 });
 define('homeViewP', [

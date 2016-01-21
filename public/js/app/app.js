@@ -1,11 +1,13 @@
 define([
 	'bar',
 	'colors',
+	'doTune',
 	'footer',
 	'header',
 	'pageRoutes',
 	'separatorSize',
-], function (bar, colors, footer, header, pageRoutes, separatorSize) {
+], function (bar, colors, doTune, footer, header, pageRoutes, separatorSize) {
+	doTune();
 	var page = extendToWindowBottom(alignTBM({
 		top: fixedHeaderBody({}, header, stack({}, [
 			bar.horizontal(separatorSize),
