@@ -2246,12 +2246,16 @@ define('header', [
 									linkTo(domain + '/#!', sideBySide({}, [
 										keepAspectRatio(image({
 											src: domain + '/content/man3.png',
+											minHeight: 44,
+											minWidth: 55.45,
 										})),
 										headerButton(siteCopyItems.find('Header Home')),
 									])),
 									sideBySide({}, [
 										keepAspectRatio(image({
 											src: domain + '/content/man3.png',
+											minHeight: 44,
+											minWidth: 55.45,
 										})),
 										headerButton(siteCopyItems.find('Header Home')),
 									]).all([
