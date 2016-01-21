@@ -999,10 +999,12 @@
 					holibirthdayInThreeWeeks: 'holibirthdayInThreeWeeks',
 					holibirthdayInOneWeek: 'holibirthdayInOneWeek',
 					holibirthdayTomorrow: 'holibirthdayTomorrow',
+					holibirthdayToday: 'holibirthdayToday',
 
 					friendsHolibirthdayInThreeWeeks: 'friendsHolibirthdayInThreeWeeks',
 					friendsHolibirthdayInOneWeek: 'friendsHolibirthdayInOneWeek',
 					friendsHolibirthdayTomorrow: 'friendsHolibirthdayTomorrow',
+					friendsHolibirthdayToday: 'friendsHolibirthdayToday',
 
 					storyDeleted: 'storyDeleted',
 					commentDeleted: 'commentDeleted',

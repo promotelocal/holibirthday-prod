@@ -2171,13 +2171,13 @@ define('header', [
 			};
 		};
 
-		var headerButton = function (text) {
+		var headerButton = function (text, fontSize) {
 			return holibirthdayButton({
 				padding: 10,
 				all: [
 					fonts.celebrationTime,
 					$css('font-weight', 'bold'),
-					$css('font-size', '20px'),
+					$css('font-size', px(fontSize || 20)),
 				],
 			})(text);
 		};
@@ -2188,11 +2188,7 @@ define('header', [
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
 
-			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
-			buttons.push(nothing.all([
-				withMinWidth(10, true),
-				withMinHeight(10, true),
-			]));
+			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'), 30)));
 			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
@@ -2248,15 +2244,18 @@ define('header', [
 							left: alignTBM({
 								middle: toggleComponent([
 									linkTo(domain + '/#!', image({
-										src: 'https://www.holibirthday.com/content/man3.png',
+										src: domain + '/content/man3.png',
 										minHeight: 44,
 										minWidth: 55.45,
 									})),
-									image({
-										src: 'https://www.holibirthday.com/content/man3.png',
-										minHeight: 44,
-										minWidth: 55.45,
-									}).all([
+									sideBySide({}, [
+										image({
+											src: domain + '/content/man3.png',
+											minHeight: 44,
+											minWidth: 55.45,
+										}),
+										headerButton(siteCopyItems.find('Header Home')),
+									]).all([
 										function (i, context) {
 											i.$el.css('cursor', 'pointer');
 											Stream.combine([
@@ -3120,7 +3119,7 @@ define('domain', [], function () {
 	// return 'http://localhost';
 	// return 'https://nodejs-holibirthday.rhcloud.com';
 	// return 'https://holibirthday.aoeu2code.com';
-	// return 'http://71.89.76.184';
+	return 'http://71.89.76.184';
 	// return 'https://glacial-earth-6398.herokuapp.com';
 	return 'https://www.holibirthday.com';
 });
@@ -4029,6 +4028,7 @@ define('adminView', [
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
+				copyItemEditor('Header Home'),
 				copyItemEditor('Header Browse'),
 				copyItemEditor('Header Gifts'),
 				copyItemEditor('Header Causes'),
@@ -4319,6 +4319,9 @@ define('adminView', [
 					name: 'Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.holibirthdayTomorrow,
 				}, {
+					name: 'Holibirthday Today',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayToday,
+				}, {
 					name: 'Friend\'s Holibirthday in Three Weeks',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInThreeWeeks,
 				}, {
@@ -4327,6 +4330,9 @@ define('adminView', [
 				}, {
 					name: 'Friend\'s Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayTomorrow,
+				}, {
+					name: 'Friend\'s Holibirthday Today',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayToday,
 				}, {
 					name: 'Your Story Deleted',
 					event: schema.mailchimpTemplate.fields.event.options.storyDeleted,

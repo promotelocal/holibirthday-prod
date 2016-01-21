@@ -22,13 +22,13 @@ define([
 			};
 		};
 
-		var headerButton = function (text) {
+		var headerButton = function (text, fontSize) {
 			return holibirthdayButton({
 				padding: 10,
 				all: [
 					fonts.celebrationTime,
 					$css('font-weight', 'bold'),
-					$css('font-size', '20px'),
+					$css('font-size', px(fontSize || 20)),
 				],
 			})(text);
 		};
@@ -39,11 +39,7 @@ define([
 				buttons.push(linkTo('#!admin', headerButton(siteCopyItems.find('Header Admin'))));
 			}
 
-			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'))));
-			buttons.push(nothing.all([
-				withMinWidth(10, true),
-				withMinHeight(10, true),
-			]));
+			buttons.push(linkTo('http://holibirthdaygift.com/', headerButton(siteCopyItems.find('Header Gifts'), 30)));
 			buttons.push(linkTo('#!browseStories', headerButton(siteCopyItems.find('Header Browse'))));
 			buttons.push(linkTo('#!causes', headerButton(siteCopyItems.find('Header Causes'))));
 
@@ -99,15 +95,18 @@ define([
 							left: alignTBM({
 								middle: toggleComponent([
 									linkTo(domain + '/#!', image({
-										src: 'https://www.holibirthday.com/content/man3.png',
+										src: domain + '/content/man3.png',
 										minHeight: 44,
 										minWidth: 55.45,
 									})),
-									image({
-										src: 'https://www.holibirthday.com/content/man3.png',
-										minHeight: 44,
-										minWidth: 55.45,
-									}).all([
+									sideBySide({}, [
+										image({
+											src: domain + '/content/man3.png',
+											minHeight: 44,
+											minWidth: 55.45,
+										}),
+										headerButton(siteCopyItems.find('Header Home')),
+									]).all([
 										function (i, context) {
 											i.$el.css('cursor', 'pointer');
 											Stream.combine([

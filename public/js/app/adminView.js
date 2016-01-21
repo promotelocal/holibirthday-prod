@@ -346,6 +346,7 @@ define([
 			content: content(stack({
 				gutterSize: separatorSize,
 			}, [
+				copyItemEditor('Header Home'),
 				copyItemEditor('Header Browse'),
 				copyItemEditor('Header Gifts'),
 				copyItemEditor('Header Causes'),
@@ -636,6 +637,9 @@ define([
 					name: 'Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.holibirthdayTomorrow,
 				}, {
+					name: 'Holibirthday Today',
+					event: schema.mailchimpTemplate.fields.event.options.holibirthdayToday,
+				}, {
 					name: 'Friend\'s Holibirthday in Three Weeks',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayInThreeWeeks,
 				}, {
@@ -644,6 +648,9 @@ define([
 				}, {
 					name: 'Friend\'s Holibirthday Tomorrow',
 					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayTomorrow,
+				}, {
+					name: 'Friend\'s Holibirthday Today',
+					event: schema.mailchimpTemplate.fields.event.options.friendsHolibirthdayToday,
 				}, {
 					name: 'Your Story Deleted',
 					event: schema.mailchimpTemplate.fields.event.options.storyDeleted,
