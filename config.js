@@ -14,7 +14,7 @@ module.exports = {
 		// name: "holibirthday",
 	// },
 	// db: 'mongodb://holibirthday:asokha%2C38g451234865f[%2C.@ds041613.mongolab.com:41613/holibirthday',
-	db: process.env.OPENSHIFT_MONGODB_DB_URL,
+	db: process.env.OPENSHIFT_MONGODB_DB_URL + 'holibirthday',
 	grecaptcha: {
 		secret: '6Lf1ogkTAAAAAMfU6pXYGeOApwT2g7jHvS80DkM9',
 		sitekey: '6Lf1ogkTAAAAABlzCh_MhCA8hlmkc5zmockoeQsc',
