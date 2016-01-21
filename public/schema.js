@@ -127,6 +127,9 @@
 			}, {
 				name: 'optOutToken',
 				type: type.string,
+			}, {
+				name: 'hasHeardTune',
+				type: type.bool,
 			}],
 			mayFind: always,
 			mayInsert: never,
