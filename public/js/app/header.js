@@ -94,11 +94,14 @@ define([
 						alignLRM({
 							left: alignTBM({
 								middle: toggleComponent([
-									linkTo(domain + '/#!', image({
-										src: domain + '/content/man3.png',
-										minHeight: 44,
-										minWidth: 55.45,
-									})),
+									linkTo(domain + '/#!', sideBySide({}, [
+										image({
+											src: domain + '/content/man3.png',
+											minHeight: 44,
+											minWidth: 55.45,
+										}),
+										headerButton(siteCopyItems.find('Header Home')),
+									])),
 									sideBySide({}, [
 										image({
 											src: domain + '/content/man3.png',
