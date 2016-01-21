@@ -127,7 +127,7 @@ define([
 											});
 										},
 										clickThis(function () {
-											$(window).animate({scrollTop: 0}, 300);
+											$(window).scrollTop(0);
 										}),
 									]),
 								], windowHash.map(function (h) {
