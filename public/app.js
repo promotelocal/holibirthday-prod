@@ -2244,19 +2244,15 @@ define('header', [
 							left: alignTBM({
 								middle: toggleComponent([
 									linkTo(domain + '/#!', sideBySide({}, [
-										image({
+										keepAspectRatio(image({
 											src: domain + '/content/man3.png',
-											minHeight: 44,
-											minWidth: 55.45,
-										}),
+										})),
 										headerButton(siteCopyItems.find('Header Home')),
 									])),
 									sideBySide({}, [
-										image({
+										keepAspectRatio(image({
 											src: domain + '/content/man3.png',
-											minHeight: 44,
-											minWidth: 55.45,
-										}),
+										})),
 										headerButton(siteCopyItems.find('Header Home')),
 									]).all([
 										function (i, context) {
