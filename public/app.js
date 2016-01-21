@@ -2276,7 +2276,7 @@ define('header', [
 											});
 										},
 										clickThis(function () {
-											$('body').animate({scrollTop: 0}, 300);
+											$(window).animate({scrollTop: 0}, 300);
 										}),
 									]),
 								], windowHash.map(function (h) {
