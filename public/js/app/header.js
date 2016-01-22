@@ -120,13 +120,17 @@ define([
 												i.$el.css('opacity', ((hash === '' ||
 																	   hash === '#' ||
 																	   hash === '#!') &&
-																	  s > 0) ? 1 : 0);
+																	  s > 0) ? 1 : 1);
 												setTimeout(function () {
 													i.$el.css('transition', 'opacity 0.1s');
 												});
 											});
 										},
 										clickThis(function () {
+											if ($(window).scrollTop() === 0) {
+												var song = new Audio('./content/song.wav');
+												song.play();
+											}
 											$(window).scrollTop(0);
 										}),
 									]),
