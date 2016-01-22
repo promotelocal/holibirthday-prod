@@ -4995,7 +4995,7 @@ define('doTune', [
 				}, {
 					hasHeardTune: true,
 				});
-				var song = new Audio('./content/song.mp3');
+				var song = new Audio('./content/song.wav');
 				song.play();
 			}
 		});
